@@ -40,10 +40,13 @@
   // SHARED HELPERS
   // ══════════════════════════════════════════════════════════════════════
 
-  /** Henry-law CO2 solubility (mol/L per bar) — Duan-Sun 2003 fit. */
+  /** Henry-law CO2 solubility (mol/L per bar). 0.0344 at 25 C, falling to
+   *  ~0.0173 at 60 C (CO2 is less soluble when hot). Same Crolet-Bonis
+   *  temperature dependence used by the in-situ pH solver, so the scaling
+   *  and pH calculations stay internally consistent.
+   *  Crolet J.-L., Bonis M.R., CORROSION/91 Paper 22; Corrosion 47 (1991) 351. */
   function K_H_CO2(T_C) {
-    var T = T_C + 273.15;
-    return Math.exp(-145.0 + 8472 / T + 21.7 * Math.log(T) - 0.012 * T) * 55.5; // ~0.034 at 25 C
+    return 0.0344 * Math.pow(10, -0.0085 * (T_C - 25));
   }
 
   /** Aqueous CO2 -> carbonic-acid equilibrium pH at given pCO2 (no buffer).
@@ -248,21 +251,37 @@
     }
     F_H2S = Math.max(0.05, Math.min(5, F_H2S));
 
-    // Film-build factor (Tafel-style — Nesic 2007)
-    var F_film = 1 / (1 + 0.013 * Math.max(0, opts.age_h) * Math.pow(Math.max(20, opts.T_C), 0.5));
+    // Film-build factor (Nesic 2007). A protective FeCO3 layer only forms where
+    // the scale is thermodynamically stable (supersaturation SR >= 1); it then
+    // matures with exposure time. Undersaturated brine (e.g. cold or low-Fe2+)
+    // grows no scale, so F_film stays ~1 (no protection). Protection is capped
+    // at ~2 orders of magnitude, the upper bound Nesic reports for FeCO3 films.
+    var f_film = fugacity_CO2(opts.pCO2_bar, opts.T_C);
+    var CO2_aq_f = K_H_CO2(opts.T_C) * f_film;
+    var K1f = Math.pow(10, -(6.351 - 0.0019 * opts.T_C));
+    var K2f = Math.pow(10, -(10.329 - 0.0024 * opts.T_C));
+    var Hf = Math.pow(10, -opts.pH);
+    var CO3f = K1f * K2f * CO2_aq_f / (Hf * Hf);
+    var Fe2f = Math.max(0, opts.Fe2_ppm == null ? 10 : opts.Fe2_ppm) / 55847;
+    var Ksp_f = Math.pow(10, -10.13 - 0.0182 * opts.T_C);
+    var SR_f = (Fe2f * CO3f) / Ksp_f;
+    var scaleReady = SR_f > 1 ? (SR_f - 1) / SR_f : 0;            // 0..1 (0 if undersaturated)
+    var ageGrowth = 1 - Math.exp(-Math.max(0, opts.age_h) / 4380); // film matures, tau ~ 6 months
+    var coverage = scaleReady * ageGrowth;                        // 0..1 protective coverage
+    var F_film = Math.max(0.01, 1 - 0.99 * coverage);            // <= 2 orders of magnitude
 
-    // Temperature kinetics (Arrhenius envelope)
-    var Ea = 32000; // J/mol
-    var F_kin = Math.exp(-Ea / R_GAS * (1 / T - 1 / 293));
+    // NB: no separate Arrhenius factor — CR_react already carries the de Waard
+    // temperature term (-1710/T, effective Ea ~ 33 kJ/mol). A second Arrhenius
+    // multiplier would double-count temperature and blow up the hot end.
 
     // Velocity (lighter than NESC)
     var F_v = 0.8 + 0.1 * Math.min(8, opts.u_m_s);
 
     return {
-      CR_mmpy: CR_react * F_H2S * F_film * F_kin * F_v,
+      CR_mmpy: CR_react * F_H2S * F_film * F_v,
       F_H2S: F_H2S,
       F_film: F_film,
-      F_kin: F_kin,
+      F_v: F_v,
       CR_react_mmpy: CR_react
     };
   }
@@ -425,7 +444,7 @@
     var m2 = deWaard1995({ T_C: T_C, pCO2_bar: pCO2, u_m_s: u, d_pipe_m: d, pH: pH, X_glycol: glycol, applyScale: true });
     var m3 = norsokM506({ T_C: T_C, pCO2_bar: pCO2, u_m_s: u, d_pipe_m: d, pH: pH });
     var m4 = nescCassandra({ T_C: T_C, pCO2_bar: pCO2, u_m_s: u, pH: pH, Fe2_ppm: fe2, water_cut: waterCut, oil_type: oilType });
-    var m5 = multicorpFreeCorp({ T_C: T_C, pCO2_bar: pCO2, pH2S_bar: pH2S, pH: pH, u_m_s: u, age_h: ageH });
+    var m5 = multicorpFreeCorp({ T_C: T_C, pCO2_bar: pCO2, pH2S_bar: pH2S, pH: pH, u_m_s: u, age_h: ageH, Fe2_ppm: fe2 });
 
     var scale = feCO3_scaling_tendency({ T_C: T_C, pCO2_bar: pCO2, pH: pH, Fe2_ppm: fe2, CR_mmpy: m3.CR_mmpy });
     var regime = co2H2SRegime(pCO2, pH2S);
@@ -466,7 +485,7 @@
         cr: m5.CR_mmpy,
         decomposition: {
           CR_react: m5.CR_react_mmpy, F_H2S: m5.F_H2S,
-          F_film: m5.F_film, F_kin: m5.F_kin
+          F_film: m5.F_film, F_v: m5.F_v
         },
         ref: 'Nesic S., Corrosion Sci. 49 (2007) 4308; Sun-Nesic, NACE 09572'
       }
@@ -530,7 +549,7 @@
         dw95: deWaard1995({ T_C: T, pCO2_bar: pCO2, u_m_s: u, d_pipe_m: d, pH: pH, X_glycol: glycol, applyScale: true }).CR_mmpy,
         norsok: norsokM506({ T_C: T, pCO2_bar: pCO2, u_m_s: u, d_pipe_m: d, pH: pH }).CR_mmpy,
         nesc: nescCassandra({ T_C: T, pCO2_bar: pCO2, u_m_s: u, pH: pH, Fe2_ppm: fe2, water_cut: waterCut, oil_type: oilType }).CR_mmpy,
-        freecorp: multicorpFreeCorp({ T_C: T, pCO2_bar: pCO2, pH2S_bar: pH2S, pH: pH, u_m_s: u, age_h: ageH }).CR_mmpy
+        freecorp: multicorpFreeCorp({ T_C: T, pCO2_bar: pCO2, pH2S_bar: pH2S, pH: pH, u_m_s: u, age_h: ageH, Fe2_ppm: fe2 }).CR_mmpy
       });
     }
     return out;
@@ -565,7 +584,7 @@
         dw95: deWaard1995({ T_C: T, pCO2_bar: pCO2, u_m_s: u, d_pipe_m: d, pH: pH, X_glycol: glycol, applyScale: true }).CR_mmpy,
         norsok: norsokM506({ T_C: T, pCO2_bar: pCO2, u_m_s: u, d_pipe_m: d, pH: pH }).CR_mmpy,
         nesc: nescCassandra({ T_C: T, pCO2_bar: pCO2, u_m_s: u, pH: pH, Fe2_ppm: fe2, water_cut: waterCut, oil_type: oilType }).CR_mmpy,
-        freecorp: multicorpFreeCorp({ T_C: T, pCO2_bar: pCO2, pH2S_bar: pH2S, pH: pH, u_m_s: u, age_h: ageH }).CR_mmpy
+        freecorp: multicorpFreeCorp({ T_C: T, pCO2_bar: pCO2, pH2S_bar: pH2S, pH: pH, u_m_s: u, age_h: ageH, Fe2_ppm: fe2 }).CR_mmpy
       });
     }
     return out;
