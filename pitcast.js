@@ -3,8 +3,11 @@
    grade; cited/flagged in the Python VALIDATION_LOG. */
 
 // ---- calibrated constants (from fit_cpt_pren_model N30 + modules) -----------
-const CPT = { slope: 3.009571, intercept: -62.405047, resid: 8.884714,
-              prenMean: 36.98, sxx: 804.4502, n: 9, prenMin: 19.8, prenMax: 47.89 };
+// CPT correlation refit on 51 cited ASTM G48-type (FeCl3 immersion) records from the
+// Nyby 2021 open dataset: CPT = 2.038*PREN_N30 - 32.73 (R2=0.83, residual SE 8.0 C, df=49).
+// Replaces the earlier 9-point handbook calibration; reported on an ASTM G48 (6% FeCl3) basis.
+const CPT = { slope: 2.038176, intercept: -32.730883, resid: 8.033109,
+              prenMean: 36.1689, sxx: 3821.5641, n: 51, prenMin: 18.24, prenMax: 65.55 };
 const C_SIGMA_CPT = 5.0, SIGMA_CR = 30.0, SIGMA_MO = 8.0;
 const SIGMA = { Tlow: 600, Thigh: 1000, Tnose: 850, W: 110, jmakN: 1.5, feq: 0.12,
                 tauRef: 3.0, prenRef: 35.0, kPren: 0.43, tauMin: 0.005 };

@@ -144,7 +144,7 @@ function renderAssess(){
       ${g.name}: PREN ${r.pren.toFixed(0)}, ferrite ≈ ${r.ferrite.toFixed(0)}%, CPT ≈ ${r.cpt.toFixed(0)} °C.
       At ${svc.T} °C${svc.Cl>0?` / ${svc.Cl.toLocaleString()} ppm Cl⁻`:""}${svc.pH2S>=0.3?` / ${svc.pH2S} kPa H₂S`:""},
       the dominant risk is <b>${dom}</b>.${agedNote}
-      <span style="color:var(--dim)"> Screening estimate — see limits below.</span>
+      <span style="color:var(--dim)"> Screening estimate · CPT on ASTM G48 (6% FeCl₃) basis — see limits below.</span>
     </div>`;
 }
 $("assessForm").addEventListener("input", renderAssess);
