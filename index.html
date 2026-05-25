@@ -32,6 +32,7 @@
   <div class="tabs">
     <button class="tab active" data-tab="assess">Assess an alloy</button>
     <button class="tab" data-tab="select">Select the best alloy</button>
+    <button class="tab" data-tab="data">Browse data</button>
   </div>
   <div class="datastat" id="dataStat"></div>
 
@@ -94,6 +95,25 @@
            avoiding over-specification.</p>
       </form>
       <div class="card results" id="s_results"><div class="placeholder">Set a service →</div></div>
+    </div>
+  </section>
+
+  <!-- DATA --------------------------------------------------------------- -->
+  <section class="panel" id="tab-data">
+    <div class="card">
+      <p class="dintro">All real measured records from the cited open database
+        (Nyby et al., <em>Scientific Data</em> 2021, CC BY 4.0). Search by alloy or UNS,
+        filter by metric, and click <b>Assess →</b> to load any record's composition into the tool.</p>
+      <div class="datactrls">
+        <input id="d_search" placeholder="Search alloy / UNS / class — e.g. 2205, S31603, duplex">
+        <div class="chips2">
+          <button class="chip2 active" data-metric="">All</button>
+          <button class="chip2" data-metric="CPT">CPT</button>
+          <button class="chip2" data-metric="Epit">E&#8202;pit</button>
+        </div>
+      </div>
+      <div id="d_count" class="dcount"></div>
+      <div class="dtablewrap"><table id="dataTable"></table></div>
     </div>
   </section>
 </main>
