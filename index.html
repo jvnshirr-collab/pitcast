@@ -7,7 +7,7 @@
 <meta name="description" content="Microstructure-aware, probabilistic localized-corrosion prediction and cost-aware CRA selection for stainless, duplex and nickel alloys.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=8">
+<link rel="stylesheet" href="styles.css?v=9">
 </head>
 <body>
 <header class="topbar">
@@ -33,6 +33,7 @@
     <button class="tab active" data-tab="assess">Assess an alloy</button>
     <button class="tab" data-tab="select">Select the best alloy</button>
     <button class="tab" data-tab="data">Browse data</button>
+    <button class="tab" data-tab="co2">CO₂ corrosion</button>
   </div>
   <div class="datastat" id="dataStat"></div>
 
@@ -120,6 +121,51 @@
       <div class="dtablewrap"><table id="dataTable"></table></div>
     </div>
   </section>
+
+  <!-- CO2 ---------------------------------------------------------------- -->
+  <section class="panel" id="tab-co2">
+    <div class="datastat">Sweet CO₂ corrosion of carbon steel — five canonical models on one operating point ·
+      de Waard 1975/1995 · NORSOK M-506:2017 · NESC · Multicorp · cited</div>
+    <div class="grid">
+      <form class="card inputs" id="co2Form">
+        <h3>Environment preset</h3>
+        <div class="presets" id="co2Presets"></div>
+        <h3>Operating point</h3>
+        <div class="row">
+          <label>Temperature (°C)<input type="number" id="c_T" value="60" step="5"></label>
+          <label>pCO₂ (bar abs)<input type="number" id="c_pCO2" value="5" step="0.5"></label>
+        </div>
+        <div class="row">
+          <label>In-situ pH <span class="lblhint">blank = auto</span><input type="number" id="c_pH" step="0.1" placeholder="auto (Crolet-Bonis)"></label>
+          <label>Liquid velocity (m/s)<input type="number" id="c_u" value="2" step="0.5"></label>
+        </div>
+        <div class="row">
+          <label>Pipe ID (m)<input type="number" id="c_d" value="0.2" step="0.05"></label>
+          <label>Fe²⁺ (mg/L)<input type="number" id="c_fe2" value="10" step="5"></label>
+        </div>
+        <div class="row">
+          <label>pH₂S (bar)<input type="number" id="c_pH2S" value="0" step="0.1"></label>
+          <label>Water cut (0–1)<input type="number" id="c_wc" value="0.5" step="0.1" min="0" max="1"></label>
+        </div>
+        <div class="row">
+          <label>Glycol/MEG fraction<input type="number" id="c_meg" value="0" step="0.1" min="0" max="0.9"></label>
+          <label>Bicarbonate (mg/L HCO₃⁻)<input type="number" id="c_bicarb" value="500" step="50"></label>
+        </div>
+        <div class="row">
+          <label>Hydrocarbon
+            <select id="c_oil"><option value="crude">Crude oil</option><option value="condensate">Condensate</option><option value="water-only">Pure water / no oil</option></select>
+          </label>
+          <label>Exposure age (h)<input type="number" id="c_age" value="8760" step="720"></label>
+        </div>
+        <h3>Corrosion allowance</h3>
+        <div class="row">
+          <label>Design life (yr)<input type="number" id="c_life" value="20" step="1"></label>
+          <label>Allowance (mm)<input type="number" id="c_ca" value="3" step="0.5"></label>
+        </div>
+      </form>
+      <div class="card results" id="co2_results"><div class="placeholder">Set an operating point →</div></div>
+    </div>
+  </section>
 </main>
 
 <section id="how" class="info">
@@ -169,8 +215,9 @@
   <p class="muted">© <span id="yr"></span> austenite.org · PitCast research preview</p>
 </section>
 
-<script src="charts.js?v=8"></script>
-<script src="pitcast.js?v=8"></script>
-<script src="app.js?v=8"></script>
+<script src="charts.js?v=9"></script>
+<script src="co2.js?v=9"></script>
+<script src="pitcast.js?v=9"></script>
+<script src="app.js?v=10"></script>
 </body>
 </html>

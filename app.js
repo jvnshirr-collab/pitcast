@@ -13,6 +13,7 @@ document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
   document.querySelectorAll(".panel").forEach(x => x.classList.remove("active"));
   t.classList.add("active");
   $("tab-" + t.dataset.tab).classList.add("active");
+  if (t.dataset.tab === "co2") renderCO2();
 });
 
 // ---- grade picker (searchable: curated grades + in-scope measured alloys) ---
@@ -213,6 +214,60 @@ function renderSelect(){
 }
 $("selectForm").addEventListener("input", renderSelect);
 
+// ---- CO2 (sweet) corrosion --------------------------------------------------
+const CO2_PRESETS = [
+  {name:"Sweet flowline (mild) · 1 bar, 40°C", v:{T:40,pCO2:1,u:1,d:0.15,fe2:10,pH2S:0,wc:0.5,meg:0,oil:"crude",bicarb:400,age:8760}},
+  {name:"Sweet flowline (mid) · 5 bar, 60°C",  v:{T:60,pCO2:5,u:2,d:0.2,fe2:10,pH2S:0,wc:0.5,meg:0,oil:"crude",bicarb:500,age:8760}},
+  {name:"HP/HT well · 175°C, 100 bar",          v:{T:175,pCO2:100,u:3,d:0.1,fe2:50,pH2S:0,wc:0.6,meg:0,oil:"condensate",bicarb:200,age:8760}},
+  {name:"Sour-sweet field · 8 bar + 1.4 bar H₂S",v:{T:80,pCO2:8,u:2,d:0.2,fe2:20,pH2S:1.4,wc:0.4,meg:0,oil:"crude",bicarb:300,age:8760}},
+  {name:"Wet gas + 40% MEG",                     v:{T:50,pCO2:6,u:8,d:0.3,fe2:5,pH2S:0,wc:0.8,meg:0.4,oil:"condensate",bicarb:0,age:8760}},
+  {name:"Seawater injection",                    v:{T:25,pCO2:0.5,u:2,d:0.25,fe2:1,pH2S:0,wc:1,meg:0,oil:"water-only",bicarb:150,age:8760}},
+];
+function buildCO2Presets(){ const el=$("co2Presets"); if(!el) return;
+  el.innerHTML=CO2_PRESETS.map((p,i)=>`<button type="button" class="preset" data-i="${i}">${p.name}</button>`).join("");
+  el.querySelectorAll(".preset").forEach(b=>b.onclick=()=>{ const v=CO2_PRESETS[+b.dataset.i].v;
+    $("c_T").value=v.T; $("c_pCO2").value=v.pCO2; $("c_u").value=v.u; $("c_d").value=v.d; $("c_fe2").value=v.fe2;
+    $("c_pH2S").value=v.pH2S; $("c_wc").value=v.wc; $("c_meg").value=v.meg; $("c_oil").value=v.oil; $("c_pH").value="";
+    $("c_bicarb").value=v.bicarb; $("c_age").value=v.age;
+    el.querySelectorAll(".preset").forEach(x=>x.classList.remove("active")); b.classList.add("active"); renderCO2(); }); }
+function decompStr(d){ return Object.entries(d).filter(([k])=>k!=="formula")
+  .map(([k,v])=>`${k} ${typeof v==="number"?(Math.abs(v)>=100?v.toFixed(0):v.toFixed(2)):v}`).join(" · ") || (d.formula||""); }
+function renderCO2(){
+  if(!$("co2_results")||!window.CO2||!window.Charts) return;
+  const gv=id=>$(id)?$(id).value:"";
+  const o={ T:+gv("c_T"), pCO2:+gv("c_pCO2"), velocity:+gv("c_u"), pipeID:+gv("c_d"), fe2:+gv("c_fe2"),
+    pH2S:+gv("c_pH2S"), waterCut:+gv("c_wc"), glycol:+gv("c_meg"), oilType:gv("c_oil"),
+    bicarbonate:+gv("c_bicarb"), ageH:+gv("c_age") };
+  const pHraw=gv("c_pH"); if(pHraw!==""&&isFinite(+pHraw)) o.pH=+pHraw;
+  const r=CO2.assess(o);
+  const col=cr=> cr>=5?"#ef4444":cr>=1?"#f59e0b":"#22c55e";
+  const vb=r.crMax>=5?"high":r.crMax>=1?"moderate":"low";
+  const norsok=r.models.find(m=>m.id==="NORSOK")||r.models[2];
+  const al=CO2.allowance({cr:norsok.cr, designLifeYr:+gv("c_life"), caMm:+gv("c_ca")});
+  const fixed={pCO2:o.pCO2,velocity:o.velocity,pipeID:o.pipeID,fe2:o.fe2,pH2S:o.pH2S,waterCut:o.waterCut,glycol:o.glycol,oilType:o.oilType,bicarbonate:o.bicarbonate,ageH:o.ageH}; if(o.pH!=null)fixed.pH=o.pH;
+  const st=CO2.sweepT(Object.assign({Tmin:20,Tmax:175,n:50},fixed));
+  const sp=CO2.sweepPCO2(Object.assign({pMin:0.1,pMax:100,n:50,T:o.T},fixed));
+  const SER=st=>[ {name:"de Waard 95",color:"#38bdf8",pts:st.dw95}, {name:"NORSOK M-506",color:"#2dd4bf",pts:st.norsok}, {name:"NESC",color:"#a78bfa",pts:st.nesc} ];
+  const bars=Charts.bars({w:540,labelW:165,unit:"mm/y",fmt:v=>v.toFixed(v<1?3:2),items:r.models.map(m=>({name:m.name,value:m.cr,color:col(m.cr)}))});
+  const crT=Charts.lines({w:540,h:230,title:"CR vs temperature",xlabel:"Temperature (°C)",ylabel:"CR (mm/y)",
+    series:[{name:"de Waard 95",color:"#38bdf8",pts:st.map(p=>({x:p.T,y:p.dw95}))},{name:"NORSOK M-506",color:"#2dd4bf",pts:st.map(p=>({x:p.T,y:p.norsok}))},{name:"NESC",color:"#a78bfa",pts:st.map(p=>({x:p.T,y:p.nesc}))}],
+    vmarkers:[{x:o.T,label:"op "+o.T+"°C"}]});
+  const crP=Charts.lines({w:540,h:230,xlog:true,title:"CR vs CO₂ partial pressure",xlabel:"pCO₂ (bar, log)",ylabel:"CR (mm/y)",
+    series:[{name:"de Waard 95",color:"#38bdf8",pts:sp.map(p=>({x:p.pCO2,y:p.dw95}))},{name:"NORSOK M-506",color:"#2dd4bf",pts:sp.map(p=>({x:p.pCO2,y:p.norsok}))},{name:"NESC",color:"#a78bfa",pts:sp.map(p=>({x:p.pCO2,y:p.nesc}))}],
+    vmarkers:[{x:o.pCO2,label:"op"}]});
+  const rows=r.models.map(m=>`<tr><td>${m.name}</td><td class="num">${m.cr.toFixed(m.cr<1?3:2)}</td><td style="color:var(--dim);font-size:11px">${decompStr(m.decomposition)}</td><td style="color:var(--dim);font-size:10px">${m.ref}</td></tr>`).join("");
+  $("co2_results").innerHTML=`
+    <div class="verdict ${vb}"><div class="gauge">${r.crMax.toFixed(1)}<span class="u"> mm/y</span></div>
+      <div class="vtext"><b>${r.verdict}</b><div>${r.regime.regime.toUpperCase()} regime · in-situ pH ${r.pH_insitu.toFixed(2)} · FeCO₃ ${r.feco3_protective?"protective":"active"} (ST ${r.feco3_st.toExponential(1)}) · model spread ${r.spread.toFixed(0)}×</div></div></div>
+    <div class="blab2">Model verdicts (mm/y)</div>${bars}
+    <div class="chartwrap">${crT}</div>
+    <div class="chartwrap">${crP}</div>
+    <table><thead><tr><th>Model</th><th>CR</th><th>Decomposition / multipliers</th><th>Reference</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="explain"><b>Corrosion allowance (NORSOK basis):</b> ${al.uninhibited_CR_mmpy.toFixed(2)} mm/y → ${al.consumed_mm.toFixed(1)} mm consumed over ${al.designLifeYr} yr vs ${al.caMm} mm CA → <b>${al.verdict}</b>${al.ca_sufficient?"":`; required inhibitor efficiency <b>${al.required_inhibitor_efficiency_pct.toFixed(1)}%</b>${al.achievable?"":" — above sustainable field availability (~95%); reconsider a CRA or thicker CA"}`}.
+      <span style="color:var(--dim)"> Screening, carbon steel, sweet service. The five models span ${r.spread.toFixed(0)}× — design to the conservative/relevant one. Sources: Corrosion 31 (1975) 177; NACE 95-128; NORSOK M-506:2017; Nyborg 2010; Nesic 2007.</span></div>`;
+}
+$("co2Form")&&$("co2Form").addEventListener("input", renderCO2);
+
 // ---- DATA browser (all records usable) --------------------------------------
 let _metricFilter = "";
 let _measIndex = null;
@@ -295,5 +350,7 @@ async function init(){
   renderAssess();
   renderSelect();
   renderData();
+  buildCO2Presets();
+  renderCO2();
 }
 init();
