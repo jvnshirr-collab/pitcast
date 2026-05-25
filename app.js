@@ -136,6 +136,11 @@ function renderAssess(){
       ${bar("Chloride-SCC", r.pScc)}
       ${bar("Sour SSC" + (r.sourRegion?` (Region ${r.sourRegion})`:""), r.pSourFail)}
     </div>
+    ${r.iso ? `<div class="iso ${r.iso.status}">${
+      r.iso.status==="within" ? `✓ <b>ISO 15156-3 Annex A</b> (screening): within the ${r.iso.group} sour envelope (≤${r.iso.maxT} °C). Individual qualification per ISO 15156-3 is still required.`
+      : r.iso.status==="exceeds" ? `⚠ <b>ISO 15156-3 Annex A</b> (screening): service <b>exceeds</b> the ${r.iso.group} envelope — ${r.iso.reason}. Annex B lab qualification required.`
+      : `<b>ISO 15156-3</b>: no Annex A screening envelope tabulated for this alloy family — verify directly against the standard.`
+    }</div>` : ""}
     ${(() => { const mc = PitCast.measuredCPT(g.uns, g.name); return mc
       ? `<div class="measured">📊 Real measured CPT (literature): <b>${mc.min.toFixed(0)}–${mc.max.toFixed(0)} °C</b>
          · ${mc.n} record${mc.n>1?"s":""} <span style="color:var(--dim)">(cited dataset, CC BY) — vs PitCast ${r.cpt.toFixed(0)} °C predicted</span></div>`

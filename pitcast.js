@@ -104,7 +104,8 @@ function ferritePct(c){
 function inferFamily(c){
   if (v(c,"Ni")>=30) return "nickel";
   const f = ferritePct(c);
-  if (f>=30) return pren(c)>=40 ? "super_duplex" : "duplex";
+  if (f>=30){ if (v(c,"N")<0.06) return "ferritic";   // high ferrite + ~no N = ferritic, not duplex
+              return pren(c)>=40 ? "super_duplex" : "duplex"; }
   if (f<=10 && v(c,"Ni")>=6) return "austenitic";
   return "ferritic";
 }
@@ -159,6 +160,46 @@ function sourFail(HV, pp, pH, family){
   return { sour:true, region, pFail: 1-pass };
 }
 
+// ISO 15156-3:2020 Annex A "use-without-further-testing" sour envelopes — SCREENING ONLY.
+// Limits apply collectively (T, pH2S, Cl all simultaneously), for production service, and the
+// per-table metallurgical condition (hardness/ferrite/PREN) must also hold. Each group is a
+// ladder of {T:max degC, pp:max kPa H2S}; the alloy qualifies if ANY row's caps both hold.
+// Compiled from ISO 15156-3:2020 (Tables A.2/A.8/A.14/A.24) + Swagelok MS-06-124 RevB / Sandvik.
+const ISO_SOUR = {
+  austenitic_std:  { label:"austenitic SS (A.2)",            rows:[{T:60,pp:100},{T:90,pp:1},{T:149,pp:10}], cite:"ISO 15156-3 A.2" },
+  super_aust_6mo:  { label:"6Mo super-austenitic (A.8)",     rows:[{T:60,pp:100}], cite:"ISO 15156-3 A.8" },
+  duplex_22:       { label:"duplex FPREN 30-40 (A.24)",      rows:[{T:232,pp:10}], cite:"ISO 15156-3 A.24" },
+  super_duplex_25: { label:"super-duplex FPREN 40-45 (A.24)",rows:[{T:232,pp:20}], maxCl:120000, cite:"ISO 15156-3 A.24" },
+  ni_fecrmo_825:   { label:"Ni-Fe-Cr-Mo, 825 type (A.14)",   rows:[{T:232,pp:200},{T:218,pp:700},{T:204,pp:1000},{T:177,pp:1400},{T:132,pp:1e9}], cite:"ISO 15156-3 A.14" },
+  ni_crmonb_625:   { label:"Ni-Cr-Mo-Nb, 625 type (A.14)",   rows:[{T:232,pp:200},{T:218,pp:2000},{T:149,pp:1e9}], cite:"ISO 15156-3 A.14" },
+  ni_crmo_c276:    { label:"Ni-Cr-Mo high-Mo, C-276 (A.14)", rows:[{T:232,pp:7000},{T:204,pp:1e9}], cite:"ISO 15156-3 A.14" },
+};
+function isoGroup(family, c){
+  const Mo=v(c,"Mo"), Fe=v(c,"Fe"), Ni=v(c,"Ni");
+  if (family==="nickel" || Ni>=30){
+    if (Mo>=12) return "ni_crmo_c276";
+    if (Fe>=15 && Mo<5) return "ni_fecrmo_825";
+    return "ni_crmonb_625";
+  }
+  if (family==="duplex" || family==="super_duplex") return prenW(c)>=40 ? "super_duplex_25" : "duplex_22";
+  if (family==="austenitic") return Mo>=5.5 ? "super_aust_6mo" : "austenitic_std";
+  return null;   // ferritic / martensitic: not screened here
+}
+function isoSourCheck(family, c, svc){
+  if (svc.pH2S==null || svc.pH2S<SOUR.threshold) return null;     // not sour service
+  const key=isoGroup(family,c);
+  if (!key) return { group:null, status:"untabulated", cite:"ISO 15156-3" };
+  const g=ISO_SOUR[key];
+  const clOk = !g.maxCl || svc.Cl==null || svc.Cl<=g.maxCl;
+  const within = clOk && g.rows.some(r => svc.T<=r.T && svc.pH2S<=r.pp);
+  const maxT=Math.max(...g.rows.map(r=>r.T));
+  const reason = within ? null
+    : (!clOk ? ("Cl "+svc.Cl+" mg/L > "+g.maxCl+" cap")
+    : (svc.T>maxT ? ("T "+svc.T+"°C > "+maxT+"°C cap")
+    : ("pH2S "+svc.pH2S+" kPa exceeds the cap at "+svc.T+"°C")));
+  return { group:g.label, status: within?"within":"exceeds", maxT, reason, cite:g.cite };
+}
+
 // ---- cost -------------------------------------------------------------------
 function relativeCost(c){
   let total = 0, sum = 0;
@@ -177,6 +218,7 @@ function assess(c, svc){
   let pScc = null, pSourFail = null, sour = null;
   if (svc.stress!=null && svc.Cl>0) pScc = clSCC(family, svc.T, svc.Cl, svc.stress);
   if (svc.pH2S>=SOUR.threshold && svc.HV!=null){ sour = sourFail(svc.HV, svc.pH2S, svc.pH, family); pSourFail = sour.pFail; }
+  const iso = isoSourCheck(family, c, svc);
   const risks = { pitting: svc.Cl>0?pit.p:null, "chloride-SCC": pScc, "sour-SSC": pSourFail };
   const active = Object.entries(risks).filter(([k,x])=>x!=null);
   const overall = active.length ? Math.max(...active.map(([k,x])=>x)) : 0;
@@ -184,7 +226,7 @@ function assess(c, svc){
   return { family, pren: pren(c), prenW: prenW(c), ferrite: ferritePct(c),
            cpt: pit.cptLocal, cptSE: pit.se, fsig: pit.fsig, aged: !!aged,
            pPit: svc.Cl>0?pit.p:null, pScc, pSourFail, sourRegion: sour?sour.region:null,
-           cost: relativeCost(c), overall, dominant, risks };
+           cost: relativeCost(c), overall, dominant, risks, iso };
 }
 
 // ---- selection --------------------------------------------------------------
