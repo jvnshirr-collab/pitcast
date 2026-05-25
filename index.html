@@ -7,7 +7,7 @@
 <meta name="description" content="Microstructure-aware, probabilistic localized-corrosion prediction and cost-aware CRA selection for stainless, duplex and nickel alloys.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=6">
+<link rel="stylesheet" href="styles.css?v=7">
 </head>
 <body>
 <header class="topbar">
@@ -141,6 +141,28 @@
   <p>PitCast is a faithful in-browser port of a validated Python research package (124 tests; calibrated
      against cited literature — e.g. it reproduces an independent 2507 σ-phase CPT loss of 64 °C from a
      single 2205 anchor). The CPT correlation is leverage-aware and leave-one-out calibrated.</p>
+
+  <div class="valid">
+    <h3 class="validh">Validation &amp; accuracy</h3>
+    <div class="stats">
+      <div class="stat"><div class="sv">90%</div><div class="sk">LOO interval coverage<span class="sn">46 / 51</span></div></div>
+      <div class="stat"><div class="sv">6.6&nbsp;°C</div><div class="sk">LOO mean abs. error<span class="sn">RMSE 8.5&nbsp;°C</span></div></div>
+      <div class="stat"><div class="sv">51</div><div class="sk">cited G48 CPT records<span class="sn">ASTM G48, 6% FeCl₃</span></div></div>
+      <div class="stat"><div class="sv">500 / 500</div><div class="sk">sanity / invariant tests<span class="sn">all passing</span></div></div>
+    </div>
+    <p class="muted">The CPT model is a single-feature linear fit on <b>PREN<sub>N30</sub></b>
+       (PREN is the exact definitional formula Cr&nbsp;+&nbsp;3.3·Mo&nbsp;+&nbsp;16·N). That form was chosen
+       by <b>leave-one-out cross-validation</b> over 7 candidate models — it was the most accurate; richer
+       multi-feature variants overfit. The 90% prediction interval covers ~90% of held-out records, so it is
+       statistically well-calibrated. The 500 invariant tests check probability bounds, temperature &amp;
+       chloride monotonicity, that σ-phase ageing lowers CPT, and the ISO&nbsp;15156 sour gate at
+       <i>p</i>H₂S&nbsp;&lt;&nbsp;0.3&nbsp;kPa.</p>
+    <p class="muted">A ~6.6&nbsp;°C error sits close to the intrinsic lab-to-lab scatter of CPT measurement
+       itself — this is honest <b>calibration evidence for a screening tool, not a guarantee</b>.
+       Calibration set: <i>n</i>&nbsp;=&nbsp;51 records from Nyby et&nbsp;al.,
+       <a href="https://doi.org/10.6084/m9.figshare.13038257" target="_blank" rel="noopener">Scientific Data <b>8</b>, 58 (2021)</a>,
+       CC&nbsp;BY&nbsp;4.0.</p>
+  </div>
   <p class="warn">⚠ Screening / research-grade. Constants are cited or clearly flagged; some envelopes
      (welds, SCC, CCUS/H₂) are rule-of-thumb. <b>Not a substitute for qualified materials engineering,
      standards compliance, or testing.</b> Do not use unsupervised for design.</p>

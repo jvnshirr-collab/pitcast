@@ -164,6 +164,20 @@ tr.rec td:first-child{border-left:3px solid var(--accent)}
 .muted{color:var(--dim);font-size:13px}
 .info:last-child{padding-bottom:70px}
 
+/* validation / accuracy card */
+.valid{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:18px 20px;margin:6px 0 16px;max-width:780px}
+.validh{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--accent);
+  margin-bottom:14px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 13px}
+.stat .sv{font-family:var(--mono);font-size:22px;font-weight:600;color:var(--green);line-height:1.1}
+.stat .sk{display:block;color:var(--muted);font-size:11px;margin-top:6px;line-height:1.35}
+.stat .sn{display:block;color:var(--dim);font-size:10.5px;margin-top:2px}
+.valid p.muted{font-size:13px;line-height:1.55;max-width:none}
+.valid p.muted b{color:var(--ink)}
+@media(max-width:600px){.stats{grid-template-columns:1fr 1fr}}
+
 @media(max-width:600px){
   .topbar{padding:12px 16px;flex-wrap:wrap;gap:6px}
   .byline{display:none}
