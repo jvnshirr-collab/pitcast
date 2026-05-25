@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PitCast — probabilistic localized-corrosion prediction</title>
+<meta name="description" content="Microstructure-aware, probabilistic localized-corrosion prediction and cost-aware CRA selection for stainless, duplex and nickel alloys.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">◆ PitCast</span>
+    <span class="byline">by <a href="https://austenite.org" target="_blank" rel="noopener">austenite.org</a></span>
+  </div>
+  <nav><a href="#app">App</a><a href="#how">How it works</a><a href="#about">About</a></nav>
+</header>
+
+<section class="hero">
+  <h1>The corrosion tool that thinks like a <span class="grad">metallurgist</span><br>and speaks in <span class="grad">probabilities</span>.</h1>
+  <p class="sub">Microstructure-aware, probabilistic prediction of pitting, chloride-SCC and sour
+     cracking — plus cost-aware CRA selection. Runs entirely in your browser.</p>
+  <div class="chips">
+    <span>composition → PREN</span><span>σ-phase coupling</span><span>CPT + credible interval</span>
+    <span>Cl-SCC · sour SSC</span><span>cost-aware selection</span><span>CCUS / H₂</span>
+  </div>
+</section>
+
+<main id="app" class="app">
+  <div class="tabs">
+    <button class="tab active" data-tab="assess">Assess an alloy</button>
+    <button class="tab" data-tab="select">Select the best alloy</button>
+  </div>
+  <div class="datastat" id="dataStat"></div>
+
+  <!-- ASSESS ------------------------------------------------------------- -->
+  <section class="panel active" id="tab-assess">
+    <div class="grid">
+      <form class="card inputs" id="assessForm">
+        <h3>Material</h3>
+        <label>Grade
+          <select id="a_grade"></select>
+        </label>
+        <div class="comp-readout" id="a_comp"></div>
+        <h3>Service conditions</h3>
+        <div class="row">
+          <label>Temperature (°C)<input type="number" id="a_T" value="60" step="1"></label>
+          <label>Chloride (ppm)<input type="number" id="a_Cl" value="50000" step="1000"></label>
+        </div>
+        <div class="row">
+          <label>pH<input type="number" id="a_pH" value="4.5" step="0.1"></label>
+          <label>H₂S partial pressure (kPa)<input type="number" id="a_pH2S" value="10" step="1"></label>
+        </div>
+        <div class="row">
+          <label>Tensile stress (× yield)<input type="number" id="a_stress" value="0.5" step="0.05" min="0" max="1"></label>
+          <label>Hardness (HV)<input type="number" id="a_HV" value="240" step="5"></label>
+        </div>
+        <details class="adv">
+          <summary>Advanced — thermal / weld history (σ-phase)</summary>
+          <div class="row">
+            <label>Ageing / PWHT temp (°C)<input type="number" id="a_ageT" value="0" step="25"></label>
+            <label>Time (h)<input type="number" id="a_aget" value="0" step="1"></label>
+          </div>
+          <p class="hint">e.g. 850 °C for 4 h precipitates σ-phase and sharply lowers CPT.</p>
+        </details>
+      </form>
+
+      <div class="card results" id="a_results"><div class="placeholder">Enter conditions →</div></div>
+    </div>
+  </section>
+
+  <!-- SELECT ------------------------------------------------------------- -->
+  <section class="panel" id="tab-select">
+    <div class="grid">
+      <form class="card inputs" id="selectForm">
+        <h3>Service conditions</h3>
+        <div class="row">
+          <label>Temperature (°C)<input type="number" id="s_T" value="80" step="1"></label>
+          <label>Chloride (ppm)<input type="number" id="s_Cl" value="50000" step="1000"></label>
+        </div>
+        <div class="row">
+          <label>pH<input type="number" id="s_pH" value="4.5" step="0.1"></label>
+          <label>H₂S partial pressure (kPa)<input type="number" id="s_pH2S" value="10" step="1"></label>
+        </div>
+        <div class="row">
+          <label>Tensile stress (× yield)<input type="number" id="s_stress" value="0.5" step="0.05"></label>
+          <label>Hardness (HV)<input type="number" id="s_HV" value="240" step="5"></label>
+        </div>
+        <label>Acceptable risk threshold (P)
+          <input type="number" id="s_thr" value="0.15" step="0.05" min="0" max="1"></label>
+        <p class="hint">Recommends the <b>cheapest</b> grade whose overall risk clears the threshold —
+           avoiding over-specification.</p>
+      </form>
+      <div class="card results" id="s_results"><div class="placeholder">Set a service →</div></div>
+    </div>
+  </section>
+</main>
+
+<section id="how" class="info">
+  <h2>How it works</h2>
+  <div class="cols">
+    <div><b>1 · Composition → microstructure</b><p>PREN from real composition; ferrite balance (WRC-1992);
+      σ-phase and sensitization from thermal/weld history.</p></div>
+    <div><b>2 · Microstructure → resistance</b><p>An effective-local-PREN coupling degrades the critical
+      pitting temperature (CPT) — the link no standard tool carries.</p></div>
+    <div><b>3 · Probability, not a point</b><p>Every output is a distribution with a credible interval;
+      P(pit) = P(CPT &lt; service temperature).</p></div>
+    <div><b>4 · Decision</b><p>Chloride-SCC and sour SSC (ISO 15156), then a cost-aware recommendation
+      of the cheapest grade that's safe enough.</p></div>
+  </div>
+</section>
+
+<section id="about" class="info">
+  <h2>About &amp; honest limits</h2>
+  <p>PitCast is a faithful in-browser port of a validated Python research package (124 tests; calibrated
+     against cited literature — e.g. it reproduces an independent 2507 σ-phase CPT loss of 64 °C from a
+     single 2205 anchor). The CPT correlation is leverage-aware and leave-one-out calibrated.</p>
+  <p class="warn">⚠ Screening / research-grade. Constants are cited or clearly flagged; some envelopes
+     (welds, SCC, CCUS/H₂) are rule-of-thumb. <b>Not a substitute for qualified materials engineering,
+     standards compliance, or testing.</b> Do not use unsupervised for design.</p>
+  <p class="muted">© <span id="yr"></span> austenite.org · PitCast research preview</p>
+</section>
+
+<script src="pitcast.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
