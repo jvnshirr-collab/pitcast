@@ -14,6 +14,7 @@ document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
   t.classList.add("active");
   $("tab-" + t.dataset.tab).classList.add("active");
   if (t.dataset.tab === "co2") renderCO2();
+  if (t.dataset.tab === "cpac") renderCPAC();
 });
 
 // ---- grade picker (searchable: curated grades + in-scope measured alloys) ---
@@ -268,6 +269,47 @@ function renderCO2(){
 }
 $("co2Form")&&$("co2Form").addEventListener("input", renderCO2);
 
+// ---- CP / AC (cathodic protection + AC corrosion) ---------------------------
+const CPAC_PRESETS = [
+  {name:"HVAC parallelism · 15 V, 25 Ω·m",      v:{vac:15,rho:25,d:11.3,jdc:1}},
+  {name:"After mitigation · 4 V, 200 Ω·m",      v:{vac:4,rho:200,d:11.3,jdc:2}},
+  {name:"Severe stray AC · 25 V, 15 Ω·m",       v:{vac:25,rho:15,d:10,jdc:1}},
+  {name:"Small holiday, dry soil · 8 V, 500 Ω·m",v:{vac:8,rho:500,d:5,jdc:1.5}},
+];
+function buildCPACPresets(){ const el=$("cpacPresets"); if(!el) return;
+  el.innerHTML=CPAC_PRESETS.map((p,i)=>`<button type="button" class="preset" data-i="${i}">${p.name}</button>`).join("");
+  el.querySelectorAll(".preset").forEach(b=>b.onclick=()=>{ const v=CPAC_PRESETS[+b.dataset.i].v;
+    $("p_vac").value=v.vac; $("p_rho").value=v.rho; $("p_d").value=v.d; $("p_jdc").value=v.jdc;
+    el.querySelectorAll(".preset").forEach(x=>x.classList.remove("active")); b.classList.add("active"); renderCPAC(); }); }
+function renderCPAC(){
+  if(!$("cpac_results")||!window.CPAC||!window.Charts) return;
+  const gv=id=>$(id)?$(id).value:"";
+  const rho=+gv("p_rho"), d=+gv("p_d"), vac=+gv("p_vac");
+  const ac=CPAC.acRisk({Vac:vac, soilResistivity:rho, holidayDia_mm:d, Jdc:+gv("p_jdc")});
+  const rate=CPAC.acCorrRate(ac.jac);
+  const cp=CPAC.cpCriteria({Eon_mV:+gv("p_eon"), Einstantoff_mV:+gv("p_eio"), Edepol_mV:+gv("p_edep")});
+  const acVb=ac.band==="high"?"high":ac.band==="elevated"?"moderate":"low";
+  const cpCls=cp.verdict.indexOf("PROTECTED")===0?"within":(cp.verdict==="INSUFFICIENT DATA"?"untabulated":"exceeds");
+  const sweep=[]; for(let V=0;V<=40;V++){ sweep.push({x:V, y:CPAC.holidayJac(V,rho,d/1000).jac}); }
+  const jacChart=Charts.lines({w:540,h:230,title:"AC current density vs touch voltage",xlabel:"Vac (V)",ylabel:"Jac (A/m²)",ymin:0,
+    series:[{name:"Jac at holiday",color:"#38bdf8",pts:sweep}],
+    vmarkers:[{x:vac,label:"op "+vac+" V"},{x:0,label:""}]});
+  $("cpac_results").innerHTML=`
+    <div class="verdict ${acVb}"><div class="gauge">${ac.jac.toFixed(0)}<span class="u"> A/m²</span></div>
+      <div class="vtext"><b>AC corrosion: ${ac.band.toUpperCase()}${ac.mitigate?" · MITIGATE":""}</b><div>${ac.rationale}</div></div></div>
+    <div class="metrics">
+      <div class="metric"><div class="k">Spread R</div><div class="val">${ac.rSpread.toFixed(0)}<span class="u"> Ω</span></div><div class="u">holiday → earth</div></div>
+      <div class="metric"><div class="k">Jac / Jdc</div><div class="val">${ac.ratio!=null?ac.ratio.toFixed(1):"—"}</div><div class="u">${ac.ratioStatus}</div></div>
+      <div class="metric"><div class="k">Indic. rate</div><div class="val">${rate.mmYr_indicative.toFixed(1)}<span class="u"> mm/y</span></div><div class="u">indicative only</div></div>
+    </div>
+    <div class="chartwrap">${jacChart}</div>
+    <div class="iso ${cpCls}"><b>Cathodic protection — ${cp.verdict}</b><br>
+      polarized ${cp.polarized_mV!=null?cp.polarized_mV.toFixed(0)+" mV":"—"} · −850 mV ${cp.meets850?"✓ met":"✗ not met"} · 100 mV shift ${cp.polarizationShift_mV!=null?(cp.polarizationShift_mV.toFixed(0)+" mV "+(cp.meets100mV?"✓":"✗")):"(needs depol)"}${cp.irDrop_mV!=null?(" · IR drop "+cp.irDrop_mV.toFixed(0)+" mV"):""}</div>
+    <div class="explain">${(cp.notes||[]).map(n=>"• "+n).join("<br>")||"AC corrosion concentrates at coating holidays; Jac from the disc spread-resistance model."}
+      <span style="color:var(--dim)"> AC: ${ac.ref} · CP: ${cp.ref}</span></div>`;
+}
+$("cpacForm")&&$("cpacForm").addEventListener("input", renderCPAC);
+
 // ---- DATA browser (all records usable) --------------------------------------
 let _metricFilter = "";
 let _measIndex = null;
@@ -352,5 +394,7 @@ async function init(){
   renderData();
   buildCO2Presets();
   renderCO2();
+  buildCPACPresets();
+  renderCPAC();
 }
 init();
