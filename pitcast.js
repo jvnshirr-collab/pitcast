@@ -15,7 +15,11 @@ const CL_SCC = {
   ferritic:     { T: 300, Cl: 1e6,   stress: 0.90 },
   nickel:       { T: 250, Cl: 1e5,   stress: 0.80 },
   Tscale: 15, ClScale: 0.5, Sscale: 0.08 };
-const SOUR = { threshold: 0.3, hv: { 1: 250, 2: 248, 3: 240 }, hvSd: 15 };
+// ISO 15156-3 max hardness by CRA family (Vickers): 22 HRC->250 HV (austenitic/ferritic),
+// 28 HRC->~290 HV (duplex), 35-40 HRC->~360 HV (Ni-base). Replaces the carbon-steel ladder.
+const SOUR = { threshold: 0.3,
+  hvByFamily: { austenitic: 250, ferritic: 250, duplex: 290, super_duplex: 290, nickel: 360 },
+  hvSd: 15 };
 const PRICE = { Fe:0.6, Cr:10, Ni:17, Mo:53, W:35, Nb:45, Cu:9, Mn:2, Si:1.5, Co:40, N:0, C:0 };
 const REF304_COST = 3.6295;
 
@@ -67,6 +71,22 @@ function erf(x){ const t=1/(1+0.3275911*Math.abs(x));
   const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);
   return x>=0?y:-y; }
 const normCDF = z => 0.5*(1+erf(z/Math.SQRT2));
+// Student-t CDF — matches the validated Python prediction interval (df = n-2). Using the
+// Gaussian here under-states the tail at small n (the live engine was ~2x overconfident).
+function _gln(x){ const g=[76.18009172947146,-86.50532032941677,24.01409824083091,-1.231739572450155,0.1208650973866179e-2,-0.5395239384953e-5];
+  let y=x, tmp=x+5.5; tmp-=(x+0.5)*Math.log(tmp); let s=1.000000000190015;
+  for(let j=0;j<6;j++){ y++; s+=g[j]/y; } return -tmp+Math.log(2.5066282746310005*s/x); }
+function _betacf(a,b,x){ const FPMIN=1e-300; let qab=a+b,qap=a+1,qam=a-1,c=1,d=1-qab*x/qap;
+  if(Math.abs(d)<FPMIN)d=FPMIN; d=1/d; let h=d;
+  for(let m=1;m<=200;m++){ const m2=2*m;
+    let aa=m*(b-m)*x/((qam+m2)*(a+m2)); d=1+aa*d; if(Math.abs(d)<FPMIN)d=FPMIN; c=1+aa/c; if(Math.abs(c)<FPMIN)c=FPMIN; d=1/d; h*=d*c;
+    aa=-(a+m)*(qab+m)*x/((a+m2)*(qap+m2)); d=1+aa*d; if(Math.abs(d)<FPMIN)d=FPMIN; c=1+aa/c; if(Math.abs(c)<FPMIN)c=FPMIN; d=1/d; const del=d*c; h*=del;
+    if(Math.abs(del-1)<1e-12) break; }
+  return h; }
+function _ibeta(x,a,b){ if(x<=0)return 0; if(x>=1)return 1;
+  const bt=Math.exp(_gln(a+b)-_gln(a)-_gln(b)+a*Math.log(x)+b*Math.log(1-x));
+  return x<(a+1)/(a+b+2) ? bt*_betacf(a,b,x)/a : 1-bt*_betacf(b,a,1-x)/b; }
+const tCDF = (t, df) => { const ib=0.5*_ibeta(df/(df+t*t), df/2, 0.5); return t>=0 ? 1-ib : ib; };
 
 // ---- materials science ------------------------------------------------------
 const pren   = c => v(c,"Cr") + 3.3*v(c,"Mo") + 16*v(c,"N");                 // reported (N16)
@@ -104,7 +124,7 @@ function cptSE(c){
 function pPit(c, Tservice, aged){
   let mean = cptMean(c), fsig = 0;
   if (aged && aged.t>0){ fsig = sigmaFraction(c, aged.T, aged.t); mean -= C_SIGMA_CPT*fsig*100; }
-  const p = normCDF((Tservice-mean)/cptSE(c));
+  const p = tCDF((Tservice-mean)/cptSE(c), CPT.n - 2);   // Student-t (df=n-2), matches Python
   return { p, cptLocal: mean, fsig, se: cptSE(c) };
 }
 
@@ -119,17 +139,20 @@ function clSCC(family, T, Cl, stress){
 }
 
 // ---- sour SSC ---------------------------------------------------------------
+// Coarse sour-severity tier (1 mild .. 3 severe). NOTE: for CRAs the binding criterion is the
+// per-family hardness limit below (ISO 15156-3), not this tier — qualification still requires the
+// alloy-specific T/Cl/pH2S/S envelope in ISO 15156-3.
 function sourRegion(pp, pH){
-  if (pp<SOUR.threshold) return 1;
-  if (pH<3.5) return 3;
-  if (Math.log10(pp)>=0.40*pH+1 || pp>=100) return 3;
-  if (Math.log10(pp)>=0.30*pH-3) return 2;
+  if (pp<SOUR.threshold) return 0;
+  if (pp>=10 || pH<3.5) return 3;
+  if (pp>=1  || pH<4.5) return 2;
   return 1;
 }
-function sourFail(HV, pp, pH){
-  if (pp<SOUR.threshold) return { sour:false, region:1, pFail:0 };
+function sourFail(HV, pp, pH, family){
+  if (pp<SOUR.threshold) return { sour:false, region:0, pFail:0 };
   const region = sourRegion(pp, pH);
-  const pass = normCDF((SOUR.hv[region]-HV)/SOUR.hvSd);
+  const lim = SOUR.hvByFamily[family] || SOUR.hvByFamily.austenitic;
+  const pass = normCDF((lim - HV)/SOUR.hvSd);
   return { sour:true, region, pFail: 1-pass };
 }
 
@@ -150,7 +173,7 @@ function assess(c, svc){
   const pit = pPit(c, svc.T, aged);
   let pScc = null, pSourFail = null, sour = null;
   if (svc.stress!=null && svc.Cl>0) pScc = clSCC(family, svc.T, svc.Cl, svc.stress);
-  if (svc.pH2S>=SOUR.threshold && svc.HV!=null){ sour = sourFail(svc.HV, svc.pH2S, svc.pH); pSourFail = sour.pFail; }
+  if (svc.pH2S>=SOUR.threshold && svc.HV!=null){ sour = sourFail(svc.HV, svc.pH2S, svc.pH, family); pSourFail = sour.pFail; }
   const risks = { pitting: svc.Cl>0?pit.p:null, "chloride-SCC": pScc, "sour-SSC": pSourFail };
   const active = Object.entries(risks).filter(([k,x])=>x!=null);
   const overall = active.length ? Math.max(...active.map(([k,x])=>x)) : 0;
