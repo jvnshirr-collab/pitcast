@@ -7,7 +7,7 @@
 <meta name="description" content="Microstructure-aware, probabilistic localized-corrosion prediction and cost-aware CRA selection for stainless, duplex and nickel alloys.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=12">
+<link rel="stylesheet" href="styles.css?v=14">
 </head>
 <body>
 <header class="topbar">
@@ -37,6 +37,8 @@
     <button class="tab" data-tab="cpac">CP / AC</button>
   </div>
   <div class="datastat" id="dataStat"></div>
+  <div class="exportbar"><button type="button" id="btnPrint">🖶 Print / Save as PDF</button><button type="button" id="btnCSV">⤓ Download CSV</button></div>
+  <div class="printhead">PitCast · pitcast.austenite.org · screening estimate — not a substitute for qualified engineering</div>
 
   <!-- ASSESS ------------------------------------------------------------- -->
   <section class="panel active" id="tab-assess">
@@ -238,6 +240,12 @@
        Calibration set: <i>n</i>&nbsp;=&nbsp;51 records from Nyby et&nbsp;al.,
        <a href="https://doi.org/10.6084/m9.figshare.13038257" target="_blank" rel="noopener">Scientific Data <b>8</b>, 58 (2021)</a>,
        CC&nbsp;BY&nbsp;4.0.</p>
+
+    <h3 class="validh">Cited measured anchors</h3>
+    <p class="muted">Independent literature data points the models are checked against — each row links to its
+       primary source. CPT anchors span low-PREN 304 to 6Mo super-austenitic; CO₂ anchors span field
+       flowlines, top-of-line condensation and HP/HT wells.</p>
+    <div id="validTable" class="validtable"></div>
   </div>
   <p class="warn">⚠ Screening / research-grade. Constants are cited or clearly flagged; some envelopes
      (welds, SCC, CCUS/H₂) are rule-of-thumb. <b>Not a substitute for qualified materials engineering,
@@ -249,6 +257,6 @@
 <script src="co2.js?v=9"></script>
 <script src="cpac.js?v=11"></script>
 <script src="pitcast.js?v=9"></script>
-<script src="app.js?v=12"></script>
+<script src="app.js?v=14"></script>
 </body>
 </html>

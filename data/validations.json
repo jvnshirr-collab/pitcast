@@ -1,0 +1,123 @@
+[
+  {
+    "domain": "CO2",
+    "case": "Nesic 2007 - 5% CO2 flow-loop at 60 C",
+    "conditions": "T 60 C, pCO2 5 bar, pH 5.0, flow 1.0 m/s, 15 mm pipe, Fe2+ 5 ppm, 1 wt% NaCl, no scale, no inhibitor",
+    "measured": 2.0,
+    "units": "mm/y",
+    "uncertainty": 0.6,
+    "source": "Nesic S., Corrosion Sci. 49 (2007) 4308; Ohio U flow-loop",
+    "doi": "10.1016/j.corsci.2007.06.006",
+    "note": "Reference dataset behind FreeCorp/Multicorp calibration. Ported verbatim from austenite co2.ts CO2_VALIDATIONS (nesic-2007-loop)."
+  },
+  {
+    "domain": "CO2",
+    "case": "Tengiz (KZ) sour-sweet field - Kahyarian 2017",
+    "conditions": "T 92 C, pCO2 6.5 bar, pH 4.0, flow 3.5 m/s, 300 mm pipe, Fe2+ 40 ppm, water cut 0.45, H2S 1.4 mol%",
+    "measured": 0.55,
+    "units": "mm/y",
+    "uncertainty": 0.25,
+    "source": "Kahyarian A., Singer M., Nesic S., J. Nat. Gas Sci. Eng. 41 (2017) 14",
+    "doi": null,
+    "note": "Sour-sweet field; highest-CR location on flowline. Ported verbatim from austenite co2.ts CO2_VALIDATIONS (kahyarian-tengiz-2017)."
+  },
+  {
+    "domain": "CO2",
+    "case": "Top-of-line corrosion - Singer 2017",
+    "conditions": "T 75 C, pCO2 8 bar, pH 3.8, gas velocity 0.05 m/s, 100 mm pipe, Fe2+ 2 ppm, condensing water, no buffering",
+    "measured": 3.2,
+    "units": "mm/y",
+    "uncertainty": 1.0,
+    "source": "Singer M., Camacho A., Brown B., Nesic S., Corrosion 73 (2017) 1030",
+    "doi": null,
+    "note": "Condensing-water TLC; very low Fe2+ + no buffering = aggressive. Ported verbatim from austenite co2.ts CO2_VALIDATIONS (singer-tlc-2017)."
+  },
+  {
+    "domain": "CO2",
+    "case": "13Cr OCTG threshold - Mishina 2014",
+    "conditions": "T 130 C, pCO2 30 bar, pH 3.8, flow 2.0 m/s, 100 mm pipe, Fe2+ 50 ppm; Cr passivation above ~120 C",
+    "measured": 0.12,
+    "units": "mm/y",
+    "uncertainty": 0.05,
+    "source": "Mishina K. et al., NACE Paper 4226 (2014)",
+    "doi": null,
+    "note": "13Cr CR base ~0.1 mm/y vs CS baseline 5-8x higher. Ported verbatim from austenite co2.ts CO2_VALIDATIONS (mishina-2014-13cr). NACE conference paper; no DOI."
+  },
+  {
+    "domain": "CO2",
+    "case": "HP/HT well @ 175 C, 100 bar CO2 - Nyborg 2007",
+    "conditions": "T 175 C, pCO2 100 bar, pH 4.5, flow 5.0 m/s, 100 mm pipe, Fe2+ 60 ppm; protective FeCO3 scale",
+    "measured": 0.8,
+    "units": "mm/y",
+    "uncertainty": 0.4,
+    "source": "Nyborg R., NACE Paper 07522 (2007)",
+    "doi": null,
+    "note": "High-T FeCO3 scale dominates; without scale CR would be ~15 mm/y. Ported verbatim from austenite co2.ts CO2_VALIDATIONS (nyborg-2007-hpht). NACE conference paper; no DOI."
+  },
+  {
+    "domain": "CRA",
+    "case": "304 stainless - CPT in ferric chloride",
+    "conditions": "10% FeCl3 (ASTM G48 ferric-chloride family); 18Cr-8.6Ni-0.05Mo heat",
+    "measured": 3.8,
+    "units": "degC",
+    "uncertainty": null,
+    "source": "Brigham R.J., Tozer E.W., Corrosion 30 (1974) 161",
+    "doi": "10.5006/0010-9312-30.5.161",
+    "note": "Low-PREN austenitic anchor; pits just above room temperature. Value redistributed in Nyby C. et al., Sci. Data 8:58 (2021) CC-BY (dataset DOI 10.6084/m9.figshare.13038257); primary-source DOI shown."
+  },
+  {
+    "domain": "CRA",
+    "case": "316L stainless - CPT in ferric chloride",
+    "conditions": "10% FeCl3 (ASTM G48 ferric-chloride family); 17Cr-12Ni-2.5Mo",
+    "measured": 23.75,
+    "units": "degC",
+    "uncertainty": null,
+    "source": "Brigham R.J., Tozer E.W., Corrosion 30 (1974) 161",
+    "doi": "10.5006/0010-9312-30.5.161",
+    "note": "Standard 2.5Mo austenitic anchor. Same FeCl3 study as the 304 row (internally consistent pair). Redistributed in Nyby C. et al., Sci. Data 8:58 (2021) CC-BY."
+  },
+  {
+    "domain": "CRA",
+    "case": "317L stainless - CPT in ferric chloride",
+    "conditions": "10% FeCl3 (ASTM G48 ferric-chloride family); 19Cr-14Ni-3.1Mo",
+    "measured": 28.9,
+    "units": "degC",
+    "uncertainty": null,
+    "source": "Brigham R.J., Tozer E.W., Corrosion 30 (1974) 161",
+    "doi": "10.5006/0010-9312-30.5.161",
+    "note": "3Mo austenitic, between 316L and 904L. Redistributed in Nyby C. et al., Sci. Data 8:58 (2021) CC-BY."
+  },
+  {
+    "domain": "CRA",
+    "case": "904L (N08904) - CPT in 1 M NaCl",
+    "conditions": "1 M NaCl, potentiodynamic electrochemical CPT; 19.8Cr-23.9Ni-4.36Mo-0.055N",
+    "measured": 54.5,
+    "units": "degC",
+    "uncertainty": null,
+    "source": "Sun Y.T., Wang J.M., Jiang Y.M., Li J., Materials and Corrosion 69 (2018) 44",
+    "doi": "10.1002/maco.201709641",
+    "note": "High-alloy austenitic anchor. Electrochemical (1 M NaCl) method - higher than a FeCl3 G48 value would be; method noted. Redistributed in Nyby C. et al., Sci. Data 8:58 (2021) CC-BY."
+  },
+  {
+    "domain": "CRA",
+    "case": "254 SMO (S31254, 6Mo) - CPT in 1 M NaCl",
+    "conditions": "1 M NaCl, potentiodynamic electrochemical CPT; 19.8Cr-17.8Ni-5.88Mo-0.19N",
+    "measured": 86.49,
+    "units": "degC",
+    "uncertainty": null,
+    "source": "Sun Y.T., Wang J.M., Jiang Y.M., Li J., Materials and Corrosion 69 (2018) 44",
+    "doi": "10.1002/maco.201709641",
+    "note": "6Mo super-austenitic high-end anchor. Electrochemical (1 M NaCl) method noted. Redistributed in Nyby C. et al., Sci. Data 8:58 (2021) CC-BY."
+  },
+  {
+    "domain": "CRA",
+    "case": "2205 (S31803/S32205) duplex - CPT in acidified ferric chloride",
+    "conditions": "Acidified ferric chloride (ASTM G48 family), standard immersion method; 22Cr-5Ni-3.2Mo-0.2N duplex",
+    "measured": 40.0,
+    "units": "degC",
+    "uncertainty": null,
+    "source": "Hoseinpoor M., Momeni M., Moayed M.H., Davoodi A., Corrosion Sci. 80 (2014) 197",
+    "doi": "10.1016/j.corsci.2013.11.023",
+    "note": "Standard-method CPT = 40 C (paper also reports 44 C ZRA / 49 C potentiostatic). Duplex mid-range anchor."
+  }
+]

@@ -90,6 +90,20 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .charts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 6px}
 .charts .chartwrap{margin:0}
 @media(max-width:700px){.charts{grid-template-columns:1fr}}
+.exportbar{display:flex;gap:8px;justify-content:center;margin:-8px 0 16px}
+.exportbar button{background:var(--panel2);color:var(--muted);border:1px solid var(--line);
+  border-radius:8px;padding:6px 13px;font-size:12px;cursor:pointer}
+.exportbar button:hover{color:var(--ink);border-color:var(--accent)}
+.printhead{display:none}
+@media print{
+  .topbar,.hero,.tabs,.exportbar,.datastat,.inputs,.info,#how,#about{display:none!important}
+  .panel:not(.active){display:none!important}
+  .grid{grid-template-columns:1fr}
+  .card.results{border:none;padding:0}
+  .printhead{display:block;font-size:12px;color:var(--muted);margin:0 0 14px;border-bottom:1px solid var(--line);padding-bottom:8px}
+  body,.panel{background:var(--bg)!important}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+}
 .presets{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 4px}
 .preset{background:var(--panel2);color:var(--muted);border:1px solid var(--line);border-radius:8px;
   padding:6px 10px;font-size:12px;cursor:pointer;text-align:left;line-height:1.2}
@@ -188,6 +202,21 @@ tr.rec td:first-child{border-left:3px solid var(--accent)}
 .valid p.muted{font-size:13px;line-height:1.55;max-width:none}
 .valid p.muted b{color:var(--ink)}
 @media(max-width:600px){.stats{grid-template-columns:1fr 1fr}}
+.validtable{margin-top:6px}
+.vgh{font-size:12px;color:var(--ink);margin:14px 0 6px;font-weight:600}
+.vgn{color:var(--dim);font-weight:400;font-size:11px;margin-left:6px}
+.vtwrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+.vtable{width:100%;border-collapse:collapse;font-size:12px;min-width:560px}
+.vtable th{text-align:left;padding:7px 10px;background:var(--panel2);color:var(--muted);
+  font-weight:600;border-bottom:1px solid var(--line);white-space:nowrap}
+.vtable td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.4}
+.vtable tr:last-child td{border-bottom:none}
+.vcase{color:var(--ink);font-weight:500;min-width:140px}
+.vcond{color:var(--dim);max-width:280px}
+.vmeas{color:var(--accent);white-space:nowrap;font-variant-numeric:tabular-nums}
+.vsrc{color:var(--muted);min-width:160px}
+.vsrc a{color:var(--muted);text-decoration:underline;text-decoration-color:var(--line)}
+.vsrc a:hover{color:var(--accent)}
 
 @media(max-width:600px){
   .topbar{padding:12px 16px;flex-wrap:wrap;gap:6px}

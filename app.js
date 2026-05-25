@@ -1,4 +1,5 @@
 /* PitCast web UI */
+let VALIDATIONS = [];
 const $ = id => document.getElementById(id);
 const pct = p => (p*100).toFixed(0) + "%";
 const band = p => p>0.5 ? "high" : p>0.15 ? "moderate" : "low";
@@ -338,6 +339,75 @@ function renderCPAC(){
 }
 $("cpacForm")&&$("cpacForm").addEventListener("input", renderCPAC);
 
+// ---- export (CSV + print/PDF) — calc only, no stamp ceremony ----------------
+function _dl(filename, text){ const b=new Blob([text],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=filename; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1500); }
+function exportActiveCSV(){
+  const at=document.querySelector(".tab.active"); const tab=at?at.dataset.tab:"assess";
+  const gv=id=>$(id)?$(id).value:"";
+  const rows=[["PitCast export","pitcast.austenite.org"],["tab",tab],["generated",new Date().toISOString()],[]];
+  if(tab==="assess"){ const g=currentGrade(); const svc={T:+gv("a_T"),Cl:+gv("a_Cl"),pH:+gv("a_pH"),pH2S:+gv("a_pH2S"),stress:+gv("a_stress"),HV:+gv("a_HV"),ageT:+gv("a_ageT"),aget:+gv("a_aget")};
+    const r=PitCast.assess(g.comp,svc);
+    rows.push(["grade",g.name],["UNS",g.uns||""],["composition (wt%)",compString(g.comp)],[]);
+    rows.push(["T (°C)",svc.T],["Cl (ppm)",svc.Cl],["pH",svc.pH],["pH2S (kPa)",svc.pH2S],["stress (xYS)",svc.stress],["hardness (HV)",svc.HV],[]);
+    rows.push(["PREN (N16)",r.pren.toFixed(1)],["CPT (°C, G48)",r.cpt.toFixed(1)],["ferrite (%)",r.ferrite.toFixed(0)]);
+    rows.push(["P(pit)",r.pPit!=null?r.pPit.toFixed(3):"n/a"],["P(Cl-SCC)",r.pScc!=null?r.pScc.toFixed(3):"n/a"],["P(sour SSC)",r.pSourFail!=null?r.pSourFail.toFixed(3):"n/a"]);
+    rows.push(["overall risk P",r.overall.toFixed(3)],["dominant",r.dominant],["rel. cost (304L=1)",r.cost.toFixed(2)]);
+    if(r.iso)rows.push(["ISO 15156 screen",r.iso.status+(r.iso.group?(" — "+r.iso.group):"")]);
+  } else if(tab==="co2"){ const o={T:+gv("c_T"),pCO2:+gv("c_pCO2"),velocity:+gv("c_u"),pipeID:+gv("c_d"),fe2:+gv("c_fe2"),pH2S:+gv("c_pH2S"),waterCut:+gv("c_wc"),glycol:+gv("c_meg"),oilType:gv("c_oil"),bicarbonate:+gv("c_bicarb"),ageH:+gv("c_age")};
+    const pHr=gv("c_pH"); if(pHr!==""&&isFinite(+pHr))o.pH=+pHr; const r=CO2.assess(o);
+    rows.push(["T (°C)",o.T],["pCO2 (bar)",o.pCO2],["in-situ pH",r.pH_insitu.toFixed(2)],["bicarbonate (mg/L)",o.bicarbonate],["velocity (m/s)",o.velocity],[]);
+    r.models.forEach(m=>rows.push(["CR — "+m.name+" (mm/y)",m.cr.toFixed(3)]));
+    rows.push(["CR max (mm/y)",r.crMax.toFixed(2)],["verdict",r.verdict],["regime",r.regime.regime],["FeCO3 ST",r.feco3_st.toExponential(2)]);
+  } else if(tab==="cpac"){ const ac=CPAC.acRisk({Vac:+gv("p_vac"),soilResistivity:+gv("p_rho"),holidayDia_mm:+gv("p_d"),Jdc:+gv("p_jdc")});
+    const cp=CPAC.cpCriteria({Eon_mV:+gv("p_eon"),Einstantoff_mV:+gv("p_eio"),Edepol_mV:+gv("p_edep")});
+    rows.push(["Vac (V)",gv("p_vac")],["soil resistivity (Ω·m)",gv("p_rho")],["holiday dia (mm)",gv("p_d")],["Jdc (A/m²)",gv("p_jdc")],[]);
+    rows.push(["Jac (A/m²)",ac.jac.toFixed(1)],["AC band",ac.band],["mitigate",ac.mitigate],["Jac/Jdc",ac.ratio!=null?ac.ratio.toFixed(1):"n/a"],["spread R (Ω)",ac.rSpread.toFixed(0)],[]);
+    rows.push(["CP verdict",cp.verdict],["meets -850 mV",cp.meets850],["meets 100 mV",cp.meets100mV],["polarized (mV)",cp.polarized_mV!=null?cp.polarized_mV.toFixed(0):"n/a"]);
+  } else if(tab==="select"){ const svc={T:+gv("s_T"),Cl:+gv("s_Cl"),pH:+gv("s_pH"),pH2S:+gv("s_pH2S"),stress:+gv("s_stress"),HV:+gv("s_HV")};
+    const out=PitCast.selectAlloys(svc,+gv("s_thr"));
+    rows.push(["T (°C)",svc.T],["Cl (ppm)",svc.Cl],["threshold",out.threshold],["recommended",out.recommended?out.recommended.name:"none"],[],["#","alloy","overall P","rel. cost"]);
+    out.ranked.slice(0,25).forEach((r,i)=>rows.push([i+1,r.name,r.overall.toFixed(3),r.cost.toFixed(2)]));
+  } else { rows.push(["(switch to Assess / CO2 / CP·AC / Select to export that calc)"]); }
+  const csv=rows.map(r=>r.map(c=>`"${String(c==null?"":c).replace(/"/g,'""')}"`).join(",")).join("\r\n");
+  _dl("pitcast-"+tab+".csv", csv);
+}
+$("btnPrint")&&($("btnPrint").onclick=()=>window.print());
+$("btnCSV")&&($("btnCSV").onclick=exportActiveCSV);
+
+// ---- validation-cases table (cited measured anchors) ------------------------
+function renderValidations(){
+  const host = $("validTable");
+  if(!host) return;
+  if(!VALIDATIONS || !VALIDATIONS.length){ host.innerHTML=""; return; }
+  const esc = s => String(s==null?"":s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+  const order = ["CRA","CO2"];
+  const titles = { CRA:"CRA pitting — critical pitting temperature (CPT)",
+                   CO2:"CO₂ sweet-corrosion rate" };
+  const groups = {};
+  VALIDATIONS.forEach(v => { (groups[v.domain] || (groups[v.domain]=[])).push(v); });
+  const keys = order.filter(k=>groups[k]).concat(Object.keys(groups).filter(k=>!order.includes(k)));
+  let html = "";
+  keys.forEach(k => {
+    const rows = groups[k]; if(!rows.length) return;
+    html += `<h4 class="vgh">${esc(titles[k]||k)} <span class="vgn">${rows.length} cases</span></h4>`;
+    html += `<div class="vtwrap"><table class="vtable"><thead><tr>`+
+            `<th>Case</th><th>Conditions</th><th>Measured</th><th>Source</th></tr></thead><tbody>`;
+    rows.forEach(v => {
+      const meas = esc(v.measured) + (v.uncertainty!=null ? (" ± "+esc(v.uncertainty)) : "") +
+                   " " + esc((v.units||"").replace("degC","°C"));
+      const src = v.doi
+        ? `<a href="https://doi.org/${esc(v.doi)}" target="_blank" rel="noopener">${esc(v.source)}</a>`
+        : esc(v.source);
+      html += `<tr><td class="vcase">${esc(v.case)}</td><td class="vcond">${esc(v.conditions)}</td>`+
+              `<td class="vmeas">${meas}</td><td class="vsrc">${src}</td></tr>`;
+    });
+    html += `</tbody></table></div>`;
+  });
+  host.innerHTML = html;
+}
+
 // ---- DATA browser (all records usable) --------------------------------------
 let _metricFilter = "";
 let _measIndex = null;
@@ -415,6 +485,9 @@ async function init(){
     PitCast.setMeasurements(m.records || []);
     meta = m.meta;
   } catch (e) { /* fall back to the built-in grades */ }
+  try {
+    VALIDATIONS = await fetch("data/validations.json").then(r => r.json());
+  } catch (e) { VALIDATIONS = []; }
   populateGrades();
   updateDataStat(meta);
   renderAssess();
@@ -424,5 +497,6 @@ async function init(){
   renderCO2();
   buildCPACPresets();
   renderCPAC();
+  renderValidations();
 }
 init();
