@@ -247,4 +247,4 @@ window.PitCast = {
   get GRADES(){ return GRADES; }, get MEASUREMENTS(){ return MEASUREMENTS; },
   setGrades, setMeasurements, measuredCPT,
   assess, selectAlloys, pren, prenW, prenN30, ferritePct,
-  inferFamily, relativeCost, cptMean, cptSE };
+  inferFamily, relativeCost, cptMean, cptSE, cptConstants: CPT };

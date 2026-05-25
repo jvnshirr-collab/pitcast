@@ -85,6 +85,8 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .iso.within{color:#7ee2a8;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3)}
 .iso.exceeds{color:#f5c87a;background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.4)}
 .iso.untabulated{color:var(--muted);background:var(--panel2);border:1px solid var(--line)}
+.chartwrap{margin:14px 0 6px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 10px 4px}
+.chartwrap:empty{display:none}
 
 /* results */
 .results{min-height:300px}

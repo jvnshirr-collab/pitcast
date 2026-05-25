@@ -101,6 +101,30 @@ function bar(label, p){
   return `<div class="bar"><div class="blab"><span>${label}</span><span class="p">${pct(p)}</span></div>
     <div class="track"><div class="fill ${b}" style="width:${Math.max(2,p*100)}%"></div></div></div>`;
 }
+// CPT vs PREN calibration plot: the 51 cited G48 points + fit + 90% band + this alloy + service T
+function cptPrenChart(g, r, svc){
+  if (!window.Charts || !PitCast.cptConstants || !PitCast.MEASUREMENTS) return "";
+  const k = PitCast.cptConstants;
+  const pts = PitCast.MEASUREMENTS
+    .filter(m => m.metric==="CPT" && m.comp && /fecl3/i.test(m.sol||""))
+    .map(m => ({ x: PitCast.prenN30(m.comp), y: +m.value }))
+    .filter(p => p.x>0 && p.y>-50 && p.y<160);
+  if (pts.length < 5) return "";
+  const gx = PitCast.prenN30(g.comp);
+  const xs = pts.map(p=>p.x).concat([gx]);
+  const x0 = Math.min(...xs)-2, x1 = Math.max(...xs)+2, t = 1.645, band = [];
+  for (let i=0;i<=40;i++){ const x = x0 + (x1-x0)*i/40;
+    const se = k.resid*Math.sqrt(1 + 1/k.n + Math.pow(x-k.prenMean,2)/k.sxx);
+    const yh = k.slope*x + k.intercept;
+    band.push({ x, lo: yh - t*se, hi: yh + t*se }); }
+  return Charts.scatterFit({
+    w:560, h:300, title:"CPT vs PREN — G48 calibration & this alloy",
+    xlabel:"PRENₙ₃₀  (Cr + 3.3·Mo + 30·N)", ylabel:"CPT (°C, ASTM G48)",
+    points: pts, fit:{ m:k.slope, b:k.intercept }, band,
+    highlight:{ x:gx, y:r.cpt, label:`${g.name} · ${r.cpt.toFixed(0)}°C` },
+    hlines:[{ y:svc.T, label:`service ${svc.T}°C`, color:"#f59e0b" }]
+  });
+}
 function renderAssess(){
   const g = currentGrade();
   if (!g) return;
@@ -145,6 +169,7 @@ function renderAssess(){
       ? `<div class="measured">📊 Real measured CPT (literature): <b>${mc.min.toFixed(0)}–${mc.max.toFixed(0)} °C</b>
          · ${mc.n} record${mc.n>1?"s":""} <span style="color:var(--dim)">(cited dataset, CC BY) — vs PitCast ${r.cpt.toFixed(0)} °C predicted</span></div>`
       : ""; })()}
+    <div class="chartwrap">${cptPrenChart(g,r,svc)}</div>
     <div class="explain">
       ${g.name}: PREN ${r.pren.toFixed(0)}, ferrite ≈ ${r.ferrite.toFixed(0)}%, CPT ≈ ${r.cpt.toFixed(0)} °C.
       At ${svc.T} °C${svc.Cl>0?` / ${svc.Cl.toLocaleString()} ppm Cl⁻`:""}${svc.pH2S>=0.3?` / ${svc.pH2S} kPa H₂S`:""},
