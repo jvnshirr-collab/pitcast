@@ -127,6 +127,33 @@ function cptPrenChart(g, r, svc){
     hlines:[{ y:svc.T, label:`service ${svc.T}°C`, color:"#f59e0b" }]
   });
 }
+// Assess-tab visual suite: CPT-PREN + P(pit) vs T + overall-risk heatmap + sigma CPT-loss
+function assessCharts(g, r, svc){
+  if (!window.Charts) return "";
+  const C=[];
+  const cpt=cptPrenChart(g,r,svc); if (cpt) C.push(cpt);
+  if (svc.Cl>0){ const pts=[]; for(let T=0;T<=130;T+=5){ const rr=PitCast.assess(g.comp,Object.assign({},svc,{T})); if(rr.pPit!=null) pts.push({x:T,y:rr.pPit}); }
+    if (pts.length>1) C.push(Charts.lines({w:540,h:230,title:"Pitting probability vs temperature",xlabel:"Temperature (°C)",ylabel:"P(pit)",ymin:0,ymax:1,
+      series:[{name:g.name,color:"#2dd4bf",pts}],vmarkers:[{x:svc.T,label:"service "+svc.T+"°C"}]})); }
+  { const Ts=[],Cls=[100,500,2000,10000,50000,150000,250000]; for(let T=20;T<=120;T+=10)Ts.push(T);
+    const grid=Ts.map(T=>Cls.map(Cl=>{const rr=PitCast.assess(g.comp,Object.assign({},svc,{T,Cl})); return rr.overall!=null?rr.overall:0;}));
+    C.push(Charts.heatmap({w:540,h:230,title:"Localized-corrosion risk map (overall P)",xs:Cls,ys:Ts,grid,
+      xfmt:v=>v>=1000?(v/1000)+"k":(""+v),yfmt:v=>""+v,xlabel:"Chloride (ppm)",ylabel:"Temperature (°C)",
+      colors:[{max:0.05,color:"#0e3b24"},{max:0.15,color:"#1f6f43"},{max:0.4,color:"#8a6d1a"},{max:0.7,color:"#b5651d"},{max:2,color:"#c0392b"}],
+      point:{x:svc.Cl,y:svc.T}})); }
+  if (svc.ageT>0){ const pts=[]; for(let t=0;t<=24;t+=1){ const rr=PitCast.assess(g.comp,Object.assign({},svc,{aget:t})); pts.push({x:t,y:rr.cpt}); }
+    C.push(Charts.lines({w:540,h:230,title:"CPT vs ageing time @ "+svc.ageT+"°C (σ-phase)",xlabel:"Ageing time (h)",ylabel:"CPT (°C)",
+      series:[{name:"aged CPT",color:"#f59e0b",pts}],vmarkers:[{x:svc.aget,label:svc.aget+" h"}]})); }
+  return `<div class="charts">`+C.map(s=>`<div class="chartwrap">${s}</div>`).join("")+`</div>`;
+}
+function selectPareto(out){
+  if (!window.Charts || !out.ranked || !out.ranked.length) return "";
+  const rec=out.recommended;
+  return Charts.scatterFit({w:560,h:300,title:"Cost vs risk — all grades (Pareto)",xlabel:"Relative cost (304L = 1)",ylabel:"Overall risk P",ymin:0,ymax:1,
+    points:out.ranked.map(r=>({x:r.cost,y:r.overall})),
+    highlight:rec?{x:rec.cost,y:rec.overall,label:rec.name}:null,
+    hlines:[{y:out.threshold,label:"threshold "+out.threshold,color:"#f59e0b"}]});
+}
 function renderAssess(){
   const g = currentGrade();
   if (!g) return;
@@ -171,7 +198,7 @@ function renderAssess(){
       ? `<div class="measured">📊 Real measured CPT (literature): <b>${mc.min.toFixed(0)}–${mc.max.toFixed(0)} °C</b>
          · ${mc.n} record${mc.n>1?"s":""} <span style="color:var(--dim)">(cited dataset, CC BY) — vs PitCast ${r.cpt.toFixed(0)} °C predicted</span></div>`
       : ""; })()}
-    <div class="chartwrap">${cptPrenChart(g,r,svc)}</div>
+    ${assessCharts(g,r,svc)}
     <div class="explain">
       ${g.name}: PREN ${r.pren.toFixed(0)}, ferrite ≈ ${r.ferrite.toFixed(0)}%, CPT ≈ ${r.cpt.toFixed(0)} °C.
       At ${svc.T} °C${svc.Cl>0?` / ${svc.Cl.toLocaleString()} ppm Cl⁻`:""}${svc.pH2S>=0.3?` / ${svc.pH2S} kPa H₂S`:""},
@@ -211,7 +238,8 @@ function renderSelect(){
   }
   $("s_results").innerHTML = `
     <table><thead><tr><th>#</th><th>Alloy</th><th>Overall P</th><th>Cost</th><th>Dominant risk</th></tr></thead>
-      <tbody>${rows}</tbody></table>${reco}`;
+      <tbody>${rows}</tbody></table>${reco}
+    <div class="chartwrap">${selectPareto(out)}</div>`;
 }
 $("selectForm").addEventListener("input", renderSelect);
 

@@ -87,6 +87,9 @@ input:focus,select:focus{outline:none;border-color:var(--accent)}
 .iso.untabulated{color:var(--muted);background:var(--panel2);border:1px solid var(--line)}
 .chartwrap{margin:14px 0 6px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 10px 4px}
 .chartwrap:empty{display:none}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 6px}
+.charts .chartwrap{margin:0}
+@media(max-width:700px){.charts{grid-template-columns:1fr}}
 .presets{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 4px}
 .preset{background:var(--panel2);color:var(--muted);border:1px solid var(--line);border-radius:8px;
   padding:6px 10px;font-size:12px;cursor:pointer;text-align:left;line-height:1.2}
