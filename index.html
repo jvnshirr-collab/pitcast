@@ -41,8 +41,12 @@
     <div class="grid">
       <form class="card inputs" id="assessForm">
         <h3>Material</h3>
-        <label>Grade
-          <select id="a_grade"></select>
+        <label>Grade <span class="lblhint">— search 400+ alloys by name, UNS or element</span>
+          <div class="combo" id="a_combo">
+            <input id="a_grade_search" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="e.g. 2205, S31603, Alloy 625, or Cr25">
+            <div class="combo-list" id="a_grade_list" hidden></div>
+          </div>
         </label>
         <div class="comp-readout" id="a_comp"></div>
         <h3>Service conditions</h3>

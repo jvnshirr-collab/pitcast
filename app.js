@@ -15,19 +15,80 @@ document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
   $("tab-" + t.dataset.tab).classList.add("active");
 });
 
-// ---- grade dropdown (populated after real data loads) -----------------------
-const sel = $("a_grade");
-let customGrade = null;   // a composition loaded from the data browser
-function populateGrades(){
-  sel.innerHTML = "";
-  PitCast.GRADES.forEach((g,i) => {
-    const o = document.createElement("option");
-    o.value = i; o.textContent = `${g.name}  (${g.uns})`;
-    sel.appendChild(o);
-  });
-  const i2205 = PitCast.GRADES.findIndex(g => g.name === "2205");
-  sel.value = i2205 >= 0 ? i2205 : 0;
+// ---- grade picker (searchable: curated grades + in-scope measured alloys) ---
+const gInput = $("a_grade_search");
+const gList  = $("a_grade_list");
+let appGrades = [];      // unified searchable catalog
+let selectedIdx = -1;    // index into appGrades; -1 + customGrade => ad-hoc record
+let customGrade = null;  // a composition loaded from the data browser
+
+const _sig = c => Object.entries(c||{}).filter(([k,v])=>v>0)
+  .map(([k,v]) => k + (+v).toFixed(1)).sort().join("|");
+const _hint = c => Object.entries(c||{}).filter(([k,v])=>v>0)
+  .sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,v]) => `${k}${v}`).join(" ");
+// The PREN→CPT model is only valid for Fe-based stainless/duplex and NiCrMo CRAs.
+const _INSCOPE = new Set(["Fe Alloy","NiCrMo Alloy"]);
+const _JUNK = /polish|electrode|mounted|stud|finish|specimen|sample|sheet|plate|the cr|wt%|at%|%cr|%mo|diamond/i;
+function _measLabel(rec){
+  const code = (rec.code||"").trim();
+  const m = /[NSR]\d{5}/.exec(code); if (m) return m[0];
+  if (code && code.length<=18 && !_JUNK.test(code)) return code;
+  return Object.entries(rec.comp||{}).filter(([k,v])=>v>0)
+    .sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v]) => k+v).join("");
 }
+function buildAppGrades(){
+  const out=[], seen=new Set();
+  PitCast.GRADES.forEach(g => { seen.add(_sig(g.comp));
+    out.push({ uns:g.uns, name:g.name, comp:g.comp, tag:"ref", label:g.name,
+      hint:_hint(g.comp), search:(g.name+" "+g.uns+" "+_hint(g.comp)).toLowerCase() }); });
+  PitCast.MEASUREMENTS.forEach(rec => {
+    if (!_INSCOPE.has(rec.cls)) return;
+    if (((rec.comp && rec.comp.Cr) || 0) < 10.5) return;   // not a stainless → model n/a
+    const s=_sig(rec.comp); if (!s || seen.has(s)) return; seen.add(s);
+    const lbl=_measLabel(rec);
+    out.push({ uns:rec.code||"measured", name:lbl, comp:rec.comp, tag:"meas", label:lbl,
+      hint:_hint(rec.comp), search:(lbl+" "+(rec.code||"")+" "+_hint(rec.comp)).toLowerCase() });
+  });
+  return out;
+}
+function currentGrade(){ return (selectedIdx===-1 && customGrade) ? customGrade : appGrades[selectedIdx]; }
+function setSelected(idx){
+  selectedIdx=idx; customGrade=null;
+  const g=appGrades[idx];
+  gInput.value = g.tag==="ref" ? `${g.label} (${g.uns})` : `${g.label} · measured`;
+  gList.hidden=true; renderAssess();
+}
+function renderGradeList(q){
+  q=(q||"").trim().toLowerCase();
+  const matches = q ? appGrades.filter(g=>g.search.includes(q)) : appGrades;
+  const CAP=80, shown=matches.slice(0,CAP);
+  gList.innerHTML = shown.map(g=>{
+    const i=appGrades.indexOf(g);
+    return `<div class="combo-item" data-idx="${i}">
+      <span class="ci-name">${g.label}</span>
+      <span class="ci-tag ${g.tag}">${g.tag==="ref"?"ref":"measured"}</span>
+      <span class="ci-hint">${g.hint}</span></div>`;
+  }).join("")
+   + (matches.length>CAP ? `<div class="combo-more">+${matches.length-CAP} more — keep typing to narrow…</div>` : "")
+   + (matches.length===0 ? `<div class="combo-more">No alloy matches “${q}”. Try a UNS (S31603), a name (2205), or an element (Cr25).</div>` : "");
+  gList.hidden=false;
+}
+function populateGrades(){
+  appGrades=buildAppGrades();
+  const i2205=appGrades.findIndex(g=>g.tag==="ref" && g.name==="2205");
+  setSelected(i2205>=0 ? i2205 : 0);
+}
+gInput.addEventListener("focus", () => { gInput.select(); renderGradeList(""); });
+gInput.addEventListener("input", () => renderGradeList(gInput.value));
+gInput.addEventListener("keydown", e => {
+  if (e.key==="Enter"){ e.preventDefault(); const f=gList.querySelector(".combo-item"); if(f) setSelected(+f.dataset.idx); }
+  else if (e.key==="Escape"){ gList.hidden=true; gInput.blur(); }
+});
+gList.addEventListener("mousedown", e => {        // mousedown fires before input blur
+  const it=e.target.closest(".combo-item"); if(!it) return;
+  e.preventDefault(); setSelected(+it.dataset.idx);
+});
+document.addEventListener("click", e => { if(!$("a_combo").contains(e.target)) gList.hidden=true; });
 
 // ---- ASSESS -----------------------------------------------------------------
 function compString(c){
@@ -41,8 +102,11 @@ function bar(label, p){
     <div class="track"><div class="fill ${b}" style="width:${Math.max(2,p*100)}%"></div></div></div>`;
 }
 function renderAssess(){
-  const g = (sel.value === "custom" && customGrade) ? customGrade : PitCast.GRADES[+sel.value];
+  const g = currentGrade();
+  if (!g) return;
   $("a_comp").textContent = compString(g.comp);
+  const cr = (g.comp && g.comp.Cr) || 0;
+  const oos = cr < 10.5;   // below the stainless threshold → model not calibrated here
   const svc = {
     T:+$("a_T").value, Cl:+$("a_Cl").value, pH:+$("a_pH").value, pH2S:+$("a_pH2S").value,
     stress:+$("a_stress").value, HV:+$("a_HV").value,
@@ -54,6 +118,9 @@ function renderAssess(){
   let agedNote = "";
   if (r.aged && r.fsig>0) agedNote = ` σ-phase ${(r.fsig*100).toFixed(1)} vol% from ageing lowers the local CPT.`;
   $("a_results").innerHTML = `
+    ${oos ? `<div class="oos">⚠ ${g.name} has only ${cr.toFixed(1)}% Cr — below the stainless range.
+      PitCast's PREN / CPT / pitting model is calibrated for stainless, duplex and Ni-base CRAs,
+      so the numbers below are <b>not physically meaningful</b> for this alloy. Shown for reference only.</div>` : ""}
     <div class="verdict ${b}">
       <div class="gauge">${pct(r.overall)}</div>
       <div class="vtext"><b>${b.toUpperCase()} localized-corrosion risk</b>
@@ -154,10 +221,9 @@ function renderData(){
 
 function loadIntoAssess(r){
   customGrade={uns:r.code||"custom", name:(r.code?String(r.code).slice(0,24):"custom record"), comp:r.comp};
-  let opt=[...sel.options].find(o=>o.value==="custom");
-  if(!opt){ opt=document.createElement("option"); opt.value="custom"; sel.insertBefore(opt, sel.firstChild); }
-  opt.textContent=`★ ${customGrade.name} (from data)`;
-  sel.value="custom";
+  selectedIdx=-1;
+  gInput.value=`${customGrade.name} · from data`;
+  gList.hidden=true;
   document.querySelector('[data-tab=assess]').click();
   renderAssess();
 }
