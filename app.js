@@ -324,18 +324,19 @@ function renderCPAC(){
   const rate=CPAC.acCorrRate(ac.jac);
   const cp=CPAC.cpCriteria({Eon_mV:+gv("p_eon"), Einstantoff_mV:+gv("p_eio"), Edepol_mV:+gv("p_edep")});
   const acVb=ac.band==="high"?"high":ac.band==="elevated"?"moderate":"low";
+  const geomBad = !(d>0) || !(rho>0) || !isFinite(ac.jac);
   const cpCls=cp.verdict.indexOf("PROTECTED")===0?"within":(cp.verdict==="INSUFFICIENT DATA"?"untabulated":"exceeds");
-  const sweep=[]; for(let V=0;V<=40;V++){ sweep.push({x:V, y:CPAC.holidayJac(V,rho,d/1000).jac}); }
+  const sweep=[]; for(let V=0;V<=40;V++){ const j=CPAC.holidayJac(V,rho,d/1000).jac; if(isFinite(j)) sweep.push({x:V, y:j}); }
   const jacChart=Charts.lines({w:540,h:230,title:"AC current density vs touch voltage",xlabel:"Vac (V)",ylabel:"Jac (A/m²)",ymin:0,
     series:[{name:"Jac at holiday",color:"#38bdf8",pts:sweep}],
     vmarkers:[{x:vac,label:"op "+vac+" V"},{x:0,label:""}]});
   $("cpac_results").innerHTML=`
-    <div class="verdict ${acVb}"><div class="gauge">${ac.jac.toFixed(0)}<span class="u"> A/m²</span></div>
-      <div class="vtext"><b>AC corrosion: ${ac.band.toUpperCase()}${ac.mitigate?" · MITIGATE":""}</b><div>${ac.rationale}</div></div></div>
+    <div class="verdict ${geomBad?'low':acVb}"><div class="gauge">${geomBad?'—':ac.jac.toFixed(0)}<span class="u"> A/m²</span></div>
+      <div class="vtext"><b>${geomBad?'Enter a positive holiday diameter &amp; soil resistivity':('AC corrosion: '+ac.band.toUpperCase()+(ac.mitigate?' · MITIGATE':''))}</b><div>${geomBad?'Holiday geometry must be &gt; 0 — Jac = 8·Vac/(ρ·π·d) is undefined at d=0 or ρ=0.':ac.rationale}</div></div></div>
     <div class="metrics">
-      <div class="metric"><div class="k">Spread R</div><div class="val">${ac.rSpread.toFixed(0)}<span class="u"> Ω</span></div><div class="u">holiday → earth</div></div>
-      <div class="metric"><div class="k">Jac / Jdc</div><div class="val">${ac.ratio!=null?ac.ratio.toFixed(1):"—"}</div><div class="u">${ac.ratioStatus}</div></div>
-      <div class="metric"><div class="k">Indic. rate</div><div class="val">${rate.mmYr_indicative.toFixed(1)}<span class="u"> mm/y</span></div><div class="u">indicative only</div></div>
+      <div class="metric"><div class="k">Spread R</div><div class="val">${geomBad?'—':ac.rSpread.toFixed(0)}<span class="u"> Ω</span></div><div class="u">holiday → earth</div></div>
+      <div class="metric"><div class="k">Jac / Jdc</div><div class="val">${(geomBad||ac.ratio==null)?"—":ac.ratio.toFixed(1)}</div><div class="u">${ac.ratioStatus}</div></div>
+      <div class="metric"><div class="k">Indic. rate</div><div class="val">${geomBad?'—':rate.mmYr_indicative.toFixed(1)}<span class="u"> mm/y</span></div><div class="u">indicative only</div></div>
     </div>
     <div class="chartwrap">${jacChart}</div>
     <div class="iso ${cpCls}"><b>Cathodic protection — ${cp.verdict}</b><br>
@@ -436,7 +437,7 @@ function exportActiveCSV(){
   } else if(tab==="cpac"){ const ac=CPAC.acRisk({Vac:+gv("p_vac"),soilResistivity:+gv("p_rho"),holidayDia_mm:+gv("p_d"),Jdc:+gv("p_jdc")});
     const cp=CPAC.cpCriteria({Eon_mV:+gv("p_eon"),Einstantoff_mV:+gv("p_eio"),Edepol_mV:+gv("p_edep")});
     rows.push(["Vac (V)",gv("p_vac")],["soil resistivity (Ω·m)",gv("p_rho")],["holiday dia (mm)",gv("p_d")],["Jdc (A/m²)",gv("p_jdc")],[]);
-    rows.push(["Jac (A/m²)",ac.jac.toFixed(1)],["AC band",ac.band],["mitigate",ac.mitigate],["Jac/Jdc",ac.ratio!=null?ac.ratio.toFixed(1):"n/a"],["spread R (Ω)",ac.rSpread.toFixed(0)],[]);
+    rows.push(["Jac (A/m²)",isFinite(ac.jac)?ac.jac.toFixed(1):"n/a (geometry ≤ 0)"],["AC band",ac.band],["mitigate",ac.mitigate],["Jac/Jdc",(ac.ratio!=null&&isFinite(ac.ratio))?ac.ratio.toFixed(1):"n/a"],["spread R (Ω)",isFinite(ac.rSpread)?ac.rSpread.toFixed(0):"n/a"],[]);
     rows.push(["CP verdict",cp.verdict],["meets -850 mV",cp.meets850],["meets 100 mV",cp.meets100mV],["polarized (mV)",cp.polarized_mV!=null?cp.polarized_mV.toFixed(0):"n/a"]);
   } else if(tab==="select"){ const svc={T:+gv("s_T"),Cl:+gv("s_Cl"),pH:+gv("s_pH"),pH2S:+gv("s_pH2S"),stress:+gv("s_stress"),HV:+gv("s_HV")};
     const out=PitCast.selectAlloys(svc,+gv("s_thr"));
