@@ -155,12 +155,18 @@ function cptChlorideAdj(Cl_ppm){
   const adj = CL_CPT.B * Math.log10(CL_CPT.ClRef_M / Cl_M);
   return Math.max(CL_CPT.adjMin, Math.min(CL_CPT.adjMax, adj));
 }
-// P(pit) = P(CPT < T_service); CPT = G48 PREN fit + chloride term - sigma degradation
+// P(pit) = P(CPT < T_service); CPT = G48 PREN fit + chloride term - sigma degradation.
+// Clamped to a physical aqueous-service window: >=120 C means effectively immune to pitting
+// in practical aqueous service (the test electrolyte boils), so the exact value above that is
+// not meaningful; <=-15 C means it pits at any service temperature.
+const CPT_CEIL = 120, CPT_FLOOR = -15;
 function pPit(c, Tservice, aged, Cl){
   let mean = cptMean(c) + cptChlorideAdj(Cl), fsig = 0;
   if (aged && aged.t>0){ fsig = sigmaFraction(c, aged.T, aged.t); mean -= C_SIGMA_CPT*fsig*100; }
+  const capped = mean > CPT_CEIL;
+  mean = Math.max(CPT_FLOOR, Math.min(CPT_CEIL, mean));
   const p = tCDF((Tservice-mean)/cptSE(c), CPT.n - 2);   // Student-t (df=n-2), matches Python
-  return { p, cptLocal: mean, fsig, se: cptSE(c) };
+  return { p, cptLocal: mean, fsig, se: cptSE(c), capped };
 }
 
 // ---- chloride SCC -----------------------------------------------------------
@@ -256,7 +262,7 @@ function assess(c, svc){
   const dominant = active.length ? active.reduce((a,b)=>b[1]>a[1]?b:a)[0] : "none";
   return { family, pren: pren(c), prenW: prenW(c), ferrite: ferritePct(c),
            cpt: pit.cptLocal, cptG48: cptMean(c), cptSE: pit.se, fsig: pit.fsig, aged: !!aged,
-           clAdj: cptChlorideAdj(svc.Cl),
+           cptCapped: pit.capped, clAdj: cptChlorideAdj(svc.Cl),
            pPit: svc.Cl>0?pit.p:null, pScc, pSourFail, sourRegion: sour?sour.region:null,
            cost: relativeCost(c), overall, dominant, risks, iso };
 }

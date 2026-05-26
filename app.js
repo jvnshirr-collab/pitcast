@@ -192,7 +192,7 @@ function renderAssess(){
     </div>
     <div class="metrics">
       <div class="metric"><div class="k">PREN</div><div class="val">${r.pren.toFixed(1)}</div><div class="u">N16 · PREN<sub>30</sub>&nbsp;${PitCast.prenN30(g.comp).toFixed(0)} (drives CPT)</div></div>
-      <div class="metric"><div class="k">CPT</div><div class="val">${r.cpt.toFixed(0)}<span class="u"> °C</span></div><div class="u">±${ci.toFixed(0)} (90%)</div></div>
+      <div class="metric"><div class="k">CPT</div><div class="val">${r.cptCapped?"≥120":r.cpt.toFixed(0)}<span class="u"> °C</span></div><div class="u">${r.cptCapped?"immune (aqueous)":"±"+ci.toFixed(0)+" (90%)"}</div></div>
       <div class="metric"><div class="k">Rel. cost</div><div class="val">${r.cost.toFixed(2)}<span class="u">×</span></div><div class="u">304L=1</div></div>
     </div>
     <div class="bars">
