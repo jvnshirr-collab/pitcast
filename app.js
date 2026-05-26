@@ -275,6 +275,8 @@ function renderCO2(){
   const vb=r.crMax>=5?"high":r.crMax>=1?"moderate":"low";
   const norsok=r.models.find(m=>m.id==="NORSOK")||r.models[2];
   const al=CO2.allowance({cr:norsok.cr, designLifeYr:+gv("c_life"), caMm:+gv("c_ca")});
+  const ev=CO2.erosionalVelocity({velocity_ms:o.velocity});
+  const evCol=ev.status==="below continuous limit"?"#22c55e":ev.status&&ev.status.indexOf("C=200")>=0?"#ef4444":"#f59e0b";
   const fixed={pCO2:o.pCO2,velocity:o.velocity,pipeID:o.pipeID,fe2:o.fe2,pH2S:o.pH2S,waterCut:o.waterCut,glycol:o.glycol,oilType:o.oilType,bicarbonate:o.bicarbonate,ageH:o.ageH}; if(o.pH!=null)fixed.pH=o.pH;
   const st=CO2.sweepT(Object.assign({Tmin:20,Tmax:175,n:50},fixed));
   const sp=CO2.sweepPCO2(Object.assign({pMin:0.1,pMax:100,n:50,T:o.T},fixed));
@@ -295,7 +297,9 @@ function renderCO2(){
     <div class="chartwrap">${crP}</div>
     <table><thead><tr><th>Model</th><th>CR</th><th>Decomposition / multipliers</th><th>Reference</th></tr></thead><tbody>${rows}</tbody></table>
     <div class="explain"><b>Corrosion allowance (NORSOK basis):</b> ${al.uninhibited_CR_mmpy.toFixed(2)} mm/y → ${al.consumed_mm.toFixed(1)} mm consumed over ${al.designLifeYr} yr vs ${al.caMm} mm CA → <b>${al.verdict}</b>${al.ca_sufficient?"":`; required inhibitor efficiency <b>${al.required_inhibitor_efficiency_pct.toFixed(1)}%</b>${al.achievable?"":" — above sustainable field availability (~95%); reconsider a CRA or thicker CA"}`}.
-      <span style="color:var(--dim)"> Screening, carbon steel, sweet service. The five models span ${r.spread.toFixed(0)}× — design to the conservative/relevant one. Sources: Corrosion 31 (1975) 177; NACE 95-128; NORSOK M-506:2017; Nyborg 2010; Nesic 2007.</span></div>`;
+      <span style="color:var(--dim)"> Screening, carbon steel, sweet service. The five models span ${r.spread.toFixed(0)}× — design to the conservative/relevant one. Sources: Corrosion 31 (1975) 177; NACE 95-128; NORSOK M-506:2017; Nyborg 2010; Nesic 2007.</span></div>
+    <div class="explain"><b>Flow velocity (API&nbsp;RP&nbsp;14E):</b> ${o.velocity} m/s vs erosional limit V<sub>e</sub> = ${ev.Ve_continuous_ms.toFixed(1)} m/s (C=100, continuous) / ${ev.Ve_controlled_ms.toFixed(1)} m/s (C=200, corrosion-controlled) → <b style="color:${evCol}">${ev.status}</b>.
+      <span style="color:var(--dim)"> Liquid/brine basis (ρ≈${ev.rho_kg_m3} kg/m³). Above the limit, protective FeCO₃ films are stripped and erosion-corrosion adds to the rates above. API RP 14E.</span></div>`;
 }
 $("co2Form")&&$("co2Form").addEventListener("input", renderCO2);
 

@@ -402,6 +402,36 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════
+  // EROSIONAL VELOCITY — API RP 14E
+  //   Ve = C / sqrt(rho_mix)  [ft/s, lb/ft^3];  SI: Ve[m/s] = 1.22*C/sqrt(rho[kg/m^3]).
+  //   C ~ 100 for continuous solids-free service (conservative); 150-200 where
+  //   corrosion is controlled (inhibited CS / CRA). High velocity also strips the
+  //   protective FeCO3 film and accelerates the CO2 corrosion modelled above.
+  // ══════════════════════════════════════════════════════════════════════
+  function erosionalVelocity(opts) {
+    opts = opts || {};
+    var rho = opts.rho_kg_m3 == null ? 1025 : opts.rho_kg_m3;   // produced-brine default
+    var u = opts.velocity_ms;
+    var Cc = opts.cContinuous == null ? 100 : opts.cContinuous;
+    var Cr = opts.cControlled == null ? 200 : opts.cControlled;
+    var Ve_c = 1.22 * Cc / Math.sqrt(Math.max(1, rho));
+    var Ve_r = 1.22 * Cr / Math.sqrt(Math.max(1, rho));
+    var status = null, ratio = null;
+    if (u != null && isFinite(u)) {
+      ratio = u / Ve_c;
+      status = u <= Ve_c ? 'below continuous limit'
+             : u <= Ve_r ? 'above C=100 — needs corrosion control / CRA'
+             : 'above C=200 — erosion-corrosion likely';
+    }
+    return {
+      Ve_continuous_ms: Ve_c, Ve_controlled_ms: Ve_r, velocity_ms: u,
+      ratio_to_continuous: ratio, status: status, rho_kg_m3: rho,
+      cContinuous: Cc, cControlled: Cr,
+      ref: 'API RP 14E (Ve = C/sqrt(rho_mix)); liquid/brine basis.'
+    };
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
   // VERDICT — same bands the console page uses on CR_max
   // ══════════════════════════════════════════════════════════════════════
   function verdictFor(CR_max) {
@@ -609,6 +639,7 @@
     sweepT: sweepT,
     sweepPCO2: sweepPCO2,
     allowance: allowance,
+    erosionalVelocity: erosionalVelocity,
     // individual models
     deWaard1975: deWaard1975,
     deWaard1995: deWaard1995,
