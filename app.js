@@ -356,16 +356,21 @@ function renderCPAC(){
       <span style="color:var(--dim)"> AC: ${ac.ref} · CP: ${cp.ref}</span></div>
     ${(()=>{ if(!window.Anode) return ""; const an=window.Anode.size({area_m2:+gv("a_area"),lifeYr:+gv("a_life"),environment:gv("a_env"),coating:gv("a_coating"),anode:gv("a_anode")});
       if(an.error) return `<div class="cdnote">${an.error}</div>`;
+      const ep=an.env_properties;
+      const corrTxt = an.corrections.notes.length ? ` · <span style="color:#fbbf24">${an.corrections.notes.join(' · ')}</span>` : "";
       return `<div class="iso within"><b>Sacrificial anode — ${an.anode}</b><br>
         Net mass required: <b>${an.anodeMass_kg_net.toFixed(0)} kg</b> (gross ${an.anodeMass_kg_gross.toFixed(0)} kg) ≈ <b>${an.numAnodes} × ${an.anodeUnit_kg} kg</b> unit anodes.
         Current demand: initial <b>${an.I_initial_A.toFixed(1)} A</b> · mean <b>${an.I_mean_A.toFixed(1)} A</b> · final <b>${an.I_final_A.toFixed(1)} A</b>.
-        Coating breakdown f_c: mean ${(an.fc_mean*100).toFixed(0)}% · final ${(an.fc_final*100).toFixed(0)}%. Q = ${(an.Q_Ah/1e6).toFixed(2)} M·Ah.</div>
+        Coating breakdown f_c: mean ${(an.fc_mean*100).toFixed(0)}% · final ${(an.fc_final*100).toFixed(0)}%. Q = ${(an.Q_Ah/1e6).toFixed(2)} M·Ah.
+        <br><span style="color:var(--dim);font-size:12px">Env physical: T ${ep.T_C}°C · depth ${ep.depth_range_m} m · salinity ${ep.salinity_ppt}‰ · O₂ ${ep.O2_mg_L} mg/L · ρ ${ep.rho_ohm_m} Ω·m${corrTxt}</span></div>
         <div class="explain"><span style="color:var(--dim)">${an.ref}</span></div>`;})()}
-    ${(()=>{ if(!window.Galvanic) return ""; const gc=window.Galvanic.couple({a:gv("g_a"),b:gv("g_b"),areaRatio:+gv("g_ratio")});
+    ${(()=>{ if(!window.Galvanic) return ""; const gc=window.Galvanic.couple({a:gv("g_a"),b:gv("g_b"),areaRatio:+gv("g_ratio"),flow:"moderate"});
       if(gc.error) return "";
       const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[gc.level]||"within";
-      return `<div class="iso ${cls}"><b>Galvanic couple — ${gc.level.toUpperCase()}</b><br>
-        <b>${gc.anode}</b> (anode) ⇄ <b>${gc.cathode}</b> · ΔE <b>${gc.deltaE_mV.toFixed(0)} mV</b> · area ratio ${gc.areaRatio.toFixed(1)} → amplifier ${gc.areaMultiplier.toFixed(2)}×. ${gc.note}</div>
+      return `<div class="iso ${cls}"><b>Galvanic couple — ${gc.level.toUpperCase()}</b> · anode rate <b>${gc.CR_anode_mm_yr.toFixed(3)} mm/yr</b>${gc.mass_transfer_capped?" (O₂-limited)":""}<br>
+        <b>${gc.anode}</b> (anode) ⇄ <b>${gc.cathode}</b> · ΔE <b>${gc.deltaE_mV.toFixed(0)} mV</b> · area ratio ${gc.areaRatio.toFixed(1)}× · i<sub>anode</sub> <b>${gc.i_anode_Am2.toFixed(3)} A/m²</b>.
+        <br><span style="color:var(--dim);font-size:12px">Tafel: ba ${gc.ba_anode_mV_dec} / bc ${gc.bc_cathode_mV_dec} mV·dec⁻¹ · i₀ anode ${gc.i0_anode_Am2.toExponential(0)} A/m² · EW ${gc.EW_anode} g/eq · ρ ${gc.rho_anode_g_cm3} g/cm³ · flow ${gc.flow} (i_lim ${gc.i_lim_cathode_Am2} A/m²)</span>
+        <br>${gc.note}</div>
         <div class="explain"><span style="color:var(--dim)">${gc.ref}</span></div>`;})()}
     ${(()=>{ if(!window.Groundbed) return ""; const sb=window.Groundbed.sundeMulti({rho_ohm_m:+gv("gb_rho"),L_m:+gv("gb_L"),d_m:(+gv("gb_d"))/1000,s_m:+gv("gb_s"),n:+gv("gb_n")});
       if(sb.error) return "";
@@ -512,9 +517,14 @@ function renderIntegrity(){
       <span style="color:var(--dim)"> ${ff.ref} · ${rl.ref}</span></div>
     ${(()=>{ if(!window.CUI) return ""; const u=window.CUI.risk({material:gv("u_mat"),T_C:+gv("u_T"),insulation:gv("u_ins"),jacket:gv("u_jkt"),coating:gv("u_coat"),ambient:gv("u_amb"),ageYr:+gv("u_age"),cyclic:!!($("u_cyc")&&$("u_cyc").checked)});
       const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[u.level]||"within";
+      const p = u.properties || {};
+      const warnBlock = (u.warnings && u.warnings.length) ? `<div style="margin-top:6px;color:#f87171"><b>⚠ Service-T / chemistry warnings:</b><ul style="margin:4px 0 0 18px;padding:0">${u.warnings.map(w=>"<li>"+w+"</li>").join("")}</ul></div>` : "";
+      const propsLine = u.inWindow ? `<br><span style="color:var(--dim);font-size:12px">Properties: insulation T-window ${p.insulation_T_min_C} → ${p.insulation_T_max_C} °C · ASTM C871 leachable Cl <b>${p.insulation_Cl_ppm_C871} ppm</b> · water absorption ${p.insulation_water_pct}% · coating T_max ${p.coating_T_max_C} °C · ambient ISO 9223 ${p.ambient_ISO9223}${u.factors.leachable_Cl && Math.abs(u.factors.leachable_Cl-1)>0.05 ? " · Cl-amplifier ×"+u.factors.leachable_Cl.toFixed(2) : ""}</span>` : "";
       return `<div class="iso ${cls}"><b>CUI risk — ${u.level.toUpperCase()}</b> ${u.inWindow?`(${u.region})`:""}<br>
         Score <b>${u.score.toFixed(2)}</b> · recommended inspection: <b>${u.inspectionInterval}</b>.
-        ${u.inWindow?`Drivers: T factor ${u.factors.temperature.toFixed(2)} · insulation ${u.factors.insulation.toFixed(2)} (${u.categories.insulation}) · jacket ${u.factors.jacket.toFixed(2)} (${u.categories.jacket}) · coating ${u.factors.coating.toFixed(2)} (${u.categories.coating}) · ambient ${u.factors.ambient.toFixed(2)} (${u.categories.ambient}) · age ${u.factors.age.toFixed(2)} ${u.cyclic?"· cyclic ×1.5":""}.`:""}</div>
+        ${u.inWindow?`Drivers: T factor ${u.factors.temperature.toFixed(2)} · insulation ${u.factors.insulation.toFixed(2)} (${u.categories.insulation}) · jacket ${u.factors.jacket.toFixed(2)} (${u.categories.jacket}) · coating ${u.factors.coating.toFixed(2)} (${u.categories.coating}) · ambient ${u.factors.ambient.toFixed(2)} (${u.categories.ambient}) · age ${u.factors.age.toFixed(2)} ${u.cyclic?"· cyclic ×1.5":""}.`:""}
+        ${propsLine}
+        ${warnBlock}</div>
         <div class="explain"><span style="color:var(--dim)">${u.ref}</span></div>`;})()}
     ${(()=>{ if(!window.MIC) return ""; const mr=window.MIC.risk({T_C:+gv("m_T"),oxygen:gv("m_o2"),nutrient:gv("m_n"),sulphate_mgL:+gv("m_so4"),flow:gv("m_flow"),biocide:gv("m_b")});
       const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[mr.level]||"within";
