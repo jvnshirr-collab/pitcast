@@ -7,7 +7,7 @@
 <meta name="description" content="Microstructure-aware, probabilistic localized-corrosion prediction and cost-aware CRA selection for stainless, duplex and nickel alloys.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=15">
+<link rel="stylesheet" href="styles.css?v=16">
 </head>
 <body>
 <header class="topbar">
@@ -32,14 +32,16 @@
   <div class="tabs">
     <button class="tab active" data-tab="assess">Assess an alloy</button>
     <button class="tab" data-tab="select">Select the best alloy</button>
+    <button class="tab" data-tab="compare">Compare grades</button>
     <button class="tab" data-tab="envelope">Selection map</button>
     <button class="tab" data-tab="data">Browse data</button>
     <button class="tab" data-tab="co2">CO₂ corrosion</button>
     <button class="tab" data-tab="cpac">CP / AC</button>
     <button class="tab" data-tab="integrity">Integrity (B31G)</button>
+    <button class="tab" data-tab="ili">ILI batch</button>
   </div>
   <div class="datastat" id="dataStat"></div>
-  <div class="exportbar"><button type="button" id="btnPrint">🖶 Print / Save as PDF</button><button type="button" id="btnCSV">⤓ Download CSV</button></div>
+  <div class="exportbar"><button type="button" id="btnPrint">🖶 Print / Save as PDF</button><button type="button" id="btnXLSX">⤓ Export XLSX</button><button type="button" id="btnCSV">⤓ Download CSV</button></div>
   <div class="printhead">PitCast · pitcast.austenite.org · screening estimate — not a substitute for qualified engineering</div>
 
   <!-- ASSESS ------------------------------------------------------------- -->
@@ -105,6 +107,42 @@
            avoiding over-specification.</p>
       </form>
       <div class="card results" id="s_results"><div class="placeholder">Set a service →</div></div>
+    </div>
+  </section>
+
+  <!-- COMPARE — side-by-side multi-grade evaluation --------------------- -->
+  <section class="panel" id="tab-compare">
+    <div class="datastat">Side-by-side evaluation of up to 5 candidate grades against one set of service
+      conditions. Best / worst values per metric highlighted; cheapest grade that clears the risk
+      threshold marked. Industry workflow: shortlist for FEED material-selection memos.</div>
+    <div class="grid">
+      <form class="card inputs" id="compareForm">
+        <h3>Candidate grades (up to 5)</h3>
+        <label>Grade A<select id="cmp_g1"></select></label>
+        <label>Grade B<select id="cmp_g2"></select></label>
+        <label>Grade C<select id="cmp_g3"></select></label>
+        <label>Grade D<select id="cmp_g4"></select></label>
+        <label>Grade E<select id="cmp_g5"></select></label>
+        <h3>Service conditions (shared)</h3>
+        <div class="row">
+          <label>Temperature (°C)<input type="number" id="cmp_T" value="60" step="1"></label>
+          <label>Chloride (ppm)<input type="number" id="cmp_Cl" value="50000" step="1000"></label>
+        </div>
+        <div class="row">
+          <label>pH<input type="number" id="cmp_pH" value="4.5" step="0.1"></label>
+          <label>H₂S partial pressure (kPa)<input type="number" id="cmp_pH2S" value="10" step="1"></label>
+        </div>
+        <div class="row">
+          <label>Tensile stress (× yield)<input type="number" id="cmp_stress" value="0.5" step="0.05" min="0" max="1"></label>
+          <label>Hardness (HV)<input type="number" id="cmp_HV" value="240" step="5"></label>
+        </div>
+        <label>Risk threshold P (for cheapest-that-clears)
+          <input type="number" id="cmp_thr" value="0.15" step="0.05" min="0" max="1"></label>
+        <p class="hint">Each grade is run through <b>PitCast.assess()</b> with the same service.
+           Green cell = best in that column, red cell = worst. The <b>★</b> row is the cheapest grade
+           that clears the threshold.</p>
+      </form>
+      <div class="card results" id="cmp_results"><div class="placeholder">Pick grades and conditions →</div></div>
     </div>
   </section>
 
@@ -388,6 +426,47 @@
       <div class="card results" id="integrity_results"><div class="placeholder">Set pipe geometry →</div></div>
     </div>
   </section>
+
+  <!-- ILI BATCH — multi-defect CSV ingestion + batch B31G ---------------- -->
+  <section class="panel" id="tab-ili">
+    <div class="datastat">In-Line Inspection (ILI) batch screen. Upload a CSV of corrosion defects
+      from your ILI vendor (e.g. ROSEN, Baker Hughes, NDT Global), apply pipeline-level geometry +
+      grade + MAOP defaults, and the engine runs ASME B31G / Modified-B31G on every defect, returns a
+      sortable color-coded grid (PASS / MONITOR / REPAIR / IMMEDIATE), with summary stats and
+      severity histogram. Industry workflow: ILI run → defect triage → repair-priority list.</div>
+    <div class="grid">
+      <form class="card inputs" id="iliForm">
+        <h3>Pipeline-level defaults</h3>
+        <div class="row">
+          <label>OD D (mm)<input type="number" id="ili_D" value="323.9" step="5"></label>
+          <label>WT t (mm)<input type="number" id="ili_t" value="9.53" step="0.1"></label>
+        </div>
+        <div class="row">
+          <label>API 5L grade<select id="ili_grade"></select></label>
+          <label>MAOP (bar)<input type="number" id="ili_MAOP" value="70" step="5"></label>
+        </div>
+        <label class="envwide">FFS method<select id="ili_method">
+          <option value="modb31g" selected>Modified B31G — 0.85 dL (Kiefner / RSTRENG)</option>
+          <option value="b31g">Original B31G — 0.667 dL (most conservative)</option>
+        </select></label>
+        <h3>Defect CSV</h3>
+        <label class="envwide">Drag-drop or browse: <input type="file" id="ili_file" accept=".csv,text/csv"></label>
+        <p class="hint">Required columns: <code>id, length_mm, depth_mm</code>. Optional: <code>chainage_m, clock_pos, width_mm, defect_type</code>.
+          <a href="#" id="ili_sample">Download sample CSV (15 defects, real-shape distribution)</a></p>
+        <label class="envwide">…or paste CSV here<textarea id="ili_paste" rows="8" placeholder="id,length_mm,depth_mm
+D-001,180,3.2
+D-002,95,2.1
+..." style="width:100%;font-family:monospace;font-size:12px;background:rgba(255,255,255,0.04);color:var(--text);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px"></textarea></label>
+        <div class="row"><button type="button" id="ili_process" class="primary">Process defects →</button></div>
+        <p class="hint">Verdict bands per ASME B31G §3.6 + Kiefner 1989:
+          <b style="color:#34d399">PASS</b> (P<sub>safe</sub> ≥ MAOP, d/t &lt; 50%) ·
+          <b style="color:#fbbf24">MONITOR</b> (50–80% wall loss, frequent re-insp.) ·
+          <b style="color:#fb923c">REPAIR</b> (P<sub>safe</sub> &lt; MAOP) ·
+          <b style="color:#ef4444">IMMEDIATE</b> (≥80% wall, replace before re-pressurise).</p>
+      </form>
+      <div class="card results" id="ili_results"><div class="placeholder">Upload or paste an ILI defect CSV →</div></div>
+    </div>
+  </section>
 </main>
 
 <section id="how" class="info">
@@ -447,6 +526,7 @@
 <script src="co2.js?v=12"></script>
 <script src="cpac.js?v=11"></script>
 <script src="b31g.js?v=1"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="anode.js?v=3"></script>
 <script src="cui.js?v=3"></script>
 <script src="galvanic.js?v=3"></script>
@@ -455,6 +535,6 @@
 <script src="hic.js?v=1"></script>
 <script src="rbi.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=30"></script>
+<script src="app.js?v=31"></script>
 </body>
 </html>

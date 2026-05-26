@@ -18,6 +18,8 @@ document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
   if (t.dataset.tab === "cpac") renderCPAC();
   if (t.dataset.tab === "envelope") renderEnvelope();
   if (t.dataset.tab === "integrity") renderIntegrity();
+  if (t.dataset.tab === "compare") renderCompare();
+  if (t.dataset.tab === "ili") renderILIPlaceholder();
 });
 
 // ---- grade picker (searchable: curated grades + in-scope measured alloys) ---
@@ -700,6 +702,476 @@ function updateDataStat(meta){
     : `<b>${PitCast.GRADES.length}</b> alloy grades`;
 }
 
+// ===========================================================================
+//                     PRO-GRADE FEATURE A — MULTI-GRADE COMPARE
+// ===========================================================================
+// Side-by-side evaluation of up to 5 candidate grades against a shared service
+// condition set. Calls PitCast.assess() per grade and pivots into a metric
+// table with best-in-column (green) / worst-in-column (red) highlighting.
+// A ★ row marker identifies the cheapest grade that clears the user's risk
+// threshold — the same "cheapest-that-clears" semantic as the Select tab.
+// Industry workflow: FEED material-selection memo shortlist.
+function _cmpGradeOptions(){
+  const grades = PitCast.GRADES || [];
+  return grades.map((g, i) => `<option value="${i}">${g.name || ("Grade " + i)}</option>`).join("");
+}
+function populateCompareGrades(){
+  const html = _cmpGradeOptions();
+  if (!html) return;
+  const defaults = ["304L", "316L", "2205", "2507", "Alloy 625"];
+  for (let k = 1; k <= 5; k++) {
+    const sel = $("cmp_g" + k);
+    if (!sel) continue;
+    sel.innerHTML = html;
+    // Try to land on a sensible default; fall back to ordinal
+    let idx = PitCast.GRADES.findIndex(g => (g.name || "").indexOf(defaults[k-1]) === 0);
+    if (idx < 0) idx = Math.min(k * 5, PitCast.GRADES.length - 1);
+    sel.value = String(idx);
+  }
+}
+function populateILIGrade(){
+  const sel = $("ili_grade"); if (!sel || !window.B31G) return;
+  sel.innerHTML = Object.entries(B31G.GRADES).map(([k,v]) => `<option value="${k}">${v.label}</option>`).join("");
+  sel.value = "X65";
+}
+function _fmt(n, d){ if (n==null || !isFinite(n)) return "—"; return (+n).toFixed(d==null?2:d); }
+function _pctClass(v, allValues, lowerIsBetter){
+  if (v==null || !isFinite(v)) return "";
+  const xs = allValues.filter(x => x!=null && isFinite(x));
+  if (xs.length < 2) return "";
+  const lo = Math.min(...xs), hi = Math.max(...xs);
+  if (lo === hi) return "";
+  const t = lowerIsBetter ? (v - lo) / (hi - lo) : (hi - v) / (hi - lo);  // 0 best, 1 worst
+  if (t <= 0.001) return "cmpbest";
+  if (t >= 0.999) return "cmpworst";
+  return "";
+}
+function renderCompare(){
+  const host = $("cmp_results"); if (!host || !window.PitCast) return;
+  const gv = id => $(id) ? $(id).value : "";
+  const svc = { T:+gv("cmp_T"), Cl:+gv("cmp_Cl"), pH:+gv("cmp_pH"), pH2S:+gv("cmp_pH2S"),
+                stress:+gv("cmp_stress"), HV:+gv("cmp_HV") };
+  const thr = Math.max(0, Math.min(1, +gv("cmp_thr") || 0.15));
+  // Collect selected grades (deduped, in order)
+  const picks = [];
+  const seen = new Set();
+  for (let k = 1; k <= 5; k++) {
+    const idx = +($("cmp_g" + k) ? $("cmp_g" + k).value : -1);
+    if (!isFinite(idx) || idx < 0 || idx >= PitCast.GRADES.length) continue;
+    if (seen.has(idx)) continue;
+    seen.add(idx);
+    picks.push(PitCast.GRADES[idx]);
+  }
+  if (!picks.length) { host.innerHTML = '<div class="placeholder">Pick at least one grade →</div>'; return; }
+  // Assess each grade with shared conditions
+  const rows = picks.map(g => {
+    let r; try { r = PitCast.assess(g.comp || {}, svc); } catch(e) { r = { error: e.message }; }
+    return { grade: g, r: r };
+  });
+  // Column extractors for best/worst tinting
+  const ext = {
+    pren:    rows.map(x => x.r && x.r.pren),
+    cpt:     rows.map(x => x.r && x.r.cpt),
+    pPit:    rows.map(x => x.r && x.r.pPit),
+    pScc:    rows.map(x => x.r && x.r.pScc),
+    pSour:   rows.map(x => x.r && x.r.pSourFail),
+    overall: rows.map(x => x.r && x.r.overall),
+    cost:    rows.map(x => x.r && x.r.cost)
+  };
+  // Cheapest-that-clears
+  const clears = rows.filter(x => x.r && x.r.overall != null && x.r.overall <= thr && x.r.cost != null);
+  clears.sort((a,b) => (a.r.cost||1e9) - (b.r.cost||1e9));
+  const cheapestKey = clears.length ? clears[0].grade.name : null;
+  // Build table
+  const thStyle = 'style="padding:6px 10px;text-align:left;color:var(--dim);font-weight:600;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.1)"';
+  const tdStyle = 'style="padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.06)"';
+  const tdRight = 'style="padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.06);text-align:right;font-variant-numeric:tabular-nums"';
+  let html = `<style>
+    .cmpbest{ background:rgba(52,211,153,0.18); color:#34d399; font-weight:600 }
+    .cmpworst{ background:rgba(248,113,113,0.18); color:#fca5a5 }
+    .cmpcheap{ background:rgba(56,189,248,0.18); color:#7dd3fc; font-weight:700 }
+    .cmpgrid th{ position:sticky; top:0; background:#0b1220 }
+  </style>
+  <div style="overflow:auto"><table class="cmpgrid" style="border-collapse:collapse;width:100%;font-size:13px">
+    <thead><tr>
+      <th ${thStyle}>Grade</th>
+      <th ${thStyle}>PREN<sub>N16</sub></th>
+      <th ${thStyle}>CPT (°C)</th>
+      <th ${thStyle}>Ferrite (%)</th>
+      <th ${thStyle}>P(pit)</th>
+      <th ${thStyle}>P(Cl-SCC)</th>
+      <th ${thStyle}>P(sour SSC)</th>
+      <th ${thStyle}>Overall P</th>
+      <th ${thStyle}>ISO 15156</th>
+      <th ${thStyle}>Rel. cost</th>
+      <th ${thStyle}>Verdict</th>
+    </tr></thead><tbody>`;
+  rows.forEach(({grade, r}) => {
+    const isCheap = grade.name === cheapestKey;
+    const star = isCheap ? "★ " : "";
+    const isoTxt = r.iso ? (r.iso.status + (r.iso.group ? (" — " + r.iso.group) : "")) : "—";
+    const verdict = r.overall == null ? "—" : (r.overall <= thr ? "CLEARS" : "EXCEEDS");
+    const verdictCls = r.overall == null ? "" : (r.overall <= thr ? "cmpbest" : "cmpworst");
+    html += `<tr${isCheap ? ' class="cmpcheap"' : ''}>
+      <td ${tdStyle}><b>${star}${grade.name || "—"}</b>${grade.uns ? ` <span style="color:var(--dim);font-size:11px">${grade.uns}</span>` : ""}</td>
+      <td ${tdRight} class="${_pctClass(r.pren, ext.pren, false)}">${_fmt(r.pren, 1)}</td>
+      <td ${tdRight} class="${_pctClass(r.cpt, ext.cpt, false)}">${_fmt(r.cpt, 1)}</td>
+      <td ${tdRight}>${_fmt(r.ferrite, 0)}</td>
+      <td ${tdRight} class="${_pctClass(r.pPit, ext.pPit, true)}">${_fmt(r.pPit, 3)}</td>
+      <td ${tdRight} class="${_pctClass(r.pScc, ext.pScc, true)}">${_fmt(r.pScc, 3)}</td>
+      <td ${tdRight} class="${_pctClass(r.pSour, ext.pSour, true)}">${_fmt(r.pSourFail, 3)}</td>
+      <td ${tdRight} class="${_pctClass(r.overall, ext.overall, true)}">${_fmt(r.overall, 3)}</td>
+      <td ${tdStyle}>${isoTxt}</td>
+      <td ${tdRight} class="${_pctClass(r.cost, ext.cost, true)}">${_fmt(r.cost, 2)}</td>
+      <td ${tdStyle} class="${verdictCls}">${verdict}</td>
+    </tr>`;
+  });
+  html += `</tbody></table></div>`;
+  // Summary card
+  const cleared = clears.length;
+  const cheapestLine = cheapestKey
+    ? `<b style="color:#7dd3fc">★ Cheapest grade clearing P ≤ ${thr}: ${cheapestKey}</b> (rel. cost ${_fmt(clears[0].r.cost, 2)}, overall risk ${_fmt(clears[0].r.overall, 3)})`
+    : `<b style="color:#fca5a5">No selected grade clears P ≤ ${thr} for these conditions — try a higher-PREN alloy or relax conditions.</b>`;
+  html += `<div class="iso ${cleared ? 'within' : 'exceeds'}" style="margin-top:10px">
+    ${cheapestLine}<br>
+    ${cleared} of ${rows.length} grade(s) clear the risk threshold. Service: T ${svc.T} °C · Cl ${svc.Cl} ppm · pH ${svc.pH} · pH₂S ${svc.pH2S} kPa · σ ${svc.stress}×YS · HV ${svc.HV}.
+  </div>
+  <div class="explain"><span style="color:var(--dim)">PitCast.assess() per grade — PREN<sub>N16</sub>, leverage-aware CPT correlation (Nyby 2021 calibration n=51, 6.6 °C MAE), Cl-SCC + sour SSC envelopes (ISO 15156-3); cost relative to 304L. Best (green) / worst (red) per column.</span></div>`;
+  host.innerHTML = html;
+}
+
+// ===========================================================================
+//                     PRO-GRADE FEATURE B — ILI BATCH (CSV)
+// ===========================================================================
+// Industry workflow: ILI tool (MFL/UT) emits a defect list per pipeline run.
+// Engineer needs P_safe + safety-factor verdict per defect, sorted worst-first,
+// to triage repair priority. We accept CSV (file or paste) with required
+// columns id, length_mm, depth_mm + optional chainage_m, clock_pos, width_mm,
+// defect_type. Apply pipeline-level defaults (D, t, grade, MAOP, method) and
+// run B31G.failurePressure() + B31G.classify() on each row.
+function _parseILICSV(text){
+  if (!text || !text.trim()) return { defects: [], errors: ["Empty CSV"] };
+  // Strip BOM, split lines, drop comments + blanks
+  text = text.replace(/^﻿/, "");
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith("#"));
+  if (lines.length < 2) return { defects: [], errors: ["CSV needs a header row + at least 1 data row"] };
+  // Tolerant tokenizer (handles double-quoted)
+  function tok(line){
+    const out = []; let cur = "", inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (c === '"') { inQ = !inQ; continue; }
+      if (c === "," && !inQ) { out.push(cur.trim()); cur = ""; continue; }
+      cur += c;
+    }
+    out.push(cur.trim());
+    return out;
+  }
+  const headers = tok(lines[0]).map(h => h.toLowerCase().replace(/\s+/g, "_"));
+  // Alias map — accept common synonyms
+  const aliases = {
+    id: ["id", "feature_id", "defect_id", "name", "tag"],
+    chainage_m: ["chainage_m", "chainage", "km", "position_m", "log_distance_m", "abs_distance_m"],
+    clock_pos: ["clock_pos", "clock", "orientation", "clock_position"],
+    length_mm: ["length_mm", "length", "axial_length_mm", "l_mm", "l"],
+    depth_mm: ["depth_mm", "depth", "max_depth_mm", "d_mm", "depth_max"],
+    width_mm: ["width_mm", "width", "circ_width_mm", "w_mm"],
+    defect_type: ["defect_type", "type", "feature_type", "class", "anomaly"]
+  };
+  const colIdx = {};
+  Object.entries(aliases).forEach(([key, alts]) => {
+    for (const a of alts) { const i = headers.indexOf(a); if (i >= 0) { colIdx[key] = i; break; } }
+  });
+  const errs = [];
+  ["id", "length_mm", "depth_mm"].forEach(req => {
+    if (colIdx[req] == null) errs.push(`Missing required column: ${req} (or synonym)`);
+  });
+  if (errs.length) return { defects: [], errors: errs, headers: headers };
+  const defects = [];
+  for (let r = 1; r < lines.length; r++) {
+    const row = tok(lines[r]);
+    const get = key => colIdx[key] != null ? row[colIdx[key]] : "";
+    const id = get("id") || ("R-" + r);
+    const L = +get("length_mm");
+    const d = +get("depth_mm");
+    if (!isFinite(L) || L <= 0 || !isFinite(d) || d <= 0) {
+      errs.push(`Row ${r+1} (id=${id}): non-numeric or non-positive length/depth — skipped`);
+      continue;
+    }
+    defects.push({
+      id: id,
+      chainage_m: +get("chainage_m") || null,
+      clock_pos: get("clock_pos") || null,
+      length_mm: L,
+      depth_mm: d,
+      width_mm: +get("width_mm") || null,
+      defect_type: get("defect_type") || "corrosion"
+    });
+  }
+  return { defects: defects, errors: errs, headers: headers };
+}
+function _runILIBatch(opts){
+  // opts: { D, t, grade, MAOP_bar, method, defects: [] }
+  const SMYS = (B31G.GRADES[opts.grade] || B31G.GRADES["X65"]).SMYS;
+  return opts.defects.map(df => {
+    const fp = B31G.failurePressure({ D: opts.D, t: opts.t, SMYS: SMYS, L: df.length_mm, d: df.depth_mm, method: opts.method });
+    const cls = B31G.classify(fp.P_safe_bar, opts.MAOP_bar, fp.depthRatio, fp.throughWall);
+    return Object.assign({}, df, {
+      P_f_bar: fp.P_f_bar, P_safe_bar: fp.P_safe_bar,
+      depthRatio: fp.depthRatio, SF: opts.MAOP_bar > 0 ? fp.P_safe_bar / opts.MAOP_bar : null,
+      regime: fp.regime, throughWall: fp.throughWall,
+      status: cls.status, note: cls.note
+    });
+  });
+}
+let _iliCache = { defects: [], processed: [], opts: null, errors: [] };
+function renderILIPlaceholder(){
+  const host = $("ili_results"); if (!host) return;
+  if (_iliCache.processed && _iliCache.processed.length) { _renderILITable(); return; }
+  host.innerHTML = '<div class="placeholder">Upload or paste an ILI defect CSV →<br><br><span style="font-size:13px;color:var(--dim)">Sample CSVs follow the columns <code>id, length_mm, depth_mm</code> at minimum. Typical ILI tools (ROSEN, Baker Hughes, NDT Global) emit these as part of the defect list. Pipeline geometry (OD, WT, grade, MAOP) is set once in the form on the left.</span></div>';
+}
+function _renderILITable(){
+  const host = $("ili_results"); if (!host) return;
+  const res = _iliCache.processed.slice();
+  const opts = _iliCache.opts;
+  if (!res.length) { host.innerHTML = '<div class="placeholder">No defects processed.</div>'; return; }
+  // Sort by SF ascending (worst first)
+  res.sort((a, b) => (a.SF||1e9) - (b.SF||1e9));
+  const colours = { PASS: "#34d399", MONITOR: "#fbbf24", REPAIR: "#fb923c", IMMEDIATE: "#ef4444" };
+  const counts = { PASS: 0, MONITOR: 0, REPAIR: 0, IMMEDIATE: 0 };
+  res.forEach(r => { counts[r.status] = (counts[r.status]||0) + 1; });
+  // Severity histogram (SVG)
+  const total = res.length;
+  const bars = ["PASS","MONITOR","REPAIR","IMMEDIATE"].map(s => {
+    const n = counts[s]||0, pct = total ? (100*n/total).toFixed(0) : 0;
+    return `<div style="flex:1;text-align:center"><div style="height:${4 + n*200/Math.max(1,total)}px;background:${colours[s]};border-radius:4px;margin-bottom:4px"></div><div style="font-size:11px;color:var(--dim)">${s}<br><b style="color:${colours[s]}">${n}</b> (${pct}%)</div></div>`;
+  }).join("");
+  const headerStyle = 'style="padding:6px 8px;background:#0b1220;text-align:left;color:var(--dim);font-weight:600;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.1);position:sticky;top:0;cursor:pointer"';
+  const cellStyle = 'style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,0.04);font-variant-numeric:tabular-nums;font-size:12px"';
+  let table = `<div style="max-height:380px;overflow:auto;border:1px solid rgba(255,255,255,0.08);border-radius:6px"><table style="border-collapse:collapse;width:100%">
+    <thead><tr>
+      <th ${headerStyle}>ID</th>
+      <th ${headerStyle}>Chainage (m)</th>
+      <th ${headerStyle}>Clock</th>
+      <th ${headerStyle}>L (mm)</th>
+      <th ${headerStyle}>d (mm)</th>
+      <th ${headerStyle}>d/t (%)</th>
+      <th ${headerStyle}>P<sub>safe</sub> (bar)</th>
+      <th ${headerStyle}>SF</th>
+      <th ${headerStyle}>Regime</th>
+      <th ${headerStyle}>Verdict</th>
+    </tr></thead><tbody>`;
+  res.forEach(r => {
+    const col = colours[r.status] || "#888";
+    table += `<tr>
+      <td ${cellStyle}><b>${r.id}</b></td>
+      <td ${cellStyle}>${r.chainage_m != null ? r.chainage_m.toFixed(1) : "—"}</td>
+      <td ${cellStyle}>${r.clock_pos || "—"}</td>
+      <td ${cellStyle}>${r.length_mm.toFixed(1)}</td>
+      <td ${cellStyle}>${r.depth_mm.toFixed(2)}</td>
+      <td ${cellStyle}>${(r.depthRatio*100).toFixed(1)}</td>
+      <td ${cellStyle}>${r.P_safe_bar.toFixed(1)}</td>
+      <td ${cellStyle}>${r.SF != null ? r.SF.toFixed(2) : "—"}</td>
+      <td ${cellStyle}><span style="color:var(--dim);font-size:11px">${r.regime}</span></td>
+      <td ${cellStyle}><b style="color:${col}">${r.status}</b></td>
+    </tr>`;
+  });
+  table += `</tbody></table></div>`;
+  const exportBtn = `<button type="button" id="ili_export_csv" style="margin-top:10px;padding:8px 14px;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);color:#7dd3fc;border-radius:6px;cursor:pointer;font-weight:600">⤓ Export processed results (CSV)</button>`;
+  const summary = `<div class="iso ${(counts.IMMEDIATE||counts.REPAIR)?'exceeds':(counts.MONITOR?'untabulated':'within')}">
+    <b>ILI batch summary — ${total} defects processed</b><br>
+    Pipeline: D ${opts.D} mm × t ${opts.t} mm · ${B31G.GRADES[opts.grade].label} · MAOP ${opts.MAOP_bar} bar · method ${opts.method === "modb31g" ? "Modified B31G (0.85 dL Kiefner)" : "Original B31G (0.667 dL)"}.<br>
+    <b style="color:#34d399">PASS ${counts.PASS||0}</b> · <b style="color:#fbbf24">MONITOR ${counts.MONITOR||0}</b> · <b style="color:#fb923c">REPAIR ${counts.REPAIR||0}</b> · <b style="color:#ef4444">IMMEDIATE ${counts.IMMEDIATE||0}</b><br>
+    Worst defect: <b>${res[0].id}</b> · SF ${_fmt(res[0].SF, 2)} · d/t ${(res[0].depthRatio*100).toFixed(1)}% · P<sub>safe</sub> ${res[0].P_safe_bar.toFixed(1)} bar.</div>`;
+  const errBlock = _iliCache.errors.length ? `<div class="iso untabulated" style="margin-top:8px"><b>${_iliCache.errors.length} parse note(s):</b><ul style="margin:4px 0 0 18px;font-size:12px">${_iliCache.errors.slice(0,8).map(e=>"<li>"+e+"</li>").join("")}${_iliCache.errors.length>8?"<li>… and "+(_iliCache.errors.length-8)+" more</li>":""}</ul></div>` : "";
+  const histo = `<div style="display:flex;gap:8px;align-items:flex-end;margin:14px 0;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid rgba(255,255,255,0.05);min-height:220px">${bars}</div>`;
+  host.innerHTML = summary + histo + table + exportBtn + `<div class="explain" style="margin-top:8px"><span style="color:var(--dim)">ASME B31G-2012 §2 (original parabolic) / Kiefner & Vieth 1989 (Modified B31G — 0.85 dL); Folias bulging factor M; Barlow thin-shell; classification per B31G §3.6 + API 1163 ILI guidance. Screening — each defect treated as axial external metal-loss; interaction rules (POF-W or NACE SP0102 close-defect grouping) not applied — engineer must re-check candidates for interaction.</span></div>` + errBlock;
+  // Wire export button (idempotent)
+  const exp = $("ili_export_csv");
+  if (exp) exp.onclick = () => _exportILIBatchCSV();
+}
+function _exportILIBatchCSV(){
+  const res = _iliCache.processed; const opts = _iliCache.opts;
+  if (!res.length) return;
+  const hdr = ["id","chainage_m","clock_pos","length_mm","depth_mm","d_over_t_pct","P_safe_bar","P_f_bar","safety_factor","status","regime","note"];
+  const lines = [
+    "# PitCast ILI batch export · " + new Date().toISOString(),
+    "# Pipeline: D=" + opts.D + " mm, t=" + opts.t + " mm, grade=" + opts.grade + ", MAOP=" + opts.MAOP_bar + " bar, method=" + opts.method,
+    hdr.join(",")
+  ];
+  res.forEach(r => lines.push([
+    r.id, r.chainage_m||"", r.clock_pos||"", r.length_mm, r.depth_mm,
+    (r.depthRatio*100).toFixed(2), r.P_safe_bar.toFixed(2), r.P_f_bar.toFixed(2),
+    r.SF != null ? r.SF.toFixed(3) : "", r.status, '"'+r.regime+'"', '"'+r.note.replace(/"/g,"'")+'"'
+  ].join(",")));
+  _dl("pitcast_ili_batch_" + Date.now() + ".csv", lines.join("\n"));
+}
+function _iliSampleCSV(){
+  // 15 defects, log-normal-shaped length distribution + depth/length correlation —
+  // representative of a real ILI run on a 12-inch class-1 onshore line.
+  return `# PitCast sample ILI defect CSV
+# 15 defects on a hypothetical 12.75-in (323.9 mm) OD x 0.375-in (9.53 mm) WT
+# API 5L X65 pipeline, generated for ILI batch demonstration purposes only.
+id,chainage_m,clock_pos,length_mm,depth_mm,defect_type
+D-001,124.5,03:00,180,3.2,corrosion
+D-002,256.2,06:30,95,2.1,corrosion
+D-003,489.8,11:00,250,5.5,corrosion
+D-004,612.0,07:00,55,4.8,pit-cluster
+D-005,742.3,09:15,420,6.2,axial-groove
+D-006,890.5,12:00,75,1.8,corrosion
+D-007,1024.9,02:00,180,7.4,corrosion
+D-008,1245.0,08:30,40,3.5,pit-cluster
+D-009,1430.2,05:45,310,4.9,corrosion
+D-010,1612.8,11:30,140,2.6,corrosion
+D-011,1855.4,01:15,95,5.1,corrosion
+D-012,2102.7,06:00,225,6.8,axial-groove
+D-013,2348.0,10:00,70,3.0,pit-cluster
+D-014,2580.5,04:30,165,2.4,corrosion
+D-015,2790.1,09:00,290,8.1,corrosion
+`;
+}
+function _downloadILISample(ev){
+  if (ev && ev.preventDefault) ev.preventDefault();
+  _dl("pitcast_ili_sample.csv", _iliSampleCSV());
+}
+function processILICSVText(text){
+  const parsed = _parseILICSV(text);
+  if (!parsed.defects.length) {
+    $("ili_results").innerHTML = `<div class="iso exceeds"><b>Could not parse CSV.</b><br>${parsed.errors.map(e=>"• "+e).join("<br>")}</div>`;
+    return;
+  }
+  const gv = id => $(id) ? $(id).value : "";
+  const opts = {
+    D: +gv("ili_D"), t: +gv("ili_t"), grade: gv("ili_grade") || "X65",
+    MAOP_bar: +gv("ili_MAOP"), method: gv("ili_method") || "modb31g",
+    defects: parsed.defects
+  };
+  if (!(opts.D > 0 && opts.t > 0 && opts.MAOP_bar > 0)) {
+    $("ili_results").innerHTML = `<div class="iso exceeds">Pipeline OD, WT, and MAOP must all be > 0.</div>`;
+    return;
+  }
+  _iliCache = { defects: parsed.defects, processed: _runILIBatch(opts), opts: opts, errors: parsed.errors };
+  _renderILITable();
+}
+
+// ===========================================================================
+//                     PRO-GRADE FEATURE C — XLSX EXPORT (SheetJS)
+// ===========================================================================
+// Multi-sheet workbook generation for the active tab. Per tab we emit:
+//   - Inputs sheet: every form value the engine consumed
+//   - Results sheet: every computed metric, with units and citations
+//   - (where applicable) Defect/Comparison grid as its own sheet
+// Pure calculation + reference — no stamp/audit ceremony (per the project's
+// "no compliance theater" rule).
+function exportActiveXLSX(){
+  if (typeof XLSX === "undefined") { alert("Excel library not loaded — please refresh."); return; }
+  const at = document.querySelector(".tab.active"); const tab = at ? at.dataset.tab : "assess";
+  const gv = id => $(id) ? $(id).value : "";
+  const wb = XLSX.utils.book_new();
+  const _aoa = (sheet, rows) => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), sheet);
+  const HEAD = ["PitCast · pitcast.austenite.org", "Generated " + new Date().toISOString(), "Tab: " + tab];
+  const FOOT = ["", "Screening estimate — not a substitute for qualified engineering."];
+
+  if (tab === "assess") {
+    const g = currentGrade();
+    const svc = { T:+gv("a_T"), Cl:+gv("a_Cl"), pH:+gv("a_pH"), pH2S:+gv("a_pH2S"), stress:+gv("a_stress"), HV:+gv("a_HV"), ageT:+gv("a_ageT"), aget:+gv("a_aget") };
+    const r = PitCast.assess(g.comp, svc);
+    _aoa("Inputs", [HEAD, [], ["Grade", g.name||""], ["UNS", g.uns||""], ["Composition", compString(g.comp)], [],
+      ["Service", "Value", "Unit"], ["Temperature", svc.T, "°C"], ["Chloride", svc.Cl, "ppm"], ["pH", svc.pH, ""], ["H2S partial pressure", svc.pH2S, "kPa"], ["Tensile stress", svc.stress, "× yield"], ["Hardness", svc.HV, "HV"], ["Aging temperature", svc.ageT, "°C"], ["Aging time", svc.aget, "h"]]);
+    _aoa("Results", [HEAD, [],
+      ["Metric", "Value", "Unit", "Note"],
+      ["PREN (N16)", +r.pren.toFixed(2), "", "Cr + 3.3·Mo + 16·N"],
+      ["CPT", +r.cpt.toFixed(1), "°C", "G48 (6% FeCl3) calibration, n=51"],
+      ["Ferrite", +r.ferrite.toFixed(0), "%", "WRC-1992 diagram"],
+      ["P(pit)", r.pPit != null ? +r.pPit.toFixed(4) : null, "", "P(CPT < T_service)"],
+      ["P(Cl-SCC)", r.pScc != null ? +r.pScc.toFixed(4) : null, "", "ISO 15156-3 envelope"],
+      ["P(sour SSC)", r.pSourFail != null ? +r.pSourFail.toFixed(4) : null, "", "NACE MR0175 / ISO 15156"],
+      ["Overall risk", +r.overall.toFixed(4), "", "Maximum of the above"],
+      ["Dominant mechanism", r.dominant, "", ""],
+      ["Relative cost", +r.cost.toFixed(2), "× 304L", ""],
+      ["ISO 15156 status", r.iso ? r.iso.status : "", "", r.iso ? (r.iso.group||"") : ""], FOOT]);
+    _aoa("Citations", [HEAD, [], ["Source"],
+      ["Nyby et al., Scientific Data 8, 58 (2021) — DOI 10.6084/m9.figshare.13038257 (CC BY 4.0)"],
+      ["ASTM G48 — Pitting & crevice corrosion (6% FeCl3 immersion)"],
+      ["ISO 15156-3:2020 — Petroleum/NG industries — CRA in H2S-containing environments"],
+      ["NACE MR0175 / ISO 15156 — Sour service material selection"],
+      ["WRC-1992 — Welding Research Council ferrite-prediction diagram"]]);
+  }
+  else if (tab === "compare") {
+    const svc = { T:+gv("cmp_T"), Cl:+gv("cmp_Cl"), pH:+gv("cmp_pH"), pH2S:+gv("cmp_pH2S"), stress:+gv("cmp_stress"), HV:+gv("cmp_HV") };
+    const picks = [];
+    for (let k = 1; k <= 5; k++) { const idx = +($("cmp_g" + k) ? $("cmp_g" + k).value : -1); if (isFinite(idx) && idx >= 0) picks.push(PitCast.GRADES[idx]); }
+    _aoa("Inputs", [HEAD, [], ["Service", "Value", "Unit"], ["Temperature", svc.T, "°C"], ["Chloride", svc.Cl, "ppm"], ["pH", svc.pH, ""], ["H2S", svc.pH2S, "kPa"], ["Stress", svc.stress, "× yield"], ["Hardness", svc.HV, "HV"], ["Risk threshold", +gv("cmp_thr"), ""]]);
+    const rows = [["Grade", "UNS", "PREN", "CPT (°C)", "Ferrite (%)", "P(pit)", "P(Cl-SCC)", "P(sour SSC)", "Overall P", "ISO 15156", "Rel. cost"]];
+    picks.forEach(g => { let r; try { r = PitCast.assess(g.comp || {}, svc); } catch(e){ r = {}; }
+      rows.push([g.name||"", g.uns||"", _fmt(r.pren,2), _fmt(r.cpt,1), _fmt(r.ferrite,0), _fmt(r.pPit,4), _fmt(r.pScc,4), _fmt(r.pSourFail,4), _fmt(r.overall,4), r.iso?(r.iso.status+(r.iso.group?(" — "+r.iso.group):"")):"", _fmt(r.cost,2)]);
+    });
+    _aoa("Comparison", [HEAD, [], ...rows, FOOT]);
+  }
+  else if (tab === "ili") {
+    if (!_iliCache.processed.length) { alert("No ILI batch processed yet — upload or paste CSV and click Process."); return; }
+    const opts = _iliCache.opts;
+    _aoa("Pipeline", [HEAD, [], ["Parameter", "Value", "Unit"], ["OD", opts.D, "mm"], ["WT", opts.t, "mm"], ["Grade", opts.grade, ""], ["SMYS", B31G.GRADES[opts.grade].SMYS, "MPa"], ["MAOP", opts.MAOP_bar, "bar"], ["Method", opts.method === "modb31g" ? "Modified B31G (0.85 dL Kiefner)" : "Original B31G (0.667 dL)", ""]]);
+    const head = ["ID","Chainage (m)","Clock","Length (mm)","Depth (mm)","d/t (%)","P_safe (bar)","P_failure (bar)","SF","Regime","Verdict","Note"];
+    const rows = _iliCache.processed.slice().sort((a,b)=>(a.SF||1e9)-(b.SF||1e9)).map(r => [r.id, r.chainage_m||"", r.clock_pos||"", +r.length_mm, +r.depth_mm, +(r.depthRatio*100).toFixed(2), +r.P_safe_bar.toFixed(2), +r.P_f_bar.toFixed(2), r.SF!=null?+r.SF.toFixed(3):"", r.regime, r.status, r.note]);
+    _aoa("Defects", [HEAD, [], head, ...rows, FOOT]);
+    const counts = { PASS:0, MONITOR:0, REPAIR:0, IMMEDIATE:0 };
+    _iliCache.processed.forEach(r => counts[r.status] = (counts[r.status]||0)+1);
+    _aoa("Summary", [HEAD, [], ["Verdict", "Count", "% of total"], ...Object.entries(counts).map(([k,v]) => [k, v, _iliCache.processed.length ? +((100*v/_iliCache.processed.length).toFixed(1)) : 0]), FOOT]);
+  }
+  else if (tab === "co2") {
+    const co2In = { T:+gv("c_T"), pCO2:+gv("c_pCO2"), pH:+gv("c_pH"), velocity:+gv("c_u"), pipeID:+gv("c_d"), fe2:+gv("c_fe2"), pH2S:+gv("c_pH2S"), waterCut:+gv("c_wc"), glycol:+gv("c_meg"), oilType:gv("c_oil"), bicarbonate:+gv("c_bicarb"), ageH:+gv("c_age") };
+    _aoa("Inputs", [HEAD, [], ["Parameter", "Value", "Unit"], ...Object.entries(co2In).map(([k,v])=>[k,v,""]), FOOT]);
+    if (window.CO2) {
+      const models = ["deWaard1975", "deWaard1995", "norsok506", "nesc", "multicorp"].map(m => { try { const r = CO2[m] ? CO2[m](co2In) : null; return [m, r ? +(r.mmyr||r.mm_yr||0).toFixed(3) : "—"]; } catch(e){ return [m, "err"]; }}).filter(x => x[1] !== "—" && x[1] !== "err");
+      _aoa("Models", [HEAD, [], ["Model", "Rate (mm/y)"], ...models, FOOT]);
+    }
+  }
+  else if (tab === "cpac") {
+    const acIn = { Vac:+gv("p_vac"), rho:+gv("p_rho"), d:+gv("p_d"), Jdc:+gv("p_jdc") };
+    _aoa("Inputs", [HEAD, [], ["Parameter","Value","Unit"], ["AC touch voltage", acIn.Vac, "V"], ["Soil resistivity", acIn.rho, "Ω·m"], ["Holiday diameter", acIn.d, "mm"], ["CP DC density", acIn.Jdc, "A/m²"], ["E_on", +gv("p_eon"), "mV vs Cu/CuSO4"], ["E_io", +gv("p_eio"), "mV"], ["E_dep", +gv("p_edep"), "mV"]]);
+    if (window.Anode) {
+      const an = Anode.size({ area_m2:+gv("a_area"), lifeYr:+gv("a_life"), environment:gv("a_env"), coating:gv("a_coating"), anode:gv("a_anode") });
+      _aoa("Anode", [HEAD, [], ["Parameter","Value","Unit"], ["Environment", an.environment, ""], ["Coating", an.coating, ""], ["Anode alloy", an.anode, ""], ["Service T", an.T_C_service, "°C"], ["Salinity", an.env_properties.salinity_ppt, "‰"], ["Dissolved O2", an.env_properties.O2_mg_L, "mg/L"], ["Resistivity", an.env_properties.rho_ohm_m, "Ω·m"], ["I mean", +an.I_mean_A.toFixed(2), "A"], ["Anode net mass", +an.anodeMass_kg_net.toFixed(0), "kg"], ["Number of anodes", an.numAnodes, ""], FOOT]);
+    }
+    if (window.Galvanic) {
+      const gc = Galvanic.couple({ a:gv("g_a"), b:gv("g_b"), areaRatio:+gv("g_ratio"), flow:"moderate" });
+      if (!gc.error) _aoa("Galvanic", [HEAD, [], ["Parameter","Value","Unit"], ["Anode", gc.anode, ""], ["Cathode", gc.cathode, ""], ["ΔE", gc.deltaE_mV.toFixed(0), "mV"], ["Area ratio", gc.areaRatio, ""], ["i_anode", +gc.i_anode_Am2.toFixed(3), "A/m²"], ["CR anode", +gc.CR_anode_mm_yr.toFixed(3), "mm/y"], ["Level", gc.level, ""], FOOT]);
+    }
+  }
+  else if (tab === "integrity") {
+    const pipe = { D:+gv("b_D"), t:+gv("b_t"), grade:gv("b_grade"), MAOP:+gv("b_MAOP"), L:+gv("b_L"), d:+gv("b_d"), method:gv("b_method") };
+    _aoa("Inputs", [HEAD, [], ["Parameter","Value","Unit"], ["OD", pipe.D, "mm"], ["WT", pipe.t, "mm"], ["Grade", pipe.grade, ""], ["MAOP", pipe.MAOP, "bar"], ["Defect length", pipe.L, "mm"], ["Defect depth", pipe.d, "mm"], ["Method", pipe.method, ""]]);
+    if (window.B31G) {
+      const SMYS = (B31G.GRADES[pipe.grade]||{}).SMYS;
+      const fp = B31G.failurePressure({D:pipe.D, t:pipe.t, SMYS:SMYS, L:pipe.L, d:pipe.d, method:pipe.method});
+      const cls = B31G.classify(fp.P_safe_bar, pipe.MAOP, fp.depthRatio, fp.throughWall);
+      _aoa("B31G FFS", [HEAD, [], ["Metric","Value","Unit"], ["σ_flow", +fp.sigmaFlow_MPa.toFixed(1), "MPa"], ["σ_f", +fp.sigma_f_MPa.toFixed(1), "MPa"], ["Folias M", +fp.M.toFixed(3), ""], ["P_failure", +fp.P_f_bar.toFixed(2), "bar"], ["P_safe", +fp.P_safe_bar.toFixed(2), "bar"], ["d/t", +(fp.depthRatio*100).toFixed(1), "%"], ["Regime", fp.regime, ""], ["Verdict", cls.status, ""], ["Note", cls.note, ""], FOOT]);
+    }
+  }
+  else {
+    _aoa("Note", [HEAD, [], ["This tab does not yet have an XLSX export profile — use Print/Save as PDF."], FOOT]);
+  }
+  XLSX.writeFile(wb, "pitcast_" + tab + "_" + Date.now() + ".xlsx");
+}
+
+// ===========================================================================
+//                  EVENT BINDINGS — compare + ILI + XLSX + sample
+// ===========================================================================
+function _bindIndustryHandlers(){
+  if ($("compareForm")) $("compareForm").addEventListener("input", renderCompare);
+  for (let k = 1; k <= 5; k++) { const s = $("cmp_g" + k); if (s) s.addEventListener("change", renderCompare); }
+  const fI = $("ili_file"); if (fI) fI.addEventListener("change", e => {
+    const f = e.target.files && e.target.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => { $("ili_paste").value = rd.result; processILICSVText(rd.result); };
+    rd.readAsText(f);
+  });
+  const pB = $("ili_process"); if (pB) pB.onclick = () => processILICSVText($("ili_paste") ? $("ili_paste").value : "");
+  const sL = $("ili_sample"); if (sL) sL.onclick = _downloadILISample;
+  const bX = $("btnXLSX"); if (bX) bX.onclick = exportActiveXLSX;
+}
+
 async function init(){
   let meta = null;
   try {
@@ -727,7 +1199,12 @@ async function init(){
   renderEnvelope();
   populateGradeSelect();
   populateIndustryDropdowns();
+  populateCompareGrades();
+  populateILIGrade();
   renderIntegrity();
+  renderCompare();
+  renderILIPlaceholder();
+  _bindIndustryHandlers();
   renderValidations();
 }
 init();
