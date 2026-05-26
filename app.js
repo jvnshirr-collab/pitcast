@@ -250,7 +250,7 @@ const CO2_PRESETS = [
   {name:"Sweet flowline (mild) · 1 bar, 40°C", v:{T:40,pCO2:1,u:1,d:0.15,fe2:10,pH2S:0,wc:0.5,meg:0,oil:"crude",bicarb:400,age:8760}},
   {name:"Sweet flowline (mid) · 5 bar, 60°C",  v:{T:60,pCO2:5,u:2,d:0.2,fe2:10,pH2S:0,wc:0.5,meg:0,oil:"crude",bicarb:500,age:8760}},
   {name:"HP/HT well · 175°C, 100 bar",          v:{T:175,pCO2:100,u:3,d:0.1,fe2:50,pH2S:0,wc:0.6,meg:0,oil:"condensate",bicarb:200,age:8760}},
-  {name:"Sour-sweet field · 8 bar + 1.4 bar H₂S",v:{T:80,pCO2:8,u:2,d:0.2,fe2:20,pH2S:1.4,wc:0.4,meg:0,oil:"crude",bicarb:300,age:8760}},
+  {name:"Sour-sweet field · 8 bar CO₂ + 140 kPa H₂S",v:{T:80,pCO2:8,u:2,d:0.2,fe2:20,pH2S:140,wc:0.4,meg:0,oil:"crude",bicarb:300,age:8760}},
   {name:"Wet gas + 40% MEG",                     v:{T:50,pCO2:6,u:8,d:0.3,fe2:5,pH2S:0,wc:0.8,meg:0.4,oil:"condensate",bicarb:0,age:8760}},
   {name:"Seawater injection",                    v:{T:25,pCO2:0.5,u:2,d:0.25,fe2:1,pH2S:0,wc:1,meg:0,oil:"water-only",bicarb:150,age:8760}},
 ];
@@ -267,7 +267,7 @@ function renderCO2(){
   if(!$("co2_results")||!window.CO2||!window.Charts) return;
   const gv=id=>$(id)?$(id).value:"";
   const o={ T:+gv("c_T"), pCO2:+gv("c_pCO2"), velocity:+gv("c_u"), pipeID:+gv("c_d"), fe2:+gv("c_fe2"),
-    pH2S:+gv("c_pH2S"), waterCut:+gv("c_wc"), glycol:+gv("c_meg"), oilType:gv("c_oil"),
+    pH2S:+gv("c_pH2S")/100, waterCut:+gv("c_wc"), glycol:+gv("c_meg"), oilType:gv("c_oil"),
     bicarbonate:+gv("c_bicarb"), ageH:+gv("c_age") };
   const pHraw=gv("c_pH"); if(pHraw!==""&&isFinite(+pHraw)) o.pH=+pHraw;
   const r=CO2.assess(o);
@@ -430,7 +430,7 @@ function exportActiveCSV(){
     rows.push(["P(pit)",r.pPit!=null?r.pPit.toFixed(3):"n/a"],["P(Cl-SCC)",r.pScc!=null?r.pScc.toFixed(3):"n/a"],["P(sour SSC)",r.pSourFail!=null?r.pSourFail.toFixed(3):"n/a"]);
     rows.push(["overall risk P",r.overall.toFixed(3)],["dominant",r.dominant],["rel. cost (304L=1)",r.cost.toFixed(2)]);
     if(r.iso)rows.push(["ISO 15156 screen",r.iso.status+(r.iso.group?(" — "+r.iso.group):"")]);
-  } else if(tab==="co2"){ const o={T:+gv("c_T"),pCO2:+gv("c_pCO2"),velocity:+gv("c_u"),pipeID:+gv("c_d"),fe2:+gv("c_fe2"),pH2S:+gv("c_pH2S"),waterCut:+gv("c_wc"),glycol:+gv("c_meg"),oilType:gv("c_oil"),bicarbonate:+gv("c_bicarb"),ageH:+gv("c_age")};
+  } else if(tab==="co2"){ const o={T:+gv("c_T"),pCO2:+gv("c_pCO2"),velocity:+gv("c_u"),pipeID:+gv("c_d"),fe2:+gv("c_fe2"),pH2S:+gv("c_pH2S")/100,waterCut:+gv("c_wc"),glycol:+gv("c_meg"),oilType:gv("c_oil"),bicarbonate:+gv("c_bicarb"),ageH:+gv("c_age")};
     const pHr=gv("c_pH"); if(pHr!==""&&isFinite(+pHr))o.pH=+pHr; const r=CO2.assess(o);
     rows.push(["T (°C)",o.T],["pCO2 (bar)",o.pCO2],["in-situ pH",r.pH_insitu.toFixed(2)],["bicarbonate (mg/L)",o.bicarbonate],["velocity (m/s)",o.velocity],[]);
     r.models.forEach(m=>rows.push(["CR — "+m.name+" (mm/y)",m.cr.toFixed(3)]));
