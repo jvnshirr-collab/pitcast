@@ -182,7 +182,7 @@ function renderAssess(){
         <div>driven by <b style="color:var(--ink)">${dom}</b> · ${g.name} (${fam(r.family)})</div></div>
     </div>
     <div class="metrics">
-      <div class="metric"><div class="k">PREN</div><div class="val">${r.pren.toFixed(1)}</div><div class="u">N=16</div></div>
+      <div class="metric"><div class="k">PREN</div><div class="val">${r.pren.toFixed(1)}</div><div class="u">N16 · PREN<sub>30</sub>&nbsp;${PitCast.prenN30(g.comp).toFixed(0)} (drives CPT)</div></div>
       <div class="metric"><div class="k">CPT</div><div class="val">${r.cpt.toFixed(0)}<span class="u"> °C</span></div><div class="u">±${ci.toFixed(0)} (90%)</div></div>
       <div class="metric"><div class="k">Rel. cost</div><div class="val">${r.cost.toFixed(2)}<span class="u">×</span></div><div class="u">304L=1</div></div>
     </div>
@@ -197,7 +197,7 @@ function renderAssess(){
       : `<b>ISO 15156-3</b>: no Annex A screening envelope tabulated for this alloy family — verify directly against the standard.`
     }</div>` : ""}
     ${(() => { const mc = PitCast.measuredCPT(g.uns, g.name); return mc
-      ? `<div class="measured">📊 Real measured CPT (literature): <b>${mc.min.toFixed(0)}–${mc.max.toFixed(0)} °C</b>
+      ? `<div class="measured">📊 Real measured CPT (literature): <b>${mc.min.toFixed(0)===mc.max.toFixed(0)?mc.min.toFixed(0):mc.min.toFixed(0)+"–"+mc.max.toFixed(0)} °C</b>
          · ${mc.n} record${mc.n>1?"s":""} <span style="color:var(--dim)">(cited dataset, CC BY) — vs PitCast ${r.cpt.toFixed(0)} °C predicted</span></div>`
       : ""; })()}
     ${assessCharts(g,r,svc)}
@@ -299,7 +299,8 @@ function renderCO2(){
     <div class="explain"><b>Corrosion allowance (NORSOK basis):</b> ${al.uninhibited_CR_mmpy.toFixed(2)} mm/y → ${al.consumed_mm.toFixed(1)} mm consumed over ${al.designLifeYr} yr vs ${al.caMm} mm CA → <b>${al.verdict}</b>${al.ca_sufficient?"":`; required inhibitor efficiency <b>${al.required_inhibitor_efficiency_pct.toFixed(1)}%</b>${al.achievable?"":" — above sustainable field availability (~95%); reconsider a CRA or thicker CA"}`}.
       <span style="color:var(--dim)"> Screening, carbon steel, sweet service. The five models span ${r.spread.toFixed(0)}× — design to the conservative/relevant one. Sources: Corrosion 31 (1975) 177; NACE 95-128; NORSOK M-506:2017; Nyborg 2010; Nesic 2007.</span></div>
     <div class="explain"><b>Flow velocity (API&nbsp;RP&nbsp;14E):</b> ${o.velocity} m/s vs erosional limit V<sub>e</sub> = ${ev.Ve_continuous_ms.toFixed(1)} m/s (C=100, continuous) / ${ev.Ve_controlled_ms.toFixed(1)} m/s (C=200, corrosion-controlled) → <b style="color:${evCol}">${ev.status}</b>.
-      <span style="color:var(--dim)"> Liquid/brine basis (ρ≈${ev.rho_kg_m3} kg/m³). Above the limit, protective FeCO₃ films are stripped and erosion-corrosion adds to the rates above. API RP 14E.</span></div>`;
+      <span style="color:var(--dim)"> Liquid/brine basis (ρ≈${ev.rho_kg_m3} kg/m³). Above the limit, protective FeCO₃ films are stripped and erosion-corrosion adds to the rates above. API RP 14E.</span></div>
+    ${o.T>150?`<div class="cdnote">⚠ ${o.T} °C is beyond the validated / tabulated range of the de Waard–Milliams and NORSOK&nbsp;M-506 correlations (≈150 °C). The scale-blind models (de Waard 1975, FreeCorp at low pH) become unbounded upper bounds here — read the scale-aware models (de Waard 95 / NESC) as the realistic estimate, and confirm with a CRA.</div>`:""}`;
 }
 $("co2Form")&&$("co2Form").addEventListener("input", renderCO2);
 
