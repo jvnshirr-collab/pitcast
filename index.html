@@ -256,6 +256,25 @@
           <option value="Zn">Zn (seawater / brackish)</option>
           <option value="Mg">Mg (onshore high-resistivity soil)</option>
         </select></label>
+        <h3>Galvanic couple (ASTM G82 / MIL-STD-889)</h3>
+        <div class="row">
+          <label>Metal A<select id="g_a"></select></label>
+          <label>Metal B<select id="g_b"></select></label>
+        </div>
+        <label>A_cathode / A_anode (≥1)<input type="number" id="g_ratio" value="1" step="1" min="0.01"></label>
+        <h3>Groundbed (Dwight / Sunde — NACE SP0169 / IEEE 81)</h3>
+        <div class="row">
+          <label>Soil resistivity (Ω·m)<input type="number" id="gb_rho" value="50" step="5"></label>
+          <label>Anodes n<input type="number" id="gb_n" value="3" step="1" min="1"></label>
+        </div>
+        <div class="row">
+          <label>Length L (m)<input type="number" id="gb_L" value="3" step="0.5"></label>
+          <label>Diameter d (mm)<input type="number" id="gb_d" value="50" step="5"></label>
+        </div>
+        <div class="row">
+          <label>Spacing s (m)<input type="number" id="gb_s" value="3" step="0.5"></label>
+          <label>Driving voltage (V)<input type="number" id="gb_V" value="50" step="5"></label>
+        </div>
       </form>
       <div class="card results" id="cpac_results"><div class="placeholder">Enter AC + CP data →</div></div>
     </div>
@@ -336,6 +355,38 @@
           <label>Age in service (yr)<input type="number" id="u_age" value="10" step="1"></label>
           <label class="rowchk"><input type="checkbox" id="u_cyc"> Cyclic / wet-dry</label>
         </div>
+        <h3>MIC risk (NACE TM0194 / TM0212 / SP0775)</h3>
+        <div class="row">
+          <label>System T (°C)<input type="number" id="m_T" value="35" step="5"></label>
+          <label>Sulphate (mg/L)<input type="number" id="m_so4" value="500" step="50"></label>
+        </div>
+        <div class="row">
+          <label>Oxygen<select id="m_o2">
+            <option value="anaerobic" selected>Anaerobic</option>
+            <option value="low">Low / dissolved</option>
+            <option value="intermittent">Intermittent</option>
+            <option value="aerobic">Aerobic</option>
+          </select></label>
+          <label>Nutrient<select id="m_n">
+            <option value="high" selected>High (organic / acetate)</option>
+            <option value="moderate">Moderate</option>
+            <option value="low">Low</option>
+          </select></label>
+        </div>
+        <div class="row">
+          <label>Flow<select id="m_flow">
+            <option value="stagnant" selected>Stagnant / dead-leg</option>
+            <option value="low">Low</option>
+            <option value="moderate">Moderate</option>
+            <option value="turbulent">Turbulent</option>
+          </select></label>
+          <label>Biocide<select id="m_b">
+            <option value="none" selected>None</option>
+            <option value="intermittent">Intermittent batch</option>
+            <option value="regular">Regular batch</option>
+            <option value="continuous">Continuous</option>
+          </select></label>
+        </div>
       </form>
       <div class="card results" id="integrity_results"><div class="placeholder">Set pipe geometry →</div></div>
     </div>
@@ -401,7 +452,10 @@
 <script src="b31g.js?v=1"></script>
 <script src="anode.js?v=1"></script>
 <script src="cui.js?v=1"></script>
+<script src="galvanic.js?v=1"></script>
+<script src="mic.js?v=1"></script>
+<script src="groundbed.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=26"></script>
+<script src="app.js?v=27"></script>
 </body>
 </html>

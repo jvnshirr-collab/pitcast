@@ -360,7 +360,19 @@ function renderCPAC(){
         Net mass required: <b>${an.anodeMass_kg_net.toFixed(0)} kg</b> (gross ${an.anodeMass_kg_gross.toFixed(0)} kg) ≈ <b>${an.numAnodes} × ${an.anodeUnit_kg} kg</b> unit anodes.
         Current demand: initial <b>${an.I_initial_A.toFixed(1)} A</b> · mean <b>${an.I_mean_A.toFixed(1)} A</b> · final <b>${an.I_final_A.toFixed(1)} A</b>.
         Coating breakdown f_c: mean ${(an.fc_mean*100).toFixed(0)}% · final ${(an.fc_final*100).toFixed(0)}%. Q = ${(an.Q_Ah/1e6).toFixed(2)} M·Ah.</div>
-        <div class="explain"><span style="color:var(--dim)">${an.ref}</span></div>`;})()}`;
+        <div class="explain"><span style="color:var(--dim)">${an.ref}</span></div>`;})()}
+    ${(()=>{ if(!window.Galvanic) return ""; const gc=window.Galvanic.couple({a:gv("g_a"),b:gv("g_b"),areaRatio:+gv("g_ratio")});
+      if(gc.error) return "";
+      const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[gc.level]||"within";
+      return `<div class="iso ${cls}"><b>Galvanic couple — ${gc.level.toUpperCase()}</b><br>
+        <b>${gc.anode}</b> (anode) ⇄ <b>${gc.cathode}</b> · ΔE <b>${gc.deltaE_mV.toFixed(0)} mV</b> · area ratio ${gc.areaRatio.toFixed(1)} → amplifier ${gc.areaMultiplier.toFixed(2)}×. ${gc.note}</div>
+        <div class="explain"><span style="color:var(--dim)">${gc.ref}</span></div>`;})()}
+    ${(()=>{ if(!window.Groundbed) return ""; const sb=window.Groundbed.sundeMulti({rho_ohm_m:+gv("gb_rho"),L_m:+gv("gb_L"),d_m:(+gv("gb_d"))/1000,s_m:+gv("gb_s"),n:+gv("gb_n")});
+      if(sb.error) return "";
+      const cd=window.Groundbed.currentDemand({R_bed_ohm:sb.R_ohm,V_driving:+gv("gb_V")});
+      return `<div class="iso within"><b>Groundbed — ${sb.n} vertical anodes</b><br>
+        R<sub>self</sub> ${sb.R_self_ohm.toFixed(2)} Ω + R<sub>mutual</sub> ${sb.R_mutual_ohm.toFixed(2)} Ω = <b>R<sub>bed</sub> ${sb.R_ohm.toFixed(2)} Ω</b> · at ${gv("gb_V")} V driving → I<sub>bed</sub> <b>${cd.I_A.toFixed(2)} A</b>.</div>
+        <div class="explain"><span style="color:var(--dim)">${sb.ref}</span></div>`;})()}`;
 }
 $("cpacForm")&&$("cpacForm").addEventListener("input", renderCPAC);
 
@@ -467,7 +479,14 @@ function renderIntegrity(){
       return `<div class="iso ${cls}"><b>CUI risk — ${u.level.toUpperCase()}</b> ${u.inWindow?`(${u.region})`:""}<br>
         Score <b>${u.score.toFixed(2)}</b> · recommended inspection: <b>${u.inspectionInterval}</b>.
         ${u.inWindow?`Drivers: T factor ${u.factors.temperature.toFixed(2)} · insulation ${u.factors.insulation.toFixed(2)} (${u.categories.insulation}) · jacket ${u.factors.jacket.toFixed(2)} (${u.categories.jacket}) · coating ${u.factors.coating.toFixed(2)} (${u.categories.coating}) · ambient ${u.factors.ambient.toFixed(2)} (${u.categories.ambient}) · age ${u.factors.age.toFixed(2)} ${u.cyclic?"· cyclic ×1.5":""}.`:""}</div>
-        <div class="explain"><span style="color:var(--dim)">${u.ref}</span></div>`;})()}`;
+        <div class="explain"><span style="color:var(--dim)">${u.ref}</span></div>`;})()}
+    ${(()=>{ if(!window.MIC) return ""; const mr=window.MIC.risk({T_C:+gv("m_T"),oxygen:gv("m_o2"),nutrient:gv("m_n"),sulphate_mgL:+gv("m_so4"),flow:gv("m_flow"),biocide:gv("m_b")});
+      const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[mr.level]||"within";
+      const fam=mr.families?mr.families.map(f=>f.name+" "+f.score.toFixed(2)).join(" · "):"";
+      return `<div class="iso ${cls}"><b>MIC risk — ${mr.level.toUpperCase()}</b> ${mr.inWindow?`(${mr.region})`:""}<br>
+        Dominant: <b>${mr.dominant.split("—")[0].trim()}</b>. Total score ${mr.score.toFixed(2)}. ${mr.recommendation}
+        ${mr.inWindow?`<br>Family scores: ${fam}.`:""}</div>
+        <div class="explain"><span style="color:var(--dim)">${mr.ref}</span></div>`;})()}`;
 }
 $("b31gForm") && $("b31gForm").addEventListener("input", renderIntegrity);
 
@@ -636,6 +655,11 @@ async function init(){
   populateEnvGrades();
   renderEnvelope();
   populateGradeSelect();
+  if (window.Galvanic && $("g_a") && $("g_b")) {
+    const opts = Object.entries(Galvanic.METALS).map(([k,m])=>`<option value="${k}">${m.label} · ${(m.E*1000).toFixed(0)} mV</option>`).join("");
+    $("g_a").innerHTML = opts; $("g_a").value = "316L-passive";
+    $("g_b").innerHTML = opts; $("g_b").value = "Carbon-steel";
+  }
   renderIntegrity();
   renderValidations();
 }
