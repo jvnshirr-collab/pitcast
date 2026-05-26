@@ -212,10 +212,20 @@
     var F_scale = 1 / (1 + Math.pow(Math.max(1e-9, SR), 0.8));
 
     // 3) Oil-wetting / water-cut (NESC empirical)
+    // Oil/water wetting (NESC empirical, smoothed). A protective oil film forms
+    // while the steel is oil-wet (low water cut); above the water-wetting
+    // transition the steel is water-wet and corrodes fully. Crude wets steel to
+    // a higher water cut than condensate. A sigmoid in water cut replaces the
+    // old hard step so the hydrocarbon choice changes the rate continuously
+    // (Smart 1993 / de Waard water-wetting concept).
+    var ot = opts.oil_type, wc = (opts.water_cut == null ? 0.5 : opts.water_cut);
     var F_oil = 1;
-    if (opts.oil_type === 'condensate' && opts.water_cut < 0.3) F_oil = 0.05;
-    else if (opts.oil_type === 'crude' && opts.water_cut < 0.4) F_oil = 0.10;
-    else if (opts.water_cut < 0.5) F_oil = 0.4;
+    if (ot === 'crude' || ot === 'condensate') {
+      var wc_t = ot === 'crude' ? 0.45 : 0.28;   // water-wetting transition (water cut)
+      var floor = ot === 'crude' ? 0.10 : 0.05;  // residual rate when fully oil-wet
+      var ww = 1 / (1 + Math.exp(-(wc - wc_t) / 0.08)); // water-wet fraction 0..1
+      F_oil = floor + (1 - floor) * ww;
+    }
 
     // 4) Velocity / Schmidt-Sherwood (Berger-Hau correlation)
     var u = Math.max(0.05, opts.u_m_s);

@@ -32,13 +32,22 @@ const _hint = c => Object.entries(c||{}).filter(([k,v])=>v>0)
   .sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,v]) => `${k}${v}`).join(" ");
 // The PREN→CPT model is only valid for Fe-based stainless/duplex and NiCrMo CRAs.
 const _INSCOPE = new Set(["Fe Alloy","NiCrMo Alloy"]);
-const _JUNK = /polish|electrode|mounted|stud|finish|specimen|sample|sheet|plate|the cr|wt%|at%|%cr|%mo|diamond/i;
+const _JUNK = /polish|electrode|mounted|stud|finish|specimen|sample|sheet|plate|the cr|wt%|at%|%cr|%mo|diamond|exposed|area|cm2|laborator|forged|extrud|roll|grit|ground|heat|prepar|test/i;
+const _CLASSES = new Set(["Fe Alloy","NiCrMo Alloy","Ni Alloy","Al Alloy","HEA","Other","None","none","N/A",""]);
+let _UNS2NAME = null;   // UNS -> common grade name, built from the curated catalog (no fabrication)
+function _unsName(uns){
+  if(!_UNS2NAME){ _UNS2NAME={}; (PitCast.GRADES||[]).forEach(g=>{ if(g.uns) _UNS2NAME[g.uns]=g.name; }); }
+  return _UNS2NAME[uns] || uns;
+}
+function _compLabel(comp){
+  return Object.entries(comp||{}).filter(([k,v])=>v>0 && k!=="Fe")
+    .sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v]) => k+(+(+v).toFixed(2))).join("") || "alloy";
+}
 function _measLabel(rec){
   const code = (rec.code||"").trim();
-  const m = /[NSR]\d{5}/.exec(code); if (m) return m[0];
-  if (code && code.length<=18 && !_JUNK.test(code)) return code;
-  return Object.entries(rec.comp||{}).filter(([k,v])=>v>0)
-    .sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v]) => k+v).join("");
+  const m = /[NSR]\d{5}/.exec(code); if (m) return _unsName(m[0]);   // UNS → common name where known
+  if (code && code.length<=14 && !_JUNK.test(code) && !_CLASSES.has(code)) return code;
+  return _compLabel(rec.comp);                                        // honest composition fallback
 }
 function buildAppGrades(){
   const out=[], seen=new Set();
@@ -365,11 +374,13 @@ const ENV_DIAGRAMS = {
 let envGrades = [];
 function envGrade(){ return envGrades[+($("env_grade").value||0)] || envGrades[0]; }
 function populateEnvGrades(){
-  envGrades = (typeof appGrades!=="undefined" && appGrades.length)
-    ? appGrades : PitCast.GRADES.map(g=>({name:g.name,uns:g.uns,comp:g.comp,tag:"ref",label:g.name}));
   const sel=$("env_grade"); if(!sel) return;
-  sel.innerHTML = envGrades.map((g,i)=>`<option value="${i}">${(g.label||g.name)}${g.tag==="meas"?" · measured":(g.uns?(" ("+g.uns+")"):"")}</option>`).join("");
-  const i2205=envGrades.findIndex(g=>g.tag==="ref" && g.name==="2205"); if(i2205>=0) sel.value=i2205;
+  // The Selection map lists the curated, standards-named engineering grades —
+  // the right universe for "which alloy should I specify". Sorted low→high alloy
+  // (PREN_N30) so the dropdown reads from least to most resistant.
+  envGrades = (PitCast.GRADES||[]).slice().sort((a,b)=>PitCast.prenN30(a.comp)-PitCast.prenN30(b.comp));
+  sel.innerHTML = envGrades.map((g,i)=>`<option value="${i}">${g.name}${g.uns?(" · "+g.uns):""}</option>`).join("");
+  const i2205=envGrades.findIndex(g=>g.name==="2205"); if(i2205>=0) sel.value=i2205;
 }
 const _envFmt = key => (key==="Cl"||key==="pH2S")
   ? (v=>v>=1000?(v/1000).toFixed(0)+"k":(v<10?v.toFixed(1):v.toFixed(0)))
