@@ -446,6 +446,42 @@ $("env_diagram") && ($("env_diagram").onchange=()=>{
 $("envForm") && $("envForm").addEventListener("input", renderEnvelope);
 
 // ---- Integrity (ASME B31G corroded-pipe + remaining-life) -------------------
+// ----------------------------------------------------------------------------
+// Industry-grade dropdown populator — fills CP/AC + Integrity selects with
+// the full cited catalog from anode.js, galvanic.js, cui.js dictionaries.
+// Called once at init; overwrites any static <option> elements in index.html.
+// ----------------------------------------------------------------------------
+function _opts(dict, valFmt){ return Object.entries(dict).map(([k,v])=>`<option value="${k}">${v.label}${valFmt?valFmt(v):""}</option>`).join(""); }
+function _setSelect(id, html, defaultKey){
+  const el = $(id); if(!el) return;
+  el.innerHTML = html;
+  if (defaultKey && el.querySelector(`option[value="${defaultKey}"]`)) el.value = defaultKey;
+}
+function populateIndustryDropdowns(){
+  // CP/AC — anode sizing
+  if (window.Anode) {
+    _setSelect("a_env",     _opts(Anode.ENVIRONMENTS), "north-sea");
+    _setSelect("a_coating", _opts(Anode.COATINGS),     "II");
+    _setSelect("a_anode",   _opts(Anode.ANODES),       "AlZnIn");
+  }
+  // CP/AC — galvanic couple
+  if (window.Galvanic) {
+    const galvHtml = _opts(Galvanic.METALS, v=>` · ${(v.E*1000).toFixed(0)} mV`);
+    _setSelect("g_a", galvHtml, "316L-passive");
+    _setSelect("g_b", galvHtml, "Carbon-steel");
+  }
+  // Integrity — CUI
+  if (window.CUI) {
+    _setSelect("u_ins",  _opts(CUI.INSULATION), "cal-sil");
+    _setSelect("u_jkt",  _opts(CUI.JACKET),     "Galv");
+    _setSelect("u_coat", _opts(CUI.COATING),    "alkyd");
+    _setSelect("u_amb",  _opts(CUI.AMBIENT),    "industrial");
+  }
+  // Re-render dependent panels after populate (dropdown defaults may have shifted)
+  if (typeof renderCPAC === "function") renderCPAC();
+  if (typeof renderIntegrity === "function") renderIntegrity();
+}
+
 function populateGradeSelect(){
   const sel=$("b_grade"); if(!sel||!window.B31G) return;
   sel.innerHTML = Object.entries(B31G.GRADES).map(([k,g])=>`<option value="${k}">${g.label}</option>`).join("");
@@ -680,11 +716,7 @@ async function init(){
   populateEnvGrades();
   renderEnvelope();
   populateGradeSelect();
-  if (window.Galvanic && $("g_a") && $("g_b")) {
-    const opts = Object.entries(Galvanic.METALS).map(([k,m])=>`<option value="${k}">${m.label} · ${(m.E*1000).toFixed(0)} mV</option>`).join("");
-    $("g_a").innerHTML = opts; $("g_a").value = "316L-passive";
-    $("g_b").innerHTML = opts; $("g_b").value = "Carbon-steel";
-  }
+  populateIndustryDropdowns();
   renderIntegrity();
   renderValidations();
 }
