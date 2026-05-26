@@ -505,14 +505,18 @@ function valStr(r){ const u = r.units==="degC" ? "°C" : r.units==="mV(SCE)" ? "
   const v = (r.value==null) ? "—" : (Math.abs(r.value)>=100 ? r.value.toFixed(0) : r.value.toFixed(1));
   return `${v} ${u}`; }
 
+// searchable string for a measured record — clean label + UNS + class + composition
+// (NOT the raw code, which is sometimes long lab-prep text that caused false matches,
+//  e.g. "pH 7.8" in a note matching a "PH" query).
+function _measSearchStr(r){ const m=/[NSR]\d{5}/.exec(String(r.code||"").toUpperCase());
+  return (_measLabel(r)+" "+(m?m[0]:"")+" "+(r.cls||"")+" "+compStr(r.comp)).toUpperCase(); }
 function renderData(){
   if(!$("dataTable")) return;
   const q = ($("d_search").value||"").trim().toUpperCase();
   const rows = PitCast.MEASUREMENTS.filter(r=>{
     if(_metricFilter && r.metric!==_metricFilter) return false;
     if(!q) return true;
-    return (r.code||"").toUpperCase().includes(q) || (r.cls||"").toUpperCase().includes(q)
-        || compStr(r.comp).toUpperCase().includes(q);
+    return _measSearchStr(r).includes(q);
   });
   const CAP=200, shown=rows.slice(0,CAP);
   $("d_count").innerHTML = `${rows.length} record${rows.length!==1?"s":""} match`
@@ -520,7 +524,7 @@ function renderData(){
   const head=`<thead><tr><th>Alloy</th><th>Class</th><th>Metric</th><th>Value</th>`
     + `<th>Conditions</th><th>Composition (wt%)</th><th>Source</th><th></th></tr></thead>`;
   const body=shown.map(r=>`<tr>
-    <td>${r.code?String(r.code).slice(0,28):"—"}</td>
+    <td>${_measLabel(r)}</td>
     <td>${r.cls||"—"}</td><td>${r.metric}</td>
     <td class="num">${valStr(r)}</td>
     <td>${condStr(r)||"—"}</td>
