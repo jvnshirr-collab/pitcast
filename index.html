@@ -230,6 +230,32 @@
         <label>Native / depolarized<input type="number" id="p_edep" value="-550" step="10"></label>
         <p class="hint">Instant-off (IR-free) is the value the −850 mV criterion is judged on; the
            ON potential includes IR drop and can falsely "pass".</p>
+        <h3>Sacrificial anode sizing (DNV-RP-B401 / NACE SP0387)</h3>
+        <div class="row">
+          <label>Structure area (m²)<input type="number" id="a_area" value="1000" step="50"></label>
+          <label>Design life (yr)<input type="number" id="a_life" value="25" step="1"></label>
+        </div>
+        <div class="row">
+          <label>Environment<select id="a_env">
+            <option value="north-sea">North Sea seawater</option>
+            <option value="gulf-of-mexico">Gulf of Mexico</option>
+            <option value="tropical-seawater">Tropical seawater</option>
+            <option value="subsea-mud">Subsea mud / sediment</option>
+            <option value="brackish">Brackish (estuary)</option>
+            <option value="buried-soil">Buried steel in soil</option>
+          </select></label>
+          <label>Coating (DNV cat)<select id="a_coating">
+            <option value="bare">Bare</option>
+            <option value="I">I (single coat)</option>
+            <option value="II" selected>II (multi-coat)</option>
+            <option value="III">III (fusion epoxy / TSA)</option>
+          </select></label>
+        </div>
+        <label>Anode alloy<select id="a_anode">
+          <option value="AlZnIn" selected>Al-Zn-In (offshore seawater)</option>
+          <option value="Zn">Zn (seawater / brackish)</option>
+          <option value="Mg">Mg (onshore high-resistivity soil)</option>
+        </select></label>
       </form>
       <div class="card results" id="cpac_results"><div class="placeholder">Enter AC + CP data →</div></div>
     </div>
@@ -266,6 +292,49 @@
         <div class="row">
           <label>Min WT (mm)<input type="number" id="b_tmin" value="5.5" step="0.1"></label>
           <label>Inhibitor η (0-1)<input type="number" id="b_inh" value="0" step="0.05" min="0" max="0.99"></label>
+        </div>
+        <h3>CUI risk (API 583 / NACE SP0198)</h3>
+        <div class="row">
+          <label>Material<select id="u_mat">
+            <option value="CS" selected>Carbon / low-alloy steel</option>
+            <option value="SS">Austenitic stainless (ext-CSCC)</option>
+          </select></label>
+          <label>Service T (°C)<input type="number" id="u_T" value="90" step="5"></label>
+        </div>
+        <div class="row">
+          <label>Insulation<select id="u_ins">
+            <option value="cal-sil" selected>Calcium silicate</option>
+            <option value="mineral-wool">Mineral wool / fiberglass</option>
+            <option value="perlite">Perlite</option>
+            <option value="PUF">Polyurethane foam</option>
+            <option value="aerogel">Aerogel</option>
+            <option value="cellular-glass">Cellular / foam glass</option>
+          </select></label>
+          <label>Weather jacket<select id="u_jkt">
+            <option value="SS">Stainless steel</option>
+            <option value="Al">Aluminium</option>
+            <option value="Galv" selected>Galvanised steel</option>
+            <option value="none">None / damaged</option>
+          </select></label>
+        </div>
+        <div class="row">
+          <label>Under-insulation coating<select id="u_coat">
+            <option value="TSA">TSA (thermal-sprayed Al)</option>
+            <option value="epoxy">High-build epoxy</option>
+            <option value="inorganic-Zn">Inorganic zinc primer</option>
+            <option value="alkyd" selected>Alkyd / heat-resistant alkyd</option>
+            <option value="bare">Bare steel</option>
+          </select></label>
+          <label>Ambient<select id="u_amb">
+            <option value="marine">Marine</option>
+            <option value="industrial" selected>Industrial</option>
+            <option value="rural">Rural / mild</option>
+            <option value="arid">Arid / dry</option>
+          </select></label>
+        </div>
+        <div class="row">
+          <label>Age in service (yr)<input type="number" id="u_age" value="10" step="1"></label>
+          <label class="rowchk"><input type="checkbox" id="u_cyc"> Cyclic / wet-dry</label>
         </div>
       </form>
       <div class="card results" id="integrity_results"><div class="placeholder">Set pipe geometry →</div></div>
@@ -330,7 +399,9 @@
 <script src="co2.js?v=12"></script>
 <script src="cpac.js?v=11"></script>
 <script src="b31g.js?v=1"></script>
+<script src="anode.js?v=1"></script>
+<script src="cui.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=25"></script>
+<script src="app.js?v=26"></script>
 </body>
 </html>
