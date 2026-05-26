@@ -16,6 +16,7 @@ document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
   $("tab-" + t.dataset.tab).classList.add("active");
   if (t.dataset.tab === "co2") renderCO2();
   if (t.dataset.tab === "cpac") renderCPAC();
+  if (t.dataset.tab === "envelope") renderEnvelope();
 });
 
 // ---- grade picker (searchable: curated grades + in-scope measured alloys) ---
@@ -339,6 +340,73 @@ function renderCPAC(){
 }
 $("cpacForm")&&$("cpacForm").addEventListener("input", renderCPAC);
 
+// ---- Selection map (probabilistic Material Selection Diagram) ----------------
+const ENV_DIAGRAMS = {
+  scc_t_cl: { xKey:"T", yKey:"Cl", surface:"chloride-SCC", metric:"Cl-SCC",
+    xMin:20, xMax:140, yMin:50, yMax:200000, yLog:true,
+    xlabel:"Temperature (°C)", ylabel:"Chloride (ppm)",
+    note:"Chloride stress-corrosion cracking risk swept over T and Cl⁻ (pH / stress fixed below). The classic austenitic-SS map — duplex & super-duplex sit far lower. White staircase = P(SCC)=0.5 safe limit." },
+  sour_h2s_t: { xKey:"pH2S", yKey:"T", surface:"sour-SSC", metric:"sour SSC", iso:true,
+    xMin:0.3, xMax:1000, yMin:20, yMax:150, xLog:true,
+    xlabel:"pH₂S (kPa)", ylabel:"Temperature (°C)",
+    note:"Sulfide stress cracking. Dashed amber = ISO 15156-3 acceptability boundary for this alloy group; fill = modelled P(SSC) at the hardness below. Where the two diverge is the physics-vs-code story." },
+  scc_t_stress: { xKey:"T", yKey:"stress", surface:"chloride-SCC", metric:"Cl-SCC",
+    xMin:20, xMax:160, yMin:0, yMax:1.0,
+    xlabel:"Temperature (°C)", ylabel:"Applied stress (×YS)",
+    note:"Chloride-SCC vs temperature and applied stress at the fixed Cl⁻ below." }
+};
+let envGrades = [];
+function envGrade(){ return envGrades[+($("env_grade").value||0)] || envGrades[0]; }
+function populateEnvGrades(){
+  envGrades = (typeof appGrades!=="undefined" && appGrades.length)
+    ? appGrades : PitCast.GRADES.map(g=>({name:g.name,uns:g.uns,comp:g.comp,tag:"ref",label:g.name}));
+  const sel=$("env_grade"); if(!sel) return;
+  sel.innerHTML = envGrades.map((g,i)=>`<option value="${i}">${(g.label||g.name)}${g.tag==="meas"?" · measured":(g.uns?(" ("+g.uns+")"):"")}</option>`).join("");
+  const i2205=envGrades.findIndex(g=>g.tag==="ref" && g.name==="2205"); if(i2205>=0) sel.value=i2205;
+}
+const _envFmt = key => (key==="Cl"||key==="pH2S")
+  ? (v=>v>=1000?(v/1000).toFixed(0)+"k":(v<10?v.toFixed(1):v.toFixed(0)))
+  : (v=>v.toFixed(key==="stress"?2:0));
+function renderEnvelope(){
+  const host=$("env_results"); if(!host) return;
+  const g=envGrade();
+  if(!g){ host.innerHTML='<div class="placeholder">Pick an alloy →</div>'; return; }
+  const D=ENV_DIAGRAMS[$("env_diagram").value]||ENV_DIAGRAMS.scc_t_cl;
+  const op={ T:+$("e_T").value, Cl:+$("e_Cl").value, pH:+$("e_pH").value,
+             pH2S:+$("e_pH2S").value, stress:+$("e_stress").value, HV:+$("e_HV").value };
+  if($("env_axisnote")) $("env_axisnote").textContent=D.note;
+  const env=PitCast.envelope(g.comp, { xKey:D.xKey, yKey:D.yKey, xMin:D.xMin, xMax:D.xMax,
+    yMin:D.yMin, yMax:D.yMax, xLog:D.xLog, yLog:D.yLog, n:44, fixed:op, xOp:op[D.xKey], yOp:op[D.yKey] });
+  const surf=env.surfaces[D.surface] || env.surfaces.overall;
+  const anyVal=surf.some(r=>r.some(v=>v!=null));
+  const grid=(anyVal?surf:env.surfaces.overall).map(r=>r.map(v=>v==null?0:v));
+  const fX=_envFmt(D.xKey), fY=_envFmt(D.yKey);
+  const chart=Charts.envelope({ w:660, h:380, title:(g.label||g.name)+" — "+D.metric+" selection map",
+    xs:env.xs, ys:env.ys, grid, threshold:0.5, isoGrid:D.iso?env.iso:null, metricLabel:D.metric,
+    point:{x:op[D.xKey], y:op[D.yKey], label:"op"}, xlabel:D.xlabel, ylabel:D.ylabel, xfmt:fX, yfmt:fY });
+  const cd=PitCast.complianceDiff(g.comp, op);
+  const rows=cd.rows.map(r=>`<tr><td>${r.mechanism}</td><td class="cmono">${r.physics}</td>`+
+    `<td class="cmono cdcode">${r.code||""}</td><td><span class="cd ${r.pass?'pass':'fail'}">${r.pass?'PASS':'FAIL'}</span></td>`+
+    `<td class="cmono">${r.margin||""}</td></tr>`).join("");
+  const allPass=cd.rows.length>0 && cd.rows.every(r=>r.pass);
+  const sourHint=(D.iso && op.pH2S<0.3)
+    ? `<div class="cdnote">pH₂S ${op.pH2S} kPa is below the 0.3 kPa sour threshold — set pH₂S to place the operating point inside the sour field.</div>` : "";
+  host.innerHTML=`<div class="chartbox">${chart}</div>${sourHint}
+    <div class="cdwrap">
+      <div class="cdhead">Compliance bridge — physics vs code at your operating point
+        <span class="cmono">(${D.xlabel.split(" ")[0]} ${fX(op[D.xKey])} · ${D.ylabel.split(" ")[0]} ${fY(op[D.yKey])})</span></div>
+      <div class="cdtablewrap"><table class="cdtable"><thead><tr><th>Mechanism</th><th>Physics (probabilistic)</th>`+
+      `<th>Basis / standard</th><th>Verdict</th><th>Margin</th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="cmono">No mechanism active at this point.</td></tr>'}</tbody></table></div>
+      <div class="cdsum ${allPass?'pass':'fail'}">${allPass?'✓ All screened mechanisms PASS at this point':'⚠ At least one screened mechanism FAILS — see table'}</div>
+    </div>`;
+}
+$("env_grade") && ($("env_grade").onchange=renderEnvelope);
+$("env_diagram") && ($("env_diagram").onchange=()=>{
+  if($("env_diagram").value==="sour_h2s_t" && +$("e_pH2S").value<0.3) $("e_pH2S").value=10;
+  renderEnvelope();
+});
+$("envForm") && $("envForm").addEventListener("input", renderEnvelope);
+
 // ---- export (CSV + print/PDF) — calc only, no stamp ceremony ----------------
 function _dl(filename, text){ const b=new Blob([text],{type:"text/csv;charset=utf-8"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=filename; a.click();
@@ -497,6 +565,8 @@ async function init(){
   renderCO2();
   buildCPACPresets();
   renderCPAC();
+  populateEnvGrades();
+  renderEnvelope();
   renderValidations();
 }
 init();

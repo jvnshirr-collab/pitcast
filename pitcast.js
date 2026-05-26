@@ -243,8 +243,103 @@ function selectAlloys(svc, threshold){
   return { ranked, acceptable, recommended, threshold };
 }
 
+// ---- operating envelope (Material Selection Diagram) ------------------------
+// Sweeps the validated assess() engine over a 2-D service window and returns the
+// overall-risk surface, the governing (dominant) mechanism at each cell, and the
+// ISO 15156-3 status at each cell. This is a pure integration layer over the
+// physics above — no new constants. Axes are any of: T (degC), Cl (ppm),
+// pH2S (kPa), pH, stress (xYS). Cl and pH2S sweep on a log scale by default.
+const _LOG_AXES = { Cl: true, pH2S: true };
+function _axisVals(min, max, n, log){
+  const out = [];
+  for (let i = 0; i < n; i++){
+    const t = n > 1 ? i / (n - 1) : 0;
+    out.push(log ? Math.pow(10, Math.log10(min) + (Math.log10(max) - Math.log10(min)) * t)
+                 : min + (max - min) * t);
+  }
+  return out;
+}
+function envelope(c, opts){
+  opts = opts || {};
+  const xKey = opts.xKey || "T";
+  const yKey = opts.yKey || "Cl";
+  const n = Math.max(6, Math.min(80, opts.n || 40));
+  const xLog = opts.xLog != null ? opts.xLog : !!_LOG_AXES[xKey];
+  const yLog = opts.yLog != null ? opts.yLog : !!_LOG_AXES[yKey];
+  const fixed = Object.assign({ T:60, Cl:50000, pH:4.5, pH2S:0, stress:0.5, HV:250 }, opts.fixed || {});
+  const xs = _axisVals(opts.xMin, opts.xMax, n, xLog);
+  const ys = _axisVals(opts.yMin, opts.yMax, n, yLog);
+  // per-mechanism surfaces (each may be null where that mechanism is inactive)
+  const grid = [], dominant = [], iso = [], pitting = [], scc = [], sour = [];
+  for (let j = 0; j < n; j++){
+    const row=[], drow=[], irow=[], prow=[], srow=[], qrow=[];
+    for (let i = 0; i < n; i++){
+      const svc = Object.assign({}, fixed);
+      svc[xKey] = xs[i]; svc[yKey] = ys[j];
+      const a = assess(c, svc);
+      row.push(a.overall); drow.push(a.dominant);
+      irow.push(a.iso ? a.iso.status : null);
+      prow.push(a.pPit); srow.push(a.pScc); qrow.push(a.pSourFail);
+    }
+    grid.push(row); dominant.push(drow); iso.push(irow);
+    pitting.push(prow); scc.push(srow); sour.push(qrow);
+  }
+  // operating-point assessment (the fixed point, with the axes at their op value)
+  const op = Object.assign({}, fixed);
+  if (opts.xOp != null) op[xKey] = opts.xOp;
+  if (opts.yOp != null) op[yKey] = opts.yOp;
+  return { xKey, yKey, xLog, yLog, xs, ys, grid, dominant, iso,
+           surfaces: { overall: grid, pitting, "chloride-SCC": scc, "sour-SSC": sour },
+           fixed, op, opAssess: assess(c, op), opSvc: op };
+}
+
+// ---- compliance bridge: physics result vs governing code limit --------------
+// Turns one assess() at the operating point into an explicit per-mechanism diff
+// between what the alloy can take (probabilistic physics) and what the code
+// requires (ASTM G48 CPT margin, the Cl-SCC screen, ISO 15156-3 sour envelope).
+function complianceDiff(c, svc){
+  const a = assess(c, svc);
+  const rows = [];
+  // Pitting / crevice — CPT margin vs service temperature (ASTM G48 basis)
+  if (svc.Cl > 0){
+    const margin = a.cpt - svc.T;                 // degC of headroom to the CPT
+    rows.push({
+      mechanism: "Pitting / crevice",
+      physics: "P(pit) " + (a.pPit*100).toFixed(0) + "% · CPT " + a.cpt.toFixed(0) + "°C",
+      code: "ASTM G48 CPT vs T " + svc.T.toFixed(0) + "°C",
+      pass: margin > 0 && a.pPit < 0.5,
+      margin: (margin >= 0 ? "+" : "") + margin.toFixed(0) + "°C to CPT",
+      p: a.pPit
+    });
+  }
+  // Chloride SCC
+  if (a.pScc != null){
+    rows.push({
+      mechanism: "Chloride-SCC",
+      physics: "P(SCC) " + (a.pScc*100).toFixed(0) + "%",
+      code: "Cl⁻ " + (svc.Cl||0) + " ppm · " + svc.T.toFixed(0) + "°C · σ " + ((svc.stress||0)).toFixed(2) + "·YS",
+      pass: a.pScc < 0.5,
+      margin: a.pScc < 0.15 ? "low" : a.pScc < 0.5 ? "elevated" : "high",
+      p: a.pScc
+    });
+  }
+  // Sour SSC vs ISO 15156-3 envelope
+  if (a.iso){
+    rows.push({
+      mechanism: "Sour SSC (ISO 15156-3)",
+      physics: a.pSourFail != null ? ("P(fail) " + (a.pSourFail*100).toFixed(0) + "%") : "hardness-screened",
+      code: a.iso.group ? ("group " + a.iso.group) : "ISO 15156-3",
+      pass: a.iso.status === "within",
+      margin: a.iso.status,
+      note: a.iso.reason || a.iso.cite,
+      p: a.pSourFail
+    });
+  }
+  return { assess: a, rows, overall: a.overall, dominant: a.dominant };
+}
+
 window.PitCast = {
   get GRADES(){ return GRADES; }, get MEASUREMENTS(){ return MEASUREMENTS; },
   setGrades, setMeasurements, measuredCPT,
-  assess, selectAlloys, pren, prenW, prenN30, ferritePct,
+  assess, selectAlloys, envelope, complianceDiff, pren, prenW, prenN30, ferritePct,
   inferFamily, relativeCost, cptMean, cptSE, cptConstants: CPT };

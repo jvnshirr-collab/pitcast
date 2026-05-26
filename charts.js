@@ -87,6 +87,64 @@ window.Charts={
       s+=`<rect x="${barX}" y="${y+4}" width="${bw.toFixed(1)}" height="12" fill="${it.color||PAL.accent}" rx="3"/>`;
       s+=`<text x="${w}" y="${y+13}" fill="${it.color||PAL.ink}" font-size="12" text-anchor="end">${E(o.fmt?o.fmt(it.value):it.value)}${o.unit?(' '+o.unit):''}</text>`;});
     return `<svg viewBox="0 0 ${w} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block;font-family:var(--mono,monospace)">${s}</svg>`;
+  },
+  // Material Selection Diagram: risk surface + safe-window staircase + optional
+  // ISO 15156 boundary overlay + operating-point crosshair. grid[iy][ix], iy=0 bottom.
+  envelope:function(o){
+    const W=o.w||640,H=o.h||360,m={l:60,r:104,t:o.title?34:16,b:50};
+    const pw=W-m.l-m.r, ph=H-m.t-m.b;
+    const xs=o.xs, ys=o.ys, grid=o.grid, nx=xs.length, ny=ys.length, cw=pw/nx, ch=ph/ny;
+    const thr=o.threshold!=null?o.threshold:0.5;
+    const colors=o.colors||[{max:0.05,color:'#0f3d24'},{max:0.15,color:'#1c6b3a'},
+      {max:0.35,color:'#7a7416'},{max:0.6,color:'#9a6312'},{max:0.85,color:'#b4471a'},{max:1.01,color:'#b91c1c'}];
+    const colOf=v=>{ if(v==null) return '#11161f'; for(const c of colors){ if(v<=c.max) return c.color;} return colors[colors.length-1].color; };
+    const cellX=ix=>m.l+ix*cw, cellY=iy=>m.t+(ny-1-iy)*ch;
+    const nIdx=(arr,v)=>arr.reduce((b,x,i)=>Math.abs(x-v)<Math.abs(arr[b]-v)?i:b,0);
+    let s=o.title?`<text x="${m.l}" y="18" fill="${PAL.muted}" font-size="11" letter-spacing="1">${E(o.title).toUpperCase()}</text>`:'';
+    for(let iy=0;iy<ny;iy++)for(let ix=0;ix<nx;ix++)
+      s+=`<rect x="${cellX(ix).toFixed(1)}" y="${cellY(iy).toFixed(1)}" width="${(cw+0.6).toFixed(1)}" height="${(ch+0.6).toFixed(1)}" fill="${colOf(grid[iy][ix])}"/>`;
+    // safe-window staircase (boundary where accept flips)
+    const acc=(ix,iy)=> grid[iy]&&grid[iy][ix]!=null&&grid[iy][ix]<=thr;
+    let bnd='';
+    for(let iy=0;iy<ny;iy++)for(let ix=0;ix<nx;ix++){
+      if(ix<nx-1&&acc(ix,iy)!==acc(ix+1,iy)) bnd+=`M${cellX(ix+1).toFixed(1)} ${cellY(iy).toFixed(1)} l0 ${ch.toFixed(1)} `;
+      if(iy<ny-1&&acc(ix,iy)!==acc(ix,iy+1)) bnd+=`M${cellX(ix).toFixed(1)} ${cellY(iy).toFixed(1)} l${cw.toFixed(1)} 0 `;
+    }
+    if(bnd)s+=`<path d="${bnd}" stroke="#e6edf3" stroke-width="1.7" fill="none" opacity="0.92"/>`;
+    // ISO 15156 boundary (within<->exceeds) dashed amber
+    if(o.isoGrid){const wi=(ix,iy)=>o.isoGrid[iy]&&o.isoGrid[iy][ix]==='within';let ib='';
+      for(let iy=0;iy<ny;iy++)for(let ix=0;ix<nx;ix++){
+        if(ix<nx-1&&wi(ix,iy)!==wi(ix+1,iy)) ib+=`M${cellX(ix+1).toFixed(1)} ${cellY(iy).toFixed(1)} l0 ${ch.toFixed(1)} `;
+        if(iy<ny-1&&wi(ix,iy)!==wi(ix,iy+1)) ib+=`M${cellX(ix).toFixed(1)} ${cellY(iy).toFixed(1)} l${cw.toFixed(1)} 0 `;
+      }
+      if(ib)s+=`<path d="${ib}" stroke="${PAL.amber}" stroke-width="1.6" stroke-dasharray="4 3" fill="none"/>`;
+    }
+    s+=`<rect x="${m.l}" y="${m.t}" width="${pw}" height="${ph}" fill="none" stroke="${PAL.line}"/>`;
+    const xi=[...new Set([0,(nx-1)>>2,(nx-1)>>1,3*(nx-1)>>2,nx-1])];
+    xi.forEach(ix=>{const X=m.l+(ix+0.5)*cw;s+=`<text x="${X}" y="${m.t+ph+16}" fill="${PAL.dim}" font-size="10" text-anchor="middle">${E(o.xfmt?o.xfmt(xs[ix]):xs[ix])}</text>`;});
+    const yi=[...new Set([0,(ny-1)>>2,(ny-1)>>1,3*(ny-1)>>2,ny-1])];
+    yi.forEach(iy=>{const Y=m.t+(ny-1-iy+0.5)*ch;s+=`<text x="${m.l-6}" y="${Y+3}" fill="${PAL.dim}" font-size="10" text-anchor="end">${E(o.yfmt?o.yfmt(ys[iy]):ys[iy])}</text>`;});
+    if(o.xlabel)s+=`<text x="${m.l+pw/2}" y="${H-6}" fill="${PAL.muted}" font-size="11" text-anchor="middle">${E(o.xlabel)}</text>`;
+    if(o.ylabel)s+=`<text transform="translate(13,${m.t+ph/2}) rotate(-90)" fill="${PAL.muted}" font-size="11" text-anchor="middle">${E(o.ylabel)}</text>`;
+    // operating-point crosshair
+    if(o.point){const PX=m.l+(nIdx(xs,o.point.x)+0.5)*cw, PY=m.t+(ny-1-nIdx(ys,o.point.y)+0.5)*ch;
+      s+=`<line x1="${m.l}" y1="${PY.toFixed(1)}" x2="${m.l+pw}" y2="${PY.toFixed(1)}" stroke="#fff" stroke-width="0.7" opacity="0.5"/>`;
+      s+=`<line x1="${PX.toFixed(1)}" y1="${m.t}" x2="${PX.toFixed(1)}" y2="${m.t+ph}" stroke="#fff" stroke-width="0.7" opacity="0.5"/>`;
+      s+=`<circle cx="${PX.toFixed(1)}" cy="${PY.toFixed(1)}" r="5.5" fill="none" stroke="#fff" stroke-width="2"/>`;
+      if(o.point.label)s+=`<text x="${PX.toFixed(1)}" y="${(PY-10).toFixed(1)}" fill="#fff" font-size="10" text-anchor="middle" font-weight="600">${E(o.point.label)}</text>`;}
+    // legend: colour scale + boundary keys
+    const lx=W-m.r+16, lh=ph*0.5, ly=m.t;
+    s+=`<defs><linearGradient id="envgrad" x1="0" y1="0" x2="0" y2="1">`+
+       `<stop offset="0%" stop-color="${colors[colors.length-1].color}"/><stop offset="50%" stop-color="${colors[2].color}"/><stop offset="100%" stop-color="${colors[0].color}"/></linearGradient></defs>`;
+    s+=`<rect x="${lx}" y="${ly}" width="11" height="${lh}" fill="url(#envgrad)" stroke="${PAL.line}"/>`;
+    s+=`<text x="${lx+15}" y="${ly+8}" fill="${PAL.dim}" font-size="9">1.0</text>`;
+    s+=`<text x="${lx+15}" y="${ly+lh}" fill="${PAL.dim}" font-size="9">0</text>`;
+    s+=`<text x="${lx}" y="${ly+lh+16}" fill="${PAL.muted}" font-size="9">P(${E(o.metricLabel||'risk')})</text>`;
+    let ky=ly+lh+34;
+    s+=`<line x1="${lx}" y1="${ky}" x2="${lx+14}" y2="${ky}" stroke="#e6edf3" stroke-width="1.7"/><text x="${lx}" y="${ky+13}" fill="${PAL.muted}" font-size="9">safe limit</text>`;
+    if(o.isoGrid){ky+=26;s+=`<line x1="${lx}" y1="${ky}" x2="${lx+14}" y2="${ky}" stroke="${PAL.amber}" stroke-width="1.6" stroke-dasharray="4 3"/><text x="${lx}" y="${ky+13}" fill="${PAL.muted}" font-size="9">ISO 15156</text>`;}
+    if(o.point){ky+=26;s+=`<circle cx="${lx+7}" cy="${ky}" r="5" fill="none" stroke="#fff" stroke-width="2"/><text x="${lx}" y="${ky+15}" fill="${PAL.muted}" font-size="9">your point</text>`;}
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block;font-family:var(--mono,monospace)">${s}</svg>`;
   }
 };
 })();

@@ -7,7 +7,7 @@
 <meta name="description" content="Microstructure-aware, probabilistic localized-corrosion prediction and cost-aware CRA selection for stainless, duplex and nickel alloys.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=14">
+<link rel="stylesheet" href="styles.css?v=15">
 </head>
 <body>
 <header class="topbar">
@@ -32,6 +32,7 @@
   <div class="tabs">
     <button class="tab active" data-tab="assess">Assess an alloy</button>
     <button class="tab" data-tab="select">Select the best alloy</button>
+    <button class="tab" data-tab="envelope">Selection map</button>
     <button class="tab" data-tab="data">Browse data</button>
     <button class="tab" data-tab="co2">CO₂ corrosion</button>
     <button class="tab" data-tab="cpac">CP / AC</button>
@@ -122,6 +123,40 @@
       </div>
       <div id="d_count" class="dcount"></div>
       <div class="dtablewrap"><table id="dataTable"></table></div>
+    </div>
+  </section>
+
+  <!-- Selection map (Material Selection Diagram) ------------------------- -->
+  <section class="panel" id="tab-envelope">
+    <div class="datastat">Probabilistic Material Selection Diagram — sweeps the validated engine across a
+      service window and overlays the safe operating limit on the ISO 15156-3 boundary. The physics-vs-code
+      diff (right) is the part no off-the-shelf calculator gives you.</div>
+    <div class="grid">
+      <form class="card inputs" id="envForm">
+        <h3>Alloy</h3>
+        <label class="envwide">Grade<select id="env_grade"></select></label>
+        <h3>Diagram</h3>
+        <label class="envwide">Map<select id="env_diagram">
+          <option value="scc_t_cl">Chloride-SCC — T × Cl⁻ (austenitic/duplex)</option>
+          <option value="sour_h2s_t">Sour service — pH₂S × T (ISO 15156 overlay)</option>
+          <option value="scc_t_stress">Chloride-SCC — T × applied stress</option>
+        </select></label>
+        <h3>Operating point</h3>
+        <div class="row">
+          <label>Temperature (°C)<input type="number" id="e_T" value="60" step="5"></label>
+          <label>Chloride (ppm)<input type="number" id="e_Cl" value="50000" step="1000"></label>
+        </div>
+        <div class="row">
+          <label>in-situ pH<input type="number" id="e_pH" value="4.5" step="0.1"></label>
+          <label>pH₂S (kPa)<input type="number" id="e_pH2S" value="0" step="1"></label>
+        </div>
+        <div class="row">
+          <label>Applied stress (×YS)<input type="number" id="e_stress" value="0.5" step="0.05" min="0" max="1.2"></label>
+          <label>Hardness (HV)<input type="number" id="e_HV" value="250" step="10"></label>
+        </div>
+        <p class="blab2" id="env_axisnote"></p>
+      </form>
+      <div class="card results" id="env_results"><div class="placeholder">Pick an alloy and a map →</div></div>
     </div>
   </section>
 
@@ -253,10 +288,10 @@
   <p class="muted">© <span id="yr"></span> austenite.org · PitCast research preview</p>
 </section>
 
-<script src="charts.js?v=9"></script>
+<script src="charts.js?v=10"></script>
 <script src="co2.js?v=10"></script>
 <script src="cpac.js?v=11"></script>
-<script src="pitcast.js?v=9"></script>
-<script src="app.js?v=14"></script>
+<script src="pitcast.js?v=10"></script>
+<script src="app.js?v=15"></script>
 </body>
 </html>

@@ -217,6 +217,31 @@ tr.rec td:first-child{border-left:3px solid var(--accent)}
 .vsrc{color:var(--muted);min-width:160px}
 .vsrc a{color:var(--muted);text-decoration:underline;text-decoration-color:var(--line)}
 .vsrc a:hover{color:var(--accent)}
+/* selection map (MSD) */
+.envwide{display:block;margin-bottom:6px}
+.envwide select{width:100%;margin-top:4px;background:var(--panel2);color:var(--ink);
+  border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px}
+.chartbox{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:8px}
+.cdwrap{margin-top:14px}
+.cdhead{font-size:12px;color:var(--ink);font-weight:600;margin-bottom:8px;line-height:1.4}
+.cdhead .cmono{color:var(--accent);font-weight:400}
+.cmono{font-family:var(--mono,monospace);font-size:11px}
+.cdtablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+.cdtable{width:100%;border-collapse:collapse;font-size:12px;min-width:520px}
+.cdtable th{text-align:left;padding:7px 10px;background:var(--panel2);color:var(--muted);
+  font-weight:600;border-bottom:1px solid var(--line);white-space:nowrap}
+.cdtable td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink)}
+.cdtable tr:last-child td{border-bottom:none}
+.cdtable td.cmono{color:var(--muted)}
+.cdcode{color:var(--dim)!important}
+.cd{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.cd.pass{background:rgba(34,197,94,.16);color:#34d399}
+.cd.fail{background:rgba(239,68,68,.16);color:#f87171}
+.cdsum{margin-top:10px;padding:9px 12px;border-radius:9px;font-size:13px;font-weight:600}
+.cdsum.pass{background:rgba(34,197,94,.12);color:#34d399;border:1px solid rgba(34,197,94,.3)}
+.cdsum.fail{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.cdnote{margin:8px 0 0;padding:8px 11px;border-radius:8px;font-size:12px;color:var(--amber,#f59e0b);
+  background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25)}
 
 @media(max-width:600px){
   .topbar{padding:12px 16px;flex-wrap:wrap;gap:6px}
