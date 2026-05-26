@@ -10,7 +10,17 @@ const CPT = { slope: 2.038176, intercept: -32.730883, resid: 8.033109,
               prenMean: 36.1689, sxx: 3821.5641, n: 51, prenMin: 18.24, prenMax: 65.55 };
 const C_SIGMA_CPT = 5.0, SIGMA_CR = 30.0, SIGMA_MO = 8.0;
 const SIGMA = { Tlow: 600, Thigh: 1000, Tnose: 850, W: 110, jmakN: 1.5, feq: 0.12,
-                tauRef: 3.0, prenRef: 35.0, kPren: 0.43, tauMin: 0.005 };
+                tauRef: 3.0, prenRef: 35.0, kPren: 0.43, tauMin: 0.005,
+                // Single-phase austenitic / Ni-base alloys: sigma nucleates from austenite
+                // (no delta-ferrite to accelerate it), so the TTT nose sits HIGHER (~900 C,
+                // sensitive range ~875-1050 C) and kinetics are several-fold SLOWER than
+                // ferrite-bearing duplex/ferritic. Refs: Hsieh & Wu, ISRN Mater. Sci. 2012
+                // (732471); Sourmail, Mater. Sci. Technol. 17 (2001) 1; 20Cr-24Ni-6Mo TTT
+                // nose 875-925 C. Without this the high-Mo super-austenitics wrongly lost CPT
+                // at 600 C (faster than super-duplex, which is backwards).
+                // narrower nose too: the super-austenitic sensitive band (~875-1025 C) is
+                // tighter than duplex's (~600-1000 C), so sigma falls off faster below the nose.
+                austTnose: 900, austTlow: 700, austThigh: 1050, austSlow: 6.0, austW: 70 };
 const CL_SCC = {
   austenitic:   { T: 60,  Cl: 50,    stress: 0.30 },
   duplex:       { T: 130, Cl: 1000,  stress: 0.50 },
@@ -110,10 +120,18 @@ function inferFamily(c){
   return "ferritic";
 }
 function sigmaFraction(c, T, t){
-  if (t<=0 || T<SIGMA.Tlow || T>SIGMA.Thigh) return 0;
-  const rate = Math.exp(-Math.pow((T-SIGMA.Tnose)/SIGMA.W,2));
+  if (t<=0) return 0;
+  const fam = inferFamily(c);
+  const aust = (fam==="austenitic" || fam==="nickel");   // single-phase: higher nose, slower
+  const Tnose = aust ? SIGMA.austTnose : SIGMA.Tnose;
+  const Tlow  = aust ? SIGMA.austTlow  : SIGMA.Tlow;
+  const Thigh = aust ? SIGMA.austThigh : SIGMA.Thigh;
+  const slow  = aust ? SIGMA.austSlow  : 1;
+  const W     = aust ? SIGMA.austW     : SIGMA.W;
+  if (T<Tlow || T>Thigh) return 0;
+  const rate = Math.exp(-Math.pow((T-Tnose)/W,2));
   if (rate<1e-6) return 0;
-  const tauNose = Math.max(SIGMA.tauMin, SIGMA.tauRef*Math.exp(-SIGMA.kPren*(pren(c)-SIGMA.prenRef)));
+  const tauNose = slow*Math.max(SIGMA.tauMin, SIGMA.tauRef*Math.exp(-SIGMA.kPren*(pren(c)-SIGMA.prenRef)));
   const tau = tauNose/rate;
   return Math.max(0, Math.min(SIGMA.feq, SIGMA.feq*(1-Math.exp(-Math.pow(t/tau,SIGMA.jmakN)))));
 }
@@ -124,9 +142,22 @@ function cptSE(c){
   const p = prenN30(c);
   return CPT.resid*Math.sqrt(1 + 1/CPT.n + Math.pow(p-CPT.prenMean,2)/CPT.sxx);
 }
-// P(pit) = P(CPT < T_service); optional sigma degradation from thermal history
-function pPit(c, Tservice, aged){
-  let mean = cptMean(c), fsig = 0;
+// CPT chloride dependence (screening). CPT falls ~linearly with log[Cl-]; slope B ~ 24 C per
+// decade (Abd El Meguid & Abd El Latif, Corros. Sci. 49 (2007) 263: Type 254 SMO CPT 89/67/57 C
+// at 4/10/30 wt% NaCl). Anchored at the ASTM G48 6% FeCl3 reference, ~1.1 mol/L Cl-; the ferric
+// oxidiser makes G48 more aggressive than NaCl at equal [Cl-], so the anchor is conservative.
+// Clamped: the curve flattens above ~5-6 M (Ernst & Newman, Corros. Sci. 49 (2007) 3705) and the
+// dilute-side rise is capped to avoid unphysical extrapolation.
+const CL_CPT = { B: 24.0, ClRef_M: 1.1, ppmPerMol: 35450, adjMin: -15, adjMax: 40 };
+function cptChlorideAdj(Cl_ppm){
+  if (Cl_ppm == null || !(Cl_ppm > 0)) return 0;        // no chloride given -> G48 basis
+  const Cl_M = Cl_ppm / CL_CPT.ppmPerMol;
+  const adj = CL_CPT.B * Math.log10(CL_CPT.ClRef_M / Cl_M);
+  return Math.max(CL_CPT.adjMin, Math.min(CL_CPT.adjMax, adj));
+}
+// P(pit) = P(CPT < T_service); CPT = G48 PREN fit + chloride term - sigma degradation
+function pPit(c, Tservice, aged, Cl){
+  let mean = cptMean(c) + cptChlorideAdj(Cl), fsig = 0;
   if (aged && aged.t>0){ fsig = sigmaFraction(c, aged.T, aged.t); mean -= C_SIGMA_CPT*fsig*100; }
   const p = tCDF((Tservice-mean)/cptSE(c), CPT.n - 2);   // Student-t (df=n-2), matches Python
   return { p, cptLocal: mean, fsig, se: cptSE(c) };
@@ -214,7 +245,7 @@ function relativeCost(c){
 function assess(c, svc){
   const family = svc.family || inferFamily(c);
   const aged = (svc.ageT && svc.aget) ? { T:svc.ageT, t:svc.aget } : null;
-  const pit = pPit(c, svc.T, aged);
+  const pit = pPit(c, svc.T, aged, svc.Cl);
   let pScc = null, pSourFail = null, sour = null;
   if (svc.stress!=null && svc.Cl>0) pScc = clSCC(family, svc.T, svc.Cl, svc.stress);
   if (svc.pH2S>=SOUR.threshold && svc.HV!=null){ sour = sourFail(svc.HV, svc.pH2S, svc.pH, family); pSourFail = sour.pFail; }
@@ -224,7 +255,8 @@ function assess(c, svc){
   const overall = active.length ? Math.max(...active.map(([k,x])=>x)) : 0;
   const dominant = active.length ? active.reduce((a,b)=>b[1]>a[1]?b:a)[0] : "none";
   return { family, pren: pren(c), prenW: prenW(c), ferrite: ferritePct(c),
-           cpt: pit.cptLocal, cptSE: pit.se, fsig: pit.fsig, aged: !!aged,
+           cpt: pit.cptLocal, cptG48: cptMean(c), cptSE: pit.se, fsig: pit.fsig, aged: !!aged,
+           clAdj: cptChlorideAdj(svc.Cl),
            pPit: svc.Cl>0?pit.p:null, pScc, pSourFail, sourRegion: sour?sour.region:null,
            cost: relativeCost(c), overall, dominant, risks, iso };
 }

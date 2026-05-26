@@ -207,14 +207,14 @@ function renderAssess(){
     }</div>` : ""}
     ${(() => { const mc = PitCast.measuredCPT(g.uns, g.name); return mc
       ? `<div class="measured">📊 Real measured CPT (literature): <b>${mc.min.toFixed(0)===mc.max.toFixed(0)?mc.min.toFixed(0):mc.min.toFixed(0)+"–"+mc.max.toFixed(0)} °C</b>
-         · ${mc.n} record${mc.n>1?"s":""} <span style="color:var(--dim)">(cited dataset, CC BY) — vs PitCast ${r.cpt.toFixed(0)} °C predicted</span></div>`
+         · ${mc.n} record${mc.n>1?"s":""} <span style="color:var(--dim)">(cited dataset, CC BY) — vs PitCast ${r.cptG48.toFixed(0)} °C predicted (G48 basis)</span></div>`
       : ""; })()}
     ${assessCharts(g,r,svc)}
     <div class="explain">
-      ${g.name}: PREN ${r.pren.toFixed(0)}, ferrite ≈ ${r.ferrite.toFixed(0)}%, CPT ≈ ${r.cpt.toFixed(0)} °C.
+      ${g.name}: PREN ${r.pren.toFixed(0)}, ferrite ≈ ${r.ferrite.toFixed(0)}%, CPT ≈ ${r.cpt.toFixed(0)} °C${(r.clAdj&&Math.abs(r.clAdj)>=1)?` <span style="color:var(--dim)">(G48 ${r.cptG48.toFixed(0)} °C ${r.clAdj>0?"+":"−"}${Math.abs(r.clAdj).toFixed(0)} for Cl⁻)</span>`:""}.
       At ${svc.T} °C${svc.Cl>0?` / ${svc.Cl.toLocaleString()} ppm Cl⁻`:""}${svc.pH2S>=0.3?` / ${svc.pH2S} kPa H₂S`:""},
       the dominant risk is <b>${dom}</b>.${agedNote}
-      <span style="color:var(--dim)"> Screening estimate · CPT on ASTM G48 (6% FeCl₃) basis — see limits below.</span>
+      <span style="color:var(--dim)"> Screening estimate · CPT = ASTM G48 (6% FeCl₃) PREN<sub>N30</sub> fit, chloride-adjusted ≈24 °C/decade (Abd El Meguid, Corros. Sci. 2007) — see limits below.</span>
     </div>`;
 }
 $("assessForm").addEventListener("input", renderAssess);
@@ -358,6 +358,10 @@ $("cpacForm")&&$("cpacForm").addEventListener("input", renderCPAC);
 
 // ---- Selection map (probabilistic Material Selection Diagram) ----------------
 const ENV_DIAGRAMS = {
+  pit_t_cl: { xKey:"T", yKey:"Cl", surface:"pitting", metric:"pitting",
+    xMin:20, xMax:160, yMin:50, yMax:200000, yLog:true,
+    xlabel:"Temperature (°C)", ylabel:"Chloride (ppm)",
+    note:"Pitting / crevice risk — P(service T > CPT). CPT is the ASTM G48 (6% FeCl₃) PREN-fit value, chloride-adjusted ≈24 °C per decade [Cl⁻] (Abd El Meguid, Corros. Sci. 2007), anchored at the G48 ~1.1 M reference. White staircase = P(pit)=0.5 limit." },
   scc_t_cl: { xKey:"T", yKey:"Cl", surface:"chloride-SCC", metric:"Cl-SCC",
     xMin:20, xMax:140, yMin:50, yMax:200000, yLog:true,
     xlabel:"Temperature (°C)", ylabel:"Chloride (ppm)",
@@ -365,11 +369,7 @@ const ENV_DIAGRAMS = {
   sour_h2s_t: { xKey:"pH2S", yKey:"T", surface:"sour-SSC", metric:"sour SSC", iso:true,
     xMin:0.3, xMax:1000, yMin:20, yMax:150, xLog:true,
     xlabel:"pH₂S (kPa)", ylabel:"Temperature (°C)",
-    note:"Sulfide stress cracking. Dashed amber = ISO 15156-3 acceptability boundary for this alloy group; fill = modelled P(SSC) at the hardness below. Where the two diverge is the physics-vs-code story." },
-  scc_t_stress: { xKey:"T", yKey:"stress", surface:"chloride-SCC", metric:"Cl-SCC",
-    xMin:20, xMax:160, yMin:0, yMax:1.0,
-    xlabel:"Temperature (°C)", ylabel:"Applied stress (×YS)",
-    note:"Chloride-SCC vs temperature and applied stress at the fixed Cl⁻ below." }
+    note:"Sulfide stress cracking. Dashed amber = ISO 15156-3 acceptability boundary for this alloy group; fill = modelled P(SSC) at the hardness below. Where the two diverge is the physics-vs-code story." }
 };
 let envGrades = [];
 function envGrade(){ return envGrades[+($("env_grade").value||0)] || envGrades[0]; }
