@@ -486,7 +486,32 @@ function renderIntegrity(){
       return `<div class="iso ${cls}"><b>MIC risk — ${mr.level.toUpperCase()}</b> ${mr.inWindow?`(${mr.region})`:""}<br>
         Dominant: <b>${mr.dominant.split("—")[0].trim()}</b>. Total score ${mr.score.toFixed(2)}. ${mr.recommendation}
         ${mr.inWindow?`<br>Family scores: ${fam}.`:""}</div>
-        <div class="explain"><span style="color:var(--dim)">${mr.ref}</span></div>`;})()}`;
+        <div class="explain"><span style="color:var(--dim)">${mr.ref}</span></div>`;})()}
+    ${(()=>{ if(!window.HIC) return ""; const hr=window.HIC.risk({pH2S_kPa:+gv("h_pH2S"),pH:+gv("h_pH"),S_wt:+gv("h_S"),HV:+gv("h_HV"),waterCut:+gv("h_wc"),stress:+gv("h_stress")});
+      if(!hr.active) return `<div class="iso within"><b>HIC / SOHIC — INACTIVE</b><br>${hr.mech}</div>
+        <div class="explain"><span style="color:var(--dim)">${hr.ref}</span></div>`;
+      const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[hr.level]||"within";
+      return `<div class="iso ${cls}"><b>HIC / SOHIC — ${hr.level.toUpperCase()}</b> · ${hr.dominant} dominant<br>
+        HIC index <b>${hr.HIC_index.toFixed(2)}</b> (${hr.HIC_level}) · SOHIC index <b>${hr.SOHIC_index.toFixed(2)}</b> (${hr.SOHIC_level}).
+        Drivers: pH₂S ${hr.factors.pH2S.toFixed(2)} · pH ${hr.factors.pH.toFixed(2)} · S ${hr.factors.S.toFixed(2)} · HV ${hr.factors.HV.toFixed(2)} · water ${hr.factors.water.toFixed(2)}.
+        <br><b>Mechanism:</b> ${hr.mechanism}
+        <br><b>Mitigation:</b><ul style="margin:4px 0 0 18px;padding:0">${hr.mitigation.map(m=>"<li>"+m+"</li>").join("")}</ul></div>
+        <div class="explain"><span style="color:var(--dim)">${hr.ref}</span></div>`;})()}
+    ${(()=>{ if(!window.RBI) return ""; const rs=window.RBI.score({CR_mmyr:+gv("r_CR"),ageSinceLastInsp_yr:+gv("r_age"),tNom_mm:+gv("b_t"),tCurrent_mm:+gv("r_tCur"),tMin_mm:+gv("b_tmin"),fluid:gv("r_fluid"),inventory_m3:+gv("r_inv")});
+      const cls={low:"within",medium:"untabulated",high:"exceeds",extreme:"exceeds"}[rs.riskLevel]||"within";
+      const cofIdx=["A","B","C","D","E"].indexOf(rs.CoF);
+      const bandColour={L:"#0e3b24",M:"#8a6d1a",H:"#b5651d",E:"#c0392b"};
+      let mtx='<table class="rbi-mtx" style="margin-top:8px;border-collapse:collapse;font-size:11px">';
+      mtx+='<tr><th></th>'+["A","B","C","D","E"].map(c=>`<th style="padding:3px 8px;color:var(--dim);font-weight:500">CoF ${c}</th>`).join("")+"</tr>";
+      for(let i=4;i>=0;i--){ const pof=i+1; mtx+=`<tr><th style="padding:3px 8px;color:var(--dim);font-weight:500;text-align:right">PoF ${pof}</th>`;
+        for(let j=0;j<5;j++){ const cell=rs.matrix[i][j]; const here=(pof===rs.PoF && j===cofIdx);
+          mtx+=`<td style="padding:6px 12px;background:${bandColour[cell]};color:#fff;font-weight:600;text-align:center;${here?"outline:2px solid #fff;outline-offset:-2px":""}">${cell}${here?" ●":""}</td>`; }
+        mtx+="</tr>"; }
+      mtx+="</table>";
+      return `<div class="iso ${cls}"><b>RBI screen — ${rs.riskLevel.toUpperCase()}</b> · cell ${rs.CoF}${rs.PoF}<br>
+        PoF=<b>${rs.PoF}</b> · CoF=<b>${rs.CoF}</b> · driver ${rs.driver.toFixed(2)} (DF ${rs.damageFactor.toFixed(2)} / remaining margin ${(rs.remainingMargin*100).toFixed(0)}%).
+        Recommended inspection interval: <b>${rs.inspectionInterval}</b>.${mtx}</div>
+        <div class="explain"><span style="color:var(--dim)">${rs.ref}</span></div>`;})()}`;
 }
 $("b31gForm") && $("b31gForm").addEventListener("input", renderIntegrity);
 
