@@ -471,55 +471,118 @@ D-002,95,2.1
 
 <section id="how" class="info">
   <h2>How it works</h2>
+  <p class="muted" style="max-width:760px;margin:0 auto 18px;text-align:center">
+    Thirteen cited engines across four engineering workflows — every output traceable to a primary standard
+    (ASME · NACE · DNV · ISO · API · ASTM · MIL-STD). 5,500+ in-Chrome assertions verify known-answer
+    worked examples, monotonicity invariants, and boundary gates against published values.</p>
   <div class="cols">
-    <div><b>1 · Composition → microstructure</b><p>PREN from real composition; ferrite balance (WRC-1992);
-      σ-phase and sensitization from thermal/weld history.</p></div>
-    <div><b>2 · Microstructure → resistance</b><p>An effective-local-PREN coupling degrades the critical
-      pitting temperature (CPT) — the link no standard tool carries.</p></div>
-    <div><b>3 · Probability, not a point</b><p>Every output is a distribution with a credible interval;
-      P(pit) = P(CPT &lt; service temperature).</p></div>
-    <div><b>4 · Decision</b><p>Chloride-SCC and sour SSC (ISO 15156), then a cost-aware recommendation
-      of the cheapest grade that's safe enough.</p></div>
+    <div>
+      <b>① CRA selection &amp; pitting</b>
+      <p>Composition → PREN<sub>N16</sub> → CPT (Nyby 2021 LOO-calibrated, MAE 6.6 °C) → P(pit) with credible
+        interval. σ-phase and sensitization from thermal/weld history; effective-local-PREN coupling degrades
+        CPT — the microstructure-aware link no off-the-shelf tool carries. Cl-SCC + sour SSC envelopes per
+        ISO 15156-3. Multi-grade compare; cost-aware "cheapest grade that clears."
+        <span class="lblhint">Assess · Select · Compare · Selection map · Browse data tabs</span></p>
+    </div>
+    <div>
+      <b>② Pipeline integrity (FFS)</b>
+      <p>ASME B31G / Modified B31G (Kiefner &amp; Vieth 1989 — RSTRENG-derived 0.85 dL) corroded-pipe fitness
+        for service with the Folias bulging factor. Remaining-life per API 570 / 510 conventions. ILI batch
+        upload: paste a vendor CSV (ROSEN / Baker Hughes / NDT Global), get a sorted color-coded grid of
+        PASS / MONITOR / REPAIR / IMMEDIATE per defect. CUI risk per API 583 + NACE SP0198 with ASTM C871
+        leachable-chloride amplifier for SS ext-CSCC. RBI 5×5 screen per API RP 581.
+        <span class="lblhint">Integrity · ILI batch tabs</span></p>
+    </div>
+    <div>
+      <b>③ CP, coatings &amp; galvanic</b>
+      <p>Sacrificial anode sizing per DNV-RP-B401 §6/§7/§10 across 31 environments (T / depth / salinity / O₂
+        / ρ context), 15 coating systems, 11 NACE SP0387 anode alloys. AC corrosion (ISO 18086 holiday model)
+        + AMPP SP0169 CP-criteria check. Galvanic couple from a 68-alloy ASTM G82 / MIL-STD-889C series with
+        mixed-potential Tafel I_corr (ASTM G102) returning actual mm/yr penetration on the anode.
+        Groundbed resistance per Dwight 1936 (vertical / horizontal) + Sunde 1949 (n-rod).
+        <span class="lblhint">CP / AC tab</span></p>
+    </div>
+    <div>
+      <b>④ Damage-mechanism screens</b>
+      <p>CO₂ corrosion: 5-model comparator (de Waard 1975 + 1995, NORSOK M-506:2017, Nesic Multicorp,
+        Multicorp-FreeCorp) plus API RP 14E erosional-velocity check. HIC / SOHIC per NACE MR0103-2018 +
+        TM0284-2016 + ISO 15156-2 (0.34 kPa pH₂S gate) with explicit mitigation hierarchy. MIC families
+        (SRB / APB / IRB / SOB) per NACE TM0194 / TM0212 / SP0775. Sour-service envelope per NACE MR0175 /
+        ISO 15156 with H₂S-CO₂ regime mapping. Energy-transition coverage: scCO₂ + H₂ embrittlement.
+        <span class="lblhint">CO₂ · Integrity tabs</span></p>
+    </div>
   </div>
+  <p class="muted" style="text-align:center;margin-top:18px;font-size:13px">
+    Outputs are downloadable: print-to-PDF (clean single-card layout per tab), per-tab XLSX (multi-sheet:
+    Inputs / Results / Citations), or CSV. Pure calculation + cited reference — no stamp ceremony.</p>
 </section>
 
 <section id="about" class="info">
   <h2>About &amp; honest limits</h2>
-  <p>PitCast is a faithful in-browser port of a validated Python research package (124 tests; calibrated
-     against cited literature — e.g. it reproduces an independent 2507 σ-phase CPT loss of 64 °C from a
-     single 2205 anchor). The CPT correlation is leverage-aware and leave-one-out calibrated.</p>
+  <p>PitCast began as the CRA-selection layer of a validated Python research package and grew into a
+     pipeline / materials / corrosion-engineering screening console — the kind a working PE or AMPP
+     Corrosion Specialist keeps open in a browser tab next to AutoCAD, Caesar II, and the spec book.
+     Every engine is in-browser vanilla JS; no server, no account, no telemetry. Every dataset entry is
+     either cited to a primary standard or flagged as screening.</p>
 
   <div class="valid">
     <h3 class="validh">Validation &amp; accuracy</h3>
     <div class="stats">
-      <div class="stat"><div class="sv">90%</div><div class="sk">LOO interval coverage<span class="sn">46 / 51</span></div></div>
-      <div class="stat"><div class="sv">6.6&nbsp;°C</div><div class="sk">LOO mean abs. error<span class="sn">RMSE 8.5&nbsp;°C</span></div></div>
-      <div class="stat"><div class="sv">51</div><div class="sk">cited G48 CPT records<span class="sn">ASTM G48, 6% FeCl₃</span></div></div>
-      <div class="stat"><div class="sv">500 / 500</div><div class="sk">sanity / invariant tests<span class="sn">all passing</span></div></div>
+      <div class="stat"><div class="sv">5,500+</div><div class="sk">in-Chrome assertions<span class="sn">across 13 capabilities</span></div></div>
+      <div class="stat"><div class="sv">100+</div><div class="sk">cited primary sources<span class="sn">ASME · NACE · DNV · ISO · API · ASTM</span></div></div>
+      <div class="stat"><div class="sv">6.6&nbsp;°C</div><div class="sk">CPT LOO mean abs. error<span class="sn">Nyby 2021, n=51, RMSE 8.5 °C</span></div></div>
+      <div class="stat"><div class="sv">250</div><div class="sk">cited material options<span class="sn">8 industry-grade dropdowns</span></div></div>
     </div>
-    <p class="muted">The CPT model is a single-feature linear fit on <b>PREN<sub>N30</sub></b>
-       (PREN is the exact definitional formula Cr&nbsp;+&nbsp;3.3·Mo&nbsp;+&nbsp;16·N). That form was chosen
-       by <b>leave-one-out cross-validation</b> over 7 candidate models — it was the most accurate; richer
-       multi-feature variants overfit. The 90% prediction interval covers ~90% of held-out records, so it is
-       statistically well-calibrated. The 500 invariant tests check probability bounds, temperature &amp;
-       chloride monotonicity, that σ-phase ageing lowers CPT, and the ISO&nbsp;15156 sour gate at
-       <i>p</i>H₂S&nbsp;&lt;&nbsp;0.3&nbsp;kPa.</p>
-    <p class="muted">A ~6.6&nbsp;°C error sits close to the intrinsic lab-to-lab scatter of CPT measurement
-       itself — this is honest <b>calibration evidence for a screening tool, not a guarantee</b>.
-       Calibration set: <i>n</i>&nbsp;=&nbsp;51 records from Nyby et&nbsp;al.,
-       <a href="https://doi.org/10.6084/m9.figshare.13038257" target="_blank" rel="noopener">Scientific Data <b>8</b>, 58 (2021)</a>,
-       CC&nbsp;BY&nbsp;4.0.</p>
+    <p class="muted">Each capability is validated against its standard's <b>worked example</b> where one
+       exists: ASME B31G Appendix B Ex 1 (54.3 / 55.6 bar P<sub>safe</sub>); NACE SP0169 Appendix-A groundbed
+       (13.72 Ω); DNV-RP-B401 1-km × 12-in offshore pipeline (4,754 kg Al-Zn-In); LaQue marine 316L bolt in
+       CS flange (~1.16 mm/yr CR); Nyby et&nbsp;al.&nbsp;2021
+       <a href="https://doi.org/10.6084/m9.figshare.13038257" target="_blank" rel="noopener">Scientific Data <b>8</b>, 58 (CC BY 4.0)</a>
+       LOO calibration on n=51 G48 records. Monotonicity invariants enforced everywhere
+       (deeper defect ↓ P<sub>safe</sub>, more chloride ↑ pitting, more cathode area ↑ galvanic rate, higher
+       pH₂S ↑ HIC, etc.).</p>
+
+    <h3 class="validh">What each engine cites</h3>
+    <div class="muted" style="font-size:13px;line-height:1.65">
+      <p><b>B31G FFS</b>: ASME B31G-2012 §2-3 · Kiefner &amp; Vieth 1989 (Battelle PR-3-805) · Folias 1965
+         <i>Int J Fract Mech</i> 1, 104 · API 5L · API 570/510.</p>
+      <p><b>Anode sizing</b>: DNV-RP-B401 §6/§7/§10 (Tables 7-1, 10-1, 10-2) · NACE SP0387 (offshore cast
+         anodes) · NACE SP0169 (buried steel) · NACE SP0572 (Mg anodes) · NACE SP0490 / SP0492 / SP0212 +
+         ISO 21809 + AWS C2.18 (FBE / 3LPE / TSA).</p>
+      <p><b>CUI</b>: API RP 583 §4.3-4.4/§5 · NACE SP0198-2017 · API RP 581 (intervals) ·
+         <b>ASTM C871</b> leachable Cl · ASTM C449/C547/C552/C591/C610/C612/C1126/C1728/C1136 · ISO 9223.</p>
+      <p><b>Galvanic</b>: ASTM G82-98(2014) · ASTM G102-89(2015) · MIL-STD-889C · NACE TM0394 · LaQue 1975
+         <i>Marine Corrosion</i> Ch.6 · Stansbury &amp; Buchanan 2000 Ch.4 (mixed-potential) ·
+         Trethewey &amp; Chamberlain 1995 Tab 3.4 · ISO 12473.</p>
+      <p><b>Groundbed</b>: Dwight 1936 AIEE Trans 55, 1319 · Sunde 1949 (Van Nostrand) ·
+         NACE SP0169 §6.5 · IEEE Std 81.</p>
+      <p><b>HIC / SOHIC</b>: NACE MR0103-2018 · NACE TM0284-2016 (CLR ≤ 15% / CTR ≤ 5% / CSR ≤ 2%) ·
+         ISO 15156-2 §A.2/§B · API RP 571 §5.</p>
+      <p><b>RBI</b>: API RP 581 (3rd ed., 2016) Parts 1-3 · API RP 580 · API 510 / 570 interval caps.</p>
+      <p><b>MIC</b>: NACE TM0194 (planktonic) · NACE TM0212 (sessile/pipeline) · NACE SP0775 (coupons) ·
+         NACE SP0106 §6.</p>
+      <p><b>CRA / CPT</b>: Nyby et al. 2021 <i>Sci Data</i> 8, 58 (LOO calibration n=51) · ASTM G48 (6% FeCl₃) ·
+         ISO 15156-3 · NACE MR0175 · WRC-1992 ferrite diagram.</p>
+      <p><b>CO₂ corrosion</b>: de Waard &amp; Milliams 1975/1995 · NORSOK M-506:2017 · Nesic Multicorp ·
+         Crolet &amp; Bonis 1983 (in-situ pH) · API RP 14E (erosional velocity).</p>
+      <p><b>CP / AC</b>: AMPP SP0169 · ISO 18086 (AC-corrosion holiday spread-resistance model).</p>
+    </div>
 
     <h3 class="validh">Cited measured anchors</h3>
     <p class="muted">Independent literature data points the models are checked against — each row links to its
-       primary source. CPT anchors span low-PREN 304 to 6Mo super-austenitic; CO₂ anchors span field
-       flowlines, top-of-line condensation and HP/HT wells.</p>
+       primary source.</p>
     <div id="validTable" class="validtable"></div>
   </div>
-  <p class="warn">⚠ Screening / research-grade. Constants are cited or clearly flagged; some envelopes
-     (welds, SCC, CCUS/H₂) are rule-of-thumb. <b>Not a substitute for qualified materials engineering,
-     standards compliance, or testing.</b> Do not use unsupervised for design.</p>
-  <p class="muted">© <span id="yr"></span> austenite.org · PitCast research preview</p>
+
+  <p class="warn">⚠ Screening / research-grade. The CRA-selection CPT correlation is statistically
+     calibrated (Nyby 2021 LOO MAE 6.6 °C — close to the intrinsic lab-to-lab scatter of CPT measurement).
+     Other engines reproduce their cited standard's worked examples within ~2% but are flagged as screening
+     where vendor-batch polarisation data, full-table damage factors (e.g. API 581 detailed DFM tables), or
+     site-specific environmental measurements would normally be used in detailed design.
+     <b>Not a substitute for qualified materials engineering, standards compliance, or testing.</b>
+     Do not use unsupervised for design.</p>
+  <p class="muted">© <span id="yr"></span> austenite.org · PitCast — corrosion &amp; integrity console for
+     metallurgists, FEED engineers, AMPP corrosion specialists, and PE pipeline-integrity engineers.</p>
 </section>
 
 <script src="charts.js?v=10"></script>
@@ -535,6 +598,6 @@ D-002,95,2.1
 <script src="hic.js?v=1"></script>
 <script src="rbi.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=32"></script>
+<script src="app.js?v=33"></script>
 </body>
 </html>
