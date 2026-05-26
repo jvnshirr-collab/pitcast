@@ -36,6 +36,7 @@
     <button class="tab" data-tab="data">Browse data</button>
     <button class="tab" data-tab="co2">CO₂ corrosion</button>
     <button class="tab" data-tab="cpac">CP / AC</button>
+    <button class="tab" data-tab="integrity">Integrity (B31G)</button>
   </div>
   <div class="datastat" id="dataStat"></div>
   <div class="exportbar"><button type="button" id="btnPrint">🖶 Print / Save as PDF</button><button type="button" id="btnCSV">⤓ Download CSV</button></div>
@@ -233,6 +234,43 @@
       <div class="card results" id="cpac_results"><div class="placeholder">Enter AC + CP data →</div></div>
     </div>
   </section>
+
+  <!-- Integrity (ASME B31G corroded-pipe + remaining life) ----------------- -->
+  <section class="panel" id="tab-integrity">
+    <div class="datastat">Pipeline integrity — ASME B31G / Modified B31G corroded-pipe fitness-for-service + general remaining-life. PE-grade screening for axial external metal-loss defects (ILI / inspection patches).</div>
+    <div class="grid">
+      <form class="card inputs" id="b31gForm">
+        <h3>Pipe geometry</h3>
+        <div class="row">
+          <label>OD D (mm)<input type="number" id="b_D" value="219.1" step="5"></label>
+          <label>WT t (mm)<input type="number" id="b_t" value="8.18" step="0.1"></label>
+        </div>
+        <div class="row">
+          <label>API 5L grade<select id="b_grade"></select></label>
+          <label>MAOP (bar)<input type="number" id="b_MAOP" value="50" step="5"></label>
+        </div>
+        <h3>External metal-loss defect</h3>
+        <div class="row">
+          <label>Length L (mm)<input type="number" id="b_L" value="100" step="5"></label>
+          <label>Max depth d (mm)<input type="number" id="b_d" value="2.5" step="0.1"></label>
+        </div>
+        <label class="envwide">Method<select id="b_method">
+          <option value="modb31g">Modified B31G — 0.85 dL (Kiefner, RSTRENG-derived)</option>
+          <option value="b31g">Original B31G — 0.667 dL (most conservative)</option>
+        </select></label>
+        <h3>Remaining-life (uniform CR)</h3>
+        <div class="row">
+          <label>CR (mm/yr)<input type="number" id="b_CR" value="0.2" step="0.05"></label>
+          <label>Design life (yr)<input type="number" id="b_life" value="20" step="1"></label>
+        </div>
+        <div class="row">
+          <label>Min WT (mm)<input type="number" id="b_tmin" value="5.5" step="0.1"></label>
+          <label>Inhibitor η (0-1)<input type="number" id="b_inh" value="0" step="0.05" min="0" max="0.99"></label>
+        </div>
+      </form>
+      <div class="card results" id="integrity_results"><div class="placeholder">Set pipe geometry →</div></div>
+    </div>
+  </section>
 </main>
 
 <section id="how" class="info">
@@ -291,7 +329,8 @@
 <script src="charts.js?v=10"></script>
 <script src="co2.js?v=12"></script>
 <script src="cpac.js?v=11"></script>
+<script src="b31g.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=24"></script>
+<script src="app.js?v=25"></script>
 </body>
 </html>

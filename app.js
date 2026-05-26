@@ -17,6 +17,7 @@ document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
   if (t.dataset.tab === "co2") renderCO2();
   if (t.dataset.tab === "cpac") renderCPAC();
   if (t.dataset.tab === "envelope") renderEnvelope();
+  if (t.dataset.tab === "integrity") renderIntegrity();
 });
 
 // ---- grade picker (searchable: curated grades + in-scope measured alloys) ---
@@ -425,7 +426,39 @@ $("env_diagram") && ($("env_diagram").onchange=()=>{
 });
 $("envForm") && $("envForm").addEventListener("input", renderEnvelope);
 
-// ---- export (CSV + print/PDF) — calc only, no stamp ceremony ----------------
+// ---- Integrity (ASME B31G corroded-pipe + remaining-life) -------------------
+function populateGradeSelect(){
+  const sel=$("b_grade"); if(!sel||!window.B31G) return;
+  sel.innerHTML = Object.entries(B31G.GRADES).map(([k,g])=>`<option value="${k}">${g.label}</option>`).join("");
+  sel.value="X52";
+}
+function renderIntegrity(){
+  const host=$("integrity_results"); if(!host||!window.B31G) return;
+  const gv=id=>$(id)?$(id).value:"";
+  const grade=B31G.GRADES[gv("b_grade")]||B31G.GRADES.X52;
+  const D=+gv("b_D"), t=+gv("b_t"), L=+gv("b_L"), d=+gv("b_d"), MAOP=+gv("b_MAOP");
+  const method=gv("b_method")||"modb31g";
+  const ff=B31G.failurePressure({D,t,SMYS:grade.SMYS,L,d,method});
+  const dAllow=B31G.allowableDepth({D,t,SMYS:grade.SMYS,L,MAOP_bar:MAOP,method});
+  const v=B31G.classify(ff.P_safe_bar, MAOP, ff.depthRatio, ff.throughWall);
+  const vb={PASS:"low",MONITOR:"moderate",REPAIR:"high",IMMEDIATE:"high"}[v.status]||"low";
+  const rl=B31G.remainingLife({tNom:t,tMin:+gv("b_tmin"),CR:+gv("b_CR"),designLifeYr:+gv("b_life"),inhEff:+gv("b_inh")});
+  const ds={ ff:ff, dAllow:dAllow, v:v };
+  host.innerHTML=`
+    <div class="verdict ${vb}"><div class="gauge">${ff.throughWall?"—":ff.P_safe_bar.toFixed(0)}<span class="u"> bar</span></div>
+      <div class="vtext"><b>${v.status} · safe operating pressure</b><div>${v.note} ${ff.throughWall?"":(`vs MAOP ${MAOP} bar — predicted failure ${ff.P_f_bar.toFixed(0)} bar (σ<sub>f</sub> ${ff.sigma_f_MPa.toFixed(0)} MPa, M ${isFinite(ff.M)?ff.M.toFixed(2):"n/a"}).`)}</div></div></div>
+    <div class="metrics">
+      <div class="metric"><div class="k">P<sub>safe</sub></div><div class="val">${ff.P_safe_bar.toFixed(0)}<span class="u"> bar</span></div><div class="u">P<sub>f</sub> ${ff.P_f_bar.toFixed(0)} bar · SF ${ff.SF}</div></div>
+      <div class="metric"><div class="k">Wall loss d/t</div><div class="val">${(ff.depthRatio*100).toFixed(0)}<span class="u"> %</span></div><div class="u">${ff.regime||"—"}</div></div>
+      <div class="metric"><div class="k">Allowable d @ MAOP</div><div class="val">${dAllow!=null?dAllow.toFixed(1):"—"}<span class="u"> mm</span></div><div class="u">${dAllow!=null?((dAllow/t*100).toFixed(0)+"% wall · margin "+(dAllow-d).toFixed(1)+" mm"):"intact pipe weaker than MAOP"}</div></div>
+    </div>
+    <div class="explain"><b>Remaining life (uniform CR):</b> CR ${rl.CR_mmyr.toFixed(2)} mm/y${rl.inhibitorEff>0?(` × (1−η ${(rl.inhibitorEff*100).toFixed(0)}%) = ${rl.effective_CR_mmyr.toFixed(2)} mm/y eff`):""} → <b>${isFinite(rl.yearsToMinWT)?rl.yearsToMinWT.toFixed(1)+" yr"+(rl.yearsToMinWT<rl.designLifeYr?" (< design life)":""):"∞ (no corrosion)"}</b> to t<sub>min</sub> ${rl.tMin_mm} mm.
+      ${!rl.ca_sufficient?` Required inhibitor efficiency for ${rl.designLifeYr} yr: <b>${(rl.required_inhibitor_efficiency*100).toFixed(0)}%</b>.`:` CA ${rl.CA_mm.toFixed(1)} mm sufficient for ${rl.designLifeYr} yr at this CR.`}
+      <span style="color:var(--dim)"> ${ff.ref} · ${rl.ref}</span></div>`;
+}
+$("b31gForm") && $("b31gForm").addEventListener("input", renderIntegrity);
+
+
 function _dl(filename, text){ const b=new Blob([text],{type:"text/csv;charset=utf-8"});
   const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=filename; a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1500); }
@@ -589,6 +622,8 @@ async function init(){
   renderCPAC();
   populateEnvGrades();
   renderEnvelope();
+  populateGradeSelect();
+  renderIntegrity();
   renderValidations();
 }
 init();
