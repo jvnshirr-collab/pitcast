@@ -728,7 +728,49 @@ function renderIntegrity(){
             <li>Independent verification by an <b>AMPP / API-certified Corrosion / Inspection PE</b> is required.</li>
             <li>For absolute D<sub>f</sub> / PoF numbers, cross-check against API 581 commercial software (Antea, Cenosco IMS, Bureau Veritas, DNV Synergi) that embeds the full Tab 5.11 / 6.x.x with paid license to API.</li>
             <li>Annex 2.J Refractory + Appendix O Tank inputs use API 571/653/575/650 + API 936 + EEMUA 159 as primary refs; calibration anchor: Trinity-Bridge Ex 1 (Art=0.25 + 1A → D<sub>fB</sub><sup>thin</sup>=33.30) matches exactly.</li>
-          </ul></div>`;})()}`;
+          </ul></div>`;})()}
+    ${(()=>{ if(!window.RBIPlanner || !window.RBIDetailed) return "";
+      const t_rdi = +gv("b_t") || 12;
+      const t_min = +gv("b_tmin") || 7;
+      const CR = +gv("b_CR") || 0.1;
+      const age = +gv("r_age") || 10;
+      const PoF_target = 1e-3;
+      const horizon = 15;
+      const eqType = "vessel";
+      const GFF = (window.RBIDetailed.GFF[eqType] || {}).total || 3e-5;
+      const F_MS = 1.0;
+      const fc = window.RBIPlanner.forecastDF({
+        t_rdi_mm: t_rdi, t_min_mm: t_min, CR_mmyr: CR, CA_mm: 0, age_now_yr: age,
+        horizon_yr: horizon, planned_inspections: [], GFF: GFF, F_MS: F_MS, PoF_target: PoF_target
+      });
+      const rec = window.RBIPlanner.recommendInspection({
+        t_rdi_mm: t_rdi, t_min_mm: t_min, CR_mmyr: CR, CA_mm: 0, age_now_yr: age,
+        type: eqType, GFF: GFF, F_MS: F_MS, PoF_target: PoF_target, horizon_yr: horizon,
+        dominant_mechanism: "Thinning"
+      });
+      // forecast WITH the recommended inspection added
+      const fc2 = window.RBIPlanner.forecastDF({
+        t_rdi_mm: t_rdi, t_min_mm: t_min, CR_mmyr: CR, CA_mm: 0, age_now_yr: age,
+        horizon_yr: horizon,
+        planned_inspections: [{ at_age_yr: rec.recommended_age_yr, eff: rec.recommended_effectiveness }],
+        GFF: GFF, F_MS: F_MS, PoF_target: PoF_target
+      });
+      const chart = (window.Charts && Charts.forecastChart)
+        ? Charts.forecastChart({
+            w: 660, h: 320, title: "PoF(t) forecast — Thinning",
+            trajectory: fc2.trajectory,
+            planned_inspections: [{ at_age_yr: rec.recommended_age_yr, eff: rec.recommended_effectiveness }],
+            PoF_target: PoF_target,
+            recommended_age: rec.recommended_age_yr,
+            recommended_eff: rec.recommended_effectiveness })
+        : "";
+      const techsList = rec.recommended_techniques.techniques.map(t => "<li>"+t+"</li>").join("");
+      return `<div class="iso ${rec.recommended_years_from_now < 2 ? "exceeds" : "untabulated"}">
+        <b>Inspection recommendation</b> — perform <b>${rec.recommended_effectiveness}</b>-effectiveness inspection in <b>${rec.recommended_years_from_now.toFixed(1)} yr</b> (at age ${rec.recommended_age_yr.toFixed(1)}) to keep PoF below ${PoF_target.toExponential(0)} over ${horizon}-yr horizon${rec.code_capped ? " (capped at API 510/570/653 code maximum)" : ""}.
+        <br><span style="color:var(--dim);font-size:12px">Current PoF: ${fc.PoF_now.toExponential(2)}/yr · without inspection at horizon: ${fc.PoF_at_horizon.toExponential(2)}/yr · Art at horizon: ${(fc.Art_at_horizon*100).toFixed(0)}%</span>
+        <br><b>Recommended techniques (${rec.dominant_mechanism}):</b><ul style="margin:4px 0 0 18px;padding:0;font-size:12px">${techsList}</ul></div>
+        <div class="chartwrap" style="margin-top:8px">${chart}</div>
+        <div class="explain"><span style="color:var(--dim)">${rec.ref}</span></div>`;})()}`;
 }
 $("b31gForm") && $("b31gForm").addEventListener("input", renderIntegrity);
 
@@ -1498,8 +1540,43 @@ function _initFleetTab() {
   if (exp) exp.addEventListener("click", () => _exportFleetCSV());
   // Pre-run with the default CSV when tab is first opened
   document.querySelectorAll('[data-tab="fleet"]').forEach(el => {
-    el.addEventListener("click", () => setTimeout(_runFleet, 80));
+    el.addEventListener("click", () => setTimeout(() => { _initFleetTemplates(); _runFleet(); }, 80));
   });
+  _initFleetTemplates();
+  // wire add-template button
+  const addBtn = $("fleet_addTemplate");
+  if (addBtn) addBtn.addEventListener("click", _fleet_addTemplate);
+}
+function _initFleetTemplates() {
+  if (!window.RBILibrary) return;
+  const sel = $("fleet_template"); if (!sel || sel.options.length > 1) return;
+  const byc = RBILibrary.byCategory();
+  Object.keys(byc).forEach(cat => {
+    const og = document.createElement("optgroup"); og.label = cat;
+    byc[cat].forEach(t => {
+      const o = document.createElement("option"); o.value = t.key; o.textContent = t.label;
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  });
+}
+function _fleet_addTemplate() {
+  if (!window.RBILibrary) return;
+  const sel = $("fleet_template"); if (!sel || !sel.value) { alert("Pick a template first"); return; }
+  const t = RBILibrary.get(sel.value); if (!t) return;
+  const row = [
+    sel.value, t.gff_type || "vessel", t.env || "generic", t.material_family || "CS",
+    t.age_yr || 10, t.CR_mmyr || 0, t.t_rdi_mm || 12, t.t_min_mm || 6,
+    "B",  // assume B effectiveness inspection on add
+    t.NaOH_wt_pct || 0, t.HF_wt_pct || 0,
+    t.pH2S_kPa || 0, t.pH || 7, t.T_C || 25, t.Cl_ppm || 0,
+    t.PWHT === true ? "true" : "false", t.hardness_HRC || 22
+  ].join(",");
+  const ta = $("fleet_paste");
+  if (ta) {
+    ta.value = ta.value.trim() + "\n" + row;
+    _runFleet();
+  }
 }
 let _fleetResults = null;
 function _runFleet() {
@@ -1585,8 +1662,19 @@ function _runFleet() {
   const top10 = rows.slice(0, 10);
   const top10List = top10.map((r,i) => `<li>${i+1}. <b>${r.id}</b> · ${r.risk_level} · PoF ${r.annual_PoF.toExponential(2)} · ${r.active_mechanisms}</li>`).join("");
   const fleetPoF = rows.reduce((a,b) => a + b.annual_PoF, 0);
+  // Risk-matrix SVG (assign PoF and CoF classes per row)
+  const matrixEquip = rows.map(r => {
+    const pofClass = r.annual_PoF < 3.06e-5 ? 1 : r.annual_PoF < 3.06e-4 ? 2 : r.annual_PoF < 3.06e-3 ? 3 : r.annual_PoF < 3.06e-2 ? 4 : 5;
+    // CoF class — derive from equipment-type GFF order-of-magnitude (no fluid info per row)
+    const cofClass = r.GFF >= 1e-3 ? "E" : r.GFF >= 5e-4 ? "D" : r.GFF >= 1e-4 ? "C" : r.GFF >= 3e-5 ? "B" : "A";
+    return { id: r.id, annual_PoF: r.annual_PoF, PoF_class: pofClass, CoF_class: cofClass, risk_level: r.risk_level };
+  });
+  const matrixSVG = (window.Charts && Charts.riskMatrix5x5)
+    ? `<div class="chartwrap" style="margin-top:10px">${Charts.riskMatrix5x5({ w: 540, h: 440, title: "Fleet risk matrix (API 580 §8)", equipment: matrixEquip })}</div>`
+    : "";
   host.innerHTML = `<div class="iso ${rows.some(r=>r.risk_level==="Extreme")?"exceeds":"untabulated"}">
     <b>Fleet RBI — ${rows.length} equipment items</b> · ΣPoF = <b>${fleetPoF.toExponential(2)}</b> /yr · F_MS = ${fms.toFixed(2)}</div>
+    ${matrixSVG}
     <div style="margin:10px 0"><b>Top-10 risk equipment</b><ol style="margin:6px 0 0 18px;padding:0;font-size:12px">${top10List}</ol></div>
     <div style="max-height:480px;overflow-y:auto">
     <table style="border-collapse:collapse;width:100%;font-size:11px">

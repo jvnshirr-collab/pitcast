@@ -221,6 +221,104 @@ window.Charts={
     p.s += `<line x1="${lx}" y1="${ly0+42}" x2="${lx+22}" y2="${ly0+42}" stroke="${cC}" stroke-width="2"/>`;
     p.s += `<text x="${lx+27}" y="${ly0+45}" fill="${PAL.ink}" font-size="10">${E(c.label)} cathodic</text>`;
     return wrap(p);
+  },
+
+  /* PoF(t) / Art(t) forecast trajectory with planned inspections + target line. */
+  forecastChart: function(o) {
+    var traj = o.trajectory || [];
+    if (!traj.length) return "<svg viewBox='0 0 400 200'><text x='200' y='100' fill='#888' text-anchor='middle'>No trajectory</text></svg>";
+    var ages = traj.map(function(t){ return t.age_yr; });
+    var pofs = traj.map(function(t){ return Math.max(1e-9, t.PoF); });
+    var p = plot({
+      w: o.w||640, h: o.h||300, title: o.title||"PoF(t) forecast",
+      xmin: Math.min.apply(null, ages), xmax: Math.max.apply(null, ages),
+      ymin: 1e-6, ymax: Math.max(1e-2, Math.max.apply(null, pofs)*1.5),
+      ylog: true, xlabel: "Equipment age (yr)", ylabel: "Annual PoF (1/yr)"
+    });
+    // PoF trajectory line
+    var pts = traj.map(function(t){ return { x: t.age_yr, y: Math.max(1e-9, t.PoF) }; });
+    p.s += `<path d="${linePath(pts, p.tx, p.ty)}" fill="none" stroke="${PAL.accent}" stroke-width="2"/>`;
+    // Planned inspection markers
+    (o.planned_inspections || []).forEach(function(ins){
+      var X = p.tx(ins.at_age_yr);
+      p.s += `<line x1="${X}" y1="${p.m.t}" x2="${X}" y2="${p.m.t+p.ph}" stroke="${PAL.green}" stroke-dasharray="4 3" stroke-width="1.2"/>`;
+      p.s += `<text x="${X+3}" y="${p.m.t+12}" fill="${PAL.green}" font-size="10">insp ${ins.eff}</text>`;
+    });
+    // Target PoF horizontal line
+    if (o.PoF_target) {
+      var Y = p.ty(o.PoF_target);
+      p.s += `<line x1="${p.m.l}" y1="${Y}" x2="${p.m.l+p.pw}" y2="${Y}" stroke="${PAL.amber}" stroke-dasharray="6 3" stroke-width="1.3"/>`;
+      p.s += `<text x="${p.m.l+p.pw-2}" y="${Y-4}" fill="${PAL.amber}" font-size="10" text-anchor="end">target ${o.PoF_target.toExponential(0)}</text>`;
+    }
+    // Recommended-inspection vertical marker
+    if (o.recommended_age) {
+      var XR = p.tx(o.recommended_age);
+      p.s += `<line x1="${XR}" y1="${p.m.t}" x2="${XR}" y2="${p.m.t+p.ph}" stroke="${PAL.red}" stroke-width="1.8"/>`;
+      p.s += `<text x="${XR+3}" y="${p.m.t+24}" fill="${PAL.red}" font-size="10" font-weight="600">▸ recommended ${o.recommended_eff||""}</text>`;
+    }
+    return wrap(p);
+  },
+
+  /* 5×5 PoF×CoF risk matrix per API RP 580 §8 — equipment plotted as dots. */
+  riskMatrix5x5: function(o) {
+    var W = o.w||540, H = o.h||440;
+    var rows = ["E","D","C","B","A"];   // PoF top-to-bottom: A=lowest PoF at top? actually reverse
+    // Per API 580 convention: PoF 1-5 (low→high), CoF A-E (low→high).
+    // Display with PoF=5 at top, CoF=A at left.
+    var bandColour = { L:"#0e3b24", M:"#8a6d1a", H:"#b5651d", E:"#c0392b" };
+    // Risk band for each cell (per typical 5×5 matrix)
+    var BANDS = [
+      // PoF=5 (top row)
+      ["M","H","H","E","E"],
+      ["M","M","H","H","E"],
+      ["L","M","M","H","H"],
+      ["L","L","M","M","H"],
+      ["L","L","L","M","M"]
+    ];
+    var m = { l: 70, r: 16, t: o.title?30:14, b: 50 };
+    var pw = W - m.l - m.r, ph = H - m.t - m.b;
+    var cw = pw / 5, ch = ph / 5;
+    var s = o.title ? `<text x="${m.l}" y="${m.t-12}" fill="${PAL.muted}" font-size="11" letter-spacing="1">${E(o.title).toUpperCase()}</text>` : "";
+    // Header row (CoF A-E)
+    for (var c = 0; c < 5; c++) {
+      var hx = m.l + (c + 0.5) * cw;
+      s += `<text x="${hx}" y="${m.t-4}" fill="${PAL.dim}" font-size="10" text-anchor="middle">CoF ${["A","B","C","D","E"][c]}</text>`;
+    }
+    // Cells
+    for (var r = 0; r < 5; r++) {
+      var PoFr = 5 - r;
+      s += `<text x="${m.l-8}" y="${m.t + (r+0.55)*ch}" fill="${PAL.dim}" font-size="10" text-anchor="end">PoF ${PoFr}</text>`;
+      for (var c2 = 0; c2 < 5; c2++) {
+        var band = BANDS[r][c2];
+        var bx = m.l + c2 * cw, by = m.t + r * ch;
+        s += `<rect x="${bx}" y="${by}" width="${cw}" height="${ch}" fill="${bandColour[band]}" stroke="${PAL.line}" opacity="0.85"/>`;
+        s += `<text x="${bx+cw/2}" y="${by+ch/2+4}" fill="#fff" font-size="9" text-anchor="middle" opacity="0.7">${band}</text>`;
+      }
+    }
+    // Equipment dots
+    (o.equipment || []).forEach(function(eq){
+      var pofN = eq.PoF_class || _pofClassFromAnnualPoF(eq.annual_PoF);
+      var cofN = eq.CoF_class || "C";
+      var cofIdx = ["A","B","C","D","E"].indexOf(cofN);
+      if (cofIdx < 0 || pofN < 1 || pofN > 5) return;
+      var dx = m.l + (cofIdx + 0.5) * cw + (Math.random()-0.5) * cw * 0.6;
+      var dy = m.t + (5 - pofN + 0.5) * ch + (Math.random()-0.5) * ch * 0.6;
+      var col = eq.risk_level === "Extreme" ? "#fff" : eq.risk_level === "High" ? "#fde047" : "#a7f3d0";
+      s += `<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="5" fill="${col}" stroke="#000" stroke-width="0.6" opacity="0.9"/>`;
+      s += `<title>${E(eq.id)} · PoF ${eq.annual_PoF ? eq.annual_PoF.toExponential(2) : "n/a"} · ${eq.risk_level||"?"}</title>`;
+    });
+    s += `<text x="${m.l+pw/2}" y="${H-6}" fill="${PAL.muted}" font-size="11" text-anchor="middle">Consequence of Failure →</text>`;
+    s += `<text transform="translate(13,${m.t+ph/2}) rotate(-90)" fill="${PAL.muted}" font-size="11" text-anchor="middle">Probability of Failure ↑</text>`;
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block;font-family:var(--mono,monospace)">${s}</svg>`;
+
+    function _pofClassFromAnnualPoF(pof) {
+      if (pof == null) return 3;
+      if (pof < 3.06e-5) return 1;
+      if (pof < 3.06e-4) return 2;
+      if (pof < 3.06e-3) return 3;
+      if (pof < 3.06e-2) return 4;
+      return 5;
+    }
   }
 };
 })();

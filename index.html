@@ -707,6 +707,11 @@ PIPE-04in-001,pipe-4-10in,sour,CS,18,0.18,9.5,4.8,A,0,0,40,4.5,75,2000,true,22" 
         </div>
         <h3>Plant-wide PSM (from PSM scorer tab)</h3>
         <label>Override F_MS (auto from PSM scorer; 1.0 = no PSM effect)<input type="number" id="fleet_fms" value="1.0" step="0.1" min="0.1" max="10"></label>
+        <h3>Equipment library — add preset</h3>
+        <div class="row">
+          <label>Pick template<select id="fleet_template"><option value="">Select common equipment …</option></select></label>
+          <button type="button" id="fleet_addTemplate">Add as row to CSV →</button>
+        </div>
         <p class="hint">Each row computed with RBIDamage.combinedDF + RBIRefractoryTank.tank_bottom_DF for AST rows. PoF = GFF (per equipment type) × F_MS × ΣD_f. Recommended use: pre-turnaround / RBI workshop screen — not a substitute for full API 581 software seat or PE peer review.</p>
       </form>
       <div class="card results" id="fleet_results"><div class="placeholder">Paste equipment CSV + Compute →</div></div>
@@ -844,7 +849,7 @@ PIPE-04in-001,pipe-4-10in,sour,CS,18,0.18,9.5,4.8,A,0,0,40,4.5,75,2000,true,22" 
      metallurgists, FEED engineers, AMPP corrosion specialists, and PE pipeline-integrity engineers.</p>
 </section>
 
-<script src="charts.js?v=11"></script>
+<script src="charts.js?v=12"></script>
 <script src="co2.js?v=12"></script>
 <script src="cpac.js?v=11"></script>
 <script src="b31g.js?v=1"></script>
@@ -865,11 +870,13 @@ PIPE-04in-001,pipe-4-10in,sour,CS,18,0.18,9.5,4.8,A,0,0,40,4.5,75,2000,true,22" 
 <script src="rbi-damage-mechanisms.js?v=2"></script>
 <script src="rbi-refractory-tank.js?v=1"></script>
 <script src="rbi-psm.js?v=1"></script>
+<script src="rbi-planner.js?v=1"></script>
+<script src="rbi-library.js?v=1"></script>
 <script src="audit.js?v=1"></script>
 <script src="storage.js?v=1"></script>
 <script src="projects-ui.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=39"></script>
+<script src="app.js?v=40"></script>
 <script>
   // Wait for mr0175 annexes to load (async fetch)
   if (typeof window !== "undefined") {
