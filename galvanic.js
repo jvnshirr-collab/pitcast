@@ -147,23 +147,71 @@
     return m ? FAMILY[m.f] || FAMILY["CS"] : FAMILY["CS"];
   }
 
+  /** Vendor / textbook polarisation lookup with graceful fallback.
+   *  Returns a Tafel + EW packet shaped like FAMILY[], but pulled from
+   *  the cited polarisation dataset (electrochem.js) when available. */
+  function _lookupTafel(metalKey, env, T_C, Cl_ppm, PREN) {
+    var fallback = _fam(metalKey);
+    if (typeof window === "undefined" || !window.Electrochem || !window.Electrochem.rows) return fallback;
+    var pol = window.Electrochem.lookup({
+      metal: metalKey, env: env || "SW",
+      T_C: T_C != null ? T_C : 25,
+      Cl_ppm: Cl_ppm != null ? Cl_ppm : (env === "FW" ? 10 : 19000),
+      PREN: PREN
+    });
+    if (!pol) return fallback;
+    return {
+      ba: pol.ba_mV_dec != null ? pol.ba_mV_dec : fallback.ba,
+      bc: pol.bc_mV_dec != null ? pol.bc_mV_dec : fallback.bc,
+      i0_a: pol.i0_a_A_m2 != null ? pol.i0_a_A_m2 : fallback.i0_a,
+      i0_c: pol.i0_c_A_m2 != null ? pol.i0_c_A_m2 : fallback.i0_c,
+      n: pol.n || fallback.n,
+      EW: pol.EW || fallback.EW,
+      rho: pol.rho_g_cm3 || fallback.rho,
+      E_corr_V: pol.E_corr_V,
+      i_pass_uA_cm2: pol.i_pass_uA_cm2,
+      E_pit_V: pol.E_pit_V,
+      passivationState: pol.passivationState,
+      uncertainty: pol.uncertainty,
+      source: pol.source,
+      citation: pol.citation,
+      cited: true
+    };
+  }
+
   /** Galvanic couple risk + mixed-potential I_corr per ASTM G102.
    * @param {object} o
    * @param {string} o.a    member A key (METALS)
    * @param {string} o.b    member B key
    * @param {number} o.areaRatio  A_cathode / A_anode (≥1 = small anode, worst case)
    * @param {string} [o.flow]     "stagnant" | "moderate" | "flowing" — sets O₂-limited i_lim
+   * @param {string} [o.env]      "SW" | "FW" | "NaCl" | "Soil" | "Acid_H2SO4" | "Acid_HCl"
+   * @param {number} [o.T_C]      electrolyte temperature, °C (defaults 25)
+   * @param {number} [o.Cl_ppm]   chloride concentration (defaults SW 19k / FW 10)
+   * @param {number} [o.PREN]     PREN_N30 of any passive alloy (Galvele overlay)
    */
   function couple(o) {
     o = o || {};
     var A = METALS[o.a], B = METALS[o.b];
     if (!A || !B) return { error: "unknown metal", a: o.a, b: o.b };
 
-    // anode = less noble (lower E)
-    var anode = A.E < B.E ? { k: o.a, m: A } : { k: o.b, m: B };
-    var cath  = A.E < B.E ? { k: o.b, m: B } : { k: o.a, m: A };
-    var fA = _fam(anode.k), fC = _fam(cath.k);
-    var dE_V  = Math.abs(A.E - B.E);
+    // anode = less noble (lower E), with override from cited polarisation
+    // data if E_corr is present (per Stansbury §4 the published E_corr in
+    // the *specific* electrolyte trumps the screening series value).
+    var env  = o.env || "SW";
+    var T_C  = o.T_C != null ? +o.T_C : 25;
+    var Cl_ppm = o.Cl_ppm != null ? +o.Cl_ppm : (env === "FW" ? 10 : 19000);
+    var PREN = +o.PREN || NaN;
+    var fA_full = _lookupTafel(o.a, env, T_C, Cl_ppm, PREN);
+    var fB_full = _lookupTafel(o.b, env, T_C, Cl_ppm, PREN);
+    var EA = fA_full.E_corr_V != null ? fA_full.E_corr_V : A.E;
+    var EB = fB_full.E_corr_V != null ? fB_full.E_corr_V : B.E;
+    var anode = EA < EB ? { k: o.a, m: A, E: EA, f: fA_full }
+                        : { k: o.b, m: B, E: EB, f: fB_full };
+    var cath  = EA < EB ? { k: o.b, m: B, E: EB, f: fB_full }
+                        : { k: o.a, m: A, E: EA, f: fA_full };
+    var fA = anode.f, fC = cath.f;
+    var dE_V  = Math.abs(EA - EB);
     var dE_mV = dE_V * 1000;
     var rA = +o.areaRatio; if (!(rA > 0)) rA = 1;
 
@@ -212,10 +260,11 @@
 
     return {
       a: o.a, b: o.b,
-      anode: anode.m.label, anode_E: anode.m.E,
-      cathode: cath.m.label, cathode_E: cath.m.E,
+      anode: anode.m.label, anode_E: anode.E,
+      cathode: cath.m.label, cathode_E: cath.E,
       deltaE_mV: dE_mV, areaRatio: rA, areaMultiplier: areaMult,
       flow: o.flow || "moderate", i_lim_cathode_Am2: i_lim_c,
+      env: env, T_C: T_C, Cl_ppm: Cl_ppm, PREN: isFinite(PREN) ? PREN : null,
       i_galv_parity_Am2: i_galv,
       i_anode_Am2: i_anode,
       mass_transfer_capped: capped,
@@ -223,15 +272,24 @@
       ba_anode_mV_dec: fA.ba, bc_cathode_mV_dec: fC.bc,
       i0_anode_Am2: fA.i0_a, i0_cathode_Am2: fC.i0_c,
       EW_anode: fA.EW, rho_anode_g_cm3: fA.rho,
+      anode_polarisation_cited: !!fA.cited, cathode_polarisation_cited: !!fC.cited,
+      anode_source: fA.source || null, cathode_source: fC.source || null,
+      anode_passivation: fA.passivationState || null,
+      cathode_passivation: fC.passivationState || null,
+      anode_E_pit_V: fA.E_pit_V != null ? fA.E_pit_V : null,
+      cathode_E_pit_V: fC.E_pit_V != null ? fC.E_pit_V : null,
       score: score, level: level,
       note: msg,
       ref: "ASTM G82-98(2014) galvanic series; ASTM G102-89(2015) corrosion-rate "
          + "calculation; MIL-STD-889C (Dissimilar Metals); NACE TM0394; "
          + "LaQue (1975) Marine Corrosion Ch.6; Stansbury & Buchanan (2000) "
          + "Ch.4 (mixed-potential theory + Tafel); Trethewey & Chamberlain (1995) "
-         + "Tab 3.4. Tafel ba/bc + i0 are family screening typicals; vendor-specific "
-         + "polarization data should be used for design. O₂-diffusion limit per "
-         + "ISO 12473 (stagnant 0.1 / moderate 1 / flowing 5 A/m²)."
+         + "Tab 3.4. " + (fA.cited || fC.cited
+           ? "Polarisation parameters from cited rows (electrochem.js / data/polarization.json) "
+           + "with Arrhenius i0(T) Ea=40 kJ/mol per Jones §3.4; Galvele 1976 passivation overlay. "
+           : "Tafel ba/bc + i0 are family screening typicals; vendor-specific "
+           + "polarization data should be used for design. ")
+         + "O₂-diffusion limit per ISO 12473 (stagnant 0.1 / moderate 1 / flowing 5 A/m²)."
     };
   }
 

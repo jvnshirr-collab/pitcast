@@ -369,12 +369,23 @@ function renderCPAC(){
         Coating breakdown f_c: mean ${(an.fc_mean*100).toFixed(0)}% · final ${(an.fc_final*100).toFixed(0)}%. Q = ${(an.Q_Ah/1e6).toFixed(2)} M·Ah.
         <br><span style="color:var(--dim);font-size:12px">Env physical: T ${ep.T_C}°C · depth ${ep.depth_range_m} m · salinity ${ep.salinity_ppt}‰ · O₂ ${ep.O2_mg_L} mg/L · ρ ${ep.rho_ohm_m} Ω·m${corrTxt}</span></div>
         <div class="explain"><span style="color:var(--dim)">${an.ref}</span></div>`;})()}
-    ${(()=>{ if(!window.Galvanic) return ""; const gc=window.Galvanic.couple({a:gv("g_a"),b:gv("g_b"),areaRatio:+gv("g_ratio"),flow:"moderate"});
+    ${(()=>{ if(!window.Galvanic) return "";
+      const gcEnv = gv("g_env") || "SW";
+      const gcT = +gv("g_T") || 25;
+      const gcCl = gv("g_Cl") !== "" ? +gv("g_Cl") : (gcEnv==="FW"?10:19000);
+      const gcFlow = gv("g_flow") || "moderate";
+      const gc=window.Galvanic.couple({a:gv("g_a"),b:gv("g_b"),areaRatio:+gv("g_ratio"),flow:gcFlow,env:gcEnv,T_C:gcT,Cl_ppm:gcCl});
       if(gc.error) return "";
       const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[gc.level]||"within";
-      return `<div class="iso ${cls}"><b>Galvanic couple — ${gc.level.toUpperCase()}</b> · anode rate <b>${gc.CR_anode_mm_yr.toFixed(3)} mm/yr</b>${gc.mass_transfer_capped?" (O₂-limited)":""}<br>
-        <b>${gc.anode}</b> (anode) ⇄ <b>${gc.cathode}</b> · ΔE <b>${gc.deltaE_mV.toFixed(0)} mV</b> · area ratio ${gc.areaRatio.toFixed(1)}× · i<sub>anode</sub> <b>${gc.i_anode_Am2.toFixed(3)} A/m²</b>.
-        <br><span style="color:var(--dim);font-size:12px">Tafel: ba ${gc.ba_anode_mV_dec} / bc ${gc.bc_cathode_mV_dec} mV·dec⁻¹ · i₀ anode ${gc.i0_anode_Am2.toExponential(0)} A/m² · EW ${gc.EW_anode} g/eq · ρ ${gc.rho_anode_g_cm3} g/cm³ · flow ${gc.flow} (i_lim ${gc.i_lim_cathode_Am2} A/m²)</span>
+      const citedTag = (gc.anode_polarisation_cited||gc.cathode_polarisation_cited)
+        ? `<span style="color:#7bd88f">▸ cited polarisation</span>` : `<span style="color:#fbbf24">▸ family screening</span>`;
+      const pasTag = (gc.anode_passivation && gc.anode_passivation !== "passive")
+        ? ` · anode <b style="color:#fbbf24">${gc.anode_passivation}</b>` : "";
+      const pitTag = gc.cathode_E_pit_V != null
+        ? ` · cathode E_pit ${(gc.cathode_E_pit_V*1000).toFixed(0)} mV` : "";
+      return `<div class="iso ${cls}"><b>Galvanic couple — ${gc.level.toUpperCase()}</b> · anode rate <b>${gc.CR_anode_mm_yr.toFixed(3)} mm/yr</b>${gc.mass_transfer_capped?" (O₂-limited)":""} · ${citedTag}<br>
+        <b>${gc.anode}</b> (anode) ⇄ <b>${gc.cathode}</b> · ΔE <b>${gc.deltaE_mV.toFixed(0)} mV</b> · area ratio ${gc.areaRatio.toFixed(1)}× · i<sub>anode</sub> <b>${gc.i_anode_Am2.toFixed(3)} A/m²</b>${pasTag}${pitTag}.
+        <br><span style="color:var(--dim);font-size:12px">${gc.env} · ${gc.T_C}°C · Cl ${gc.Cl_ppm.toFixed(0)} ppm · Tafel: ba ${gc.ba_anode_mV_dec} / bc ${gc.bc_cathode_mV_dec} mV·dec⁻¹ · i₀ anode ${gc.i0_anode_Am2.toExponential(0)} A/m² · EW ${gc.EW_anode} g/eq · ρ ${gc.rho_anode_g_cm3} g/cm³ · flow ${gc.flow} (i_lim ${gc.i_lim_cathode_Am2} A/m²)${gc.anode_source?` · anode src ${gc.anode_source}`:""}${gc.cathode_source?` · cath src ${gc.cathode_source}`:""}</span>
         <br>${gc.note}</div>
         <div class="explain"><span style="color:var(--dim)">${gc.ref}</span></div>`;})()}
     ${(()=>{ if(!window.Groundbed) return ""; const sb=window.Groundbed.sundeMulti({rho_ohm_m:+gv("gb_rho"),L_m:+gv("gb_L"),d_m:(+gv("gb_d"))/1000,s_m:+gv("gb_s"),n:+gv("gb_n")});
@@ -490,6 +501,13 @@ function populateIndustryDropdowns(){
   // Re-render dependent panels after populate (dropdown defaults may have shifted)
   if (typeof renderCPAC === "function") renderCPAC();
   if (typeof renderIntegrity === "function") renderIntegrity();
+  // When electrochem.js finishes its async JSON load, re-render so the
+  // galvanic card swaps from "family screening" → "cited polarisation".
+  if (window.Electrochem && typeof window.Electrochem.load === "function") {
+    window.Electrochem.load().then(function(){
+      if (typeof renderCPAC === "function") renderCPAC();
+    }).catch(function(){ /* keep family fallback */ });
+  }
 }
 
 function populateGradeSelect(){
@@ -1138,8 +1156,23 @@ function exportActiveXLSX(){
       _aoa("Anode", [HEAD, [], ["Parameter","Value","Unit"], ["Environment", an.environment, ""], ["Coating", an.coating, ""], ["Anode alloy", an.anode, ""], ["Service T", an.T_C_service, "°C"], ["Salinity", an.env_properties.salinity_ppt, "‰"], ["Dissolved O2", an.env_properties.O2_mg_L, "mg/L"], ["Resistivity", an.env_properties.rho_ohm_m, "Ω·m"], ["I mean", +an.I_mean_A.toFixed(2), "A"], ["Anode net mass", +an.anodeMass_kg_net.toFixed(0), "kg"], ["Number of anodes", an.numAnodes, ""], FOOT]);
     }
     if (window.Galvanic) {
-      const gc = Galvanic.couple({ a:gv("g_a"), b:gv("g_b"), areaRatio:+gv("g_ratio"), flow:"moderate" });
-      if (!gc.error) _aoa("Galvanic", [HEAD, [], ["Parameter","Value","Unit"], ["Anode", gc.anode, ""], ["Cathode", gc.cathode, ""], ["ΔE", gc.deltaE_mV.toFixed(0), "mV"], ["Area ratio", gc.areaRatio, ""], ["i_anode", +gc.i_anode_Am2.toFixed(3), "A/m²"], ["CR anode", +gc.CR_anode_mm_yr.toFixed(3), "mm/y"], ["Level", gc.level, ""], FOOT]);
+      const gEnv = gv("g_env") || "SW";
+      const gT = +gv("g_T") || 25;
+      const gCl = gv("g_Cl") !== "" ? +gv("g_Cl") : (gEnv==="FW"?10:19000);
+      const gFlow = gv("g_flow") || "moderate";
+      const gc = Galvanic.couple({ a:gv("g_a"), b:gv("g_b"), areaRatio:+gv("g_ratio"), flow:gFlow, env:gEnv, T_C:gT, Cl_ppm:gCl });
+      if (!gc.error) _aoa("Galvanic", [HEAD, [], ["Parameter","Value","Unit"],
+        ["Anode", gc.anode, ""], ["Cathode", gc.cathode, ""],
+        ["Anode E_corr", +gc.anode_E.toFixed(3), "V vs Ag/AgCl"],
+        ["Cathode E_corr", +gc.cathode_E.toFixed(3), "V vs Ag/AgCl"],
+        ["ΔE", gc.deltaE_mV.toFixed(0), "mV"], ["Area ratio", gc.areaRatio, ""],
+        ["Environment", gc.env, ""], ["Temperature", gc.T_C, "°C"], ["Chloride", gc.Cl_ppm, "ppm"], ["Flow regime", gc.flow, ""],
+        ["i_anode", +gc.i_anode_Am2.toFixed(3), "A/m²"], ["CR anode", +gc.CR_anode_mm_yr.toFixed(3), "mm/y"],
+        ["Mass-transfer capped", gc.mass_transfer_capped?"yes":"no", ""],
+        ["Anode polarisation source", gc.anode_source || "family default", ""],
+        ["Cathode polarisation source", gc.cathode_source || "family default", ""],
+        ["Anode passivation state", gc.anode_passivation || "n/a", ""],
+        ["Level", gc.level, ""], FOOT]);
     }
   }
   else if (tab === "integrity") {
