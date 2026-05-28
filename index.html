@@ -712,6 +712,26 @@ PIPE-04in-001,pipe-4-10in,sour,CS,18,0.18,9.5,4.8,A,0,0,40,4.5,75,2000,true,22" 
           <label>Pick template<select id="fleet_template"><option value="">Select common equipment …</option></select></label>
           <button type="button" id="fleet_addTemplate">Add as row to CSV →</button>
         </div>
+        <h3>Fleet inspection-budget optimiser</h3>
+        <div class="row">
+          <label>Budget (USD)<input type="number" id="fleet_budget_USD" value="50000" step="5000" min="0"></label>
+          <button type="button" id="fleet_optimise">Optimise → which equipment to inspect</button>
+        </div>
+        <h3>Damage Mechanism Review (DMR) generator</h3>
+        <div class="row">
+          <label>Pick equipment by ID (from fleet results)<select id="fleet_dmr_pick"><option value="">— pick from fleet —</option></select></label>
+          <button type="button" id="fleet_dmr_generate">Generate DMR →</button>
+        </div>
+        <h3>Replacement-vs-inspect (NPV)</h3>
+        <div class="row">
+          <label>Replacement cost (USD)<input type="number" id="rv_repl" value="500000" step="50000" min="0"></label>
+          <label>Failure consequence (USD)<input type="number" id="rv_fail" value="5000000" step="500000" min="0"></label>
+        </div>
+        <div class="row">
+          <label>Discount rate (%)<input type="number" id="rv_disc" value="8" step="1" min="0"></label>
+          <label>Horizon (yr)<input type="number" id="rv_horizon" value="20" step="1" min="1"></label>
+        </div>
+        <button type="button" id="rv_compute">Compare options →</button>
         <p class="hint">Each row computed with RBIDamage.combinedDF + RBIRefractoryTank.tank_bottom_DF for AST rows. PoF = GFF (per equipment type) × F_MS × ΣD_f. Recommended use: pre-turnaround / RBI workshop screen — not a substitute for full API 581 software seat or PE peer review.</p>
       </form>
       <div class="card results" id="fleet_results"><div class="placeholder">Paste equipment CSV + Compute →</div></div>
@@ -872,11 +892,12 @@ PIPE-04in-001,pipe-4-10in,sour,CS,18,0.18,9.5,4.8,A,0,0,40,4.5,75,2000,true,22" 
 <script src="rbi-psm.js?v=1"></script>
 <script src="rbi-planner.js?v=1"></script>
 <script src="rbi-library.js?v=1"></script>
+<script src="rbi-advanced.js?v=1"></script>
 <script src="audit.js?v=1"></script>
 <script src="storage.js?v=1"></script>
 <script src="projects-ui.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=40"></script>
+<script src="app.js?v=41"></script>
 <script>
   // Wait for mr0175 annexes to load (async fetch)
   if (typeof window !== "undefined") {

@@ -1546,6 +1546,129 @@ function _initFleetTab() {
   // wire add-template button
   const addBtn = $("fleet_addTemplate");
   if (addBtn) addBtn.addEventListener("click", _fleet_addTemplate);
+  // wire optimiser
+  const optBtn = $("fleet_optimise");
+  if (optBtn) optBtn.addEventListener("click", _fleet_optimiseBudget);
+  // wire DMR generator
+  const dmrBtn = $("fleet_dmr_generate");
+  if (dmrBtn) dmrBtn.addEventListener("click", _fleet_dmrGenerate);
+  // wire replace-vs-inspect
+  const rvBtn = $("rv_compute");
+  if (rvBtn) rvBtn.addEventListener("click", _rv_compute);
+}
+function _fleet_optimiseBudget() {
+  if (!window.RBIAdvanced || !_fleetResults) { alert("Run fleet first"); return; }
+  const budget = +($("fleet_budget_USD") ? $("fleet_budget_USD").value : 0) || 0;
+  if (budget <= 0) { alert("Budget must be > 0"); return; }
+  // Map fleet results into optimiser input
+  const equipment = _fleetResults.map(r => ({
+    id: r.id, annual_PoF: r.annual_PoF,
+    dominant_mechanism: r.active_mechanisms.split(" · ")[0]?.split(":")[0] || "Thinning",
+    size_m2: 50, weld_length_m: 20, n_joints: 5
+  }));
+  const opt = window.RBIAdvanced.optimiseFleet({ equipment, budget_USD: budget });
+  const host = $("fleet_results"); if (!host) return;
+  if (opt.error) { host.innerHTML += `<div class="iso exceeds"><b>Optimiser error:</b> ${opt.error}</div>`; return; }
+  const rows = opt.allocations.map(a =>
+    `<tr><td style="padding:4px 8px">${a.id}</td>
+        <td style="padding:4px 8px">${a.technique}</td>
+        <td style="padding:4px 8px;text-align:center">${a.effectiveness}</td>
+        <td style="padding:4px 8px;text-align:right">$${a.cost_USD.toLocaleString()}</td>
+        <td style="padding:4px 8px;text-align:right">${a.old_PoF.toExponential(2)}</td>
+        <td style="padding:4px 8px;text-align:right">${a.new_PoF.toExponential(2)}</td>
+        <td style="padding:4px 8px;color:#7bd88f;text-align:right">−${((1-a.new_PoF/a.old_PoF)*100).toFixed(0)}%</td>
+    </tr>`).join("");
+  const html = `<div class="iso within" style="margin-top:10px"><b>Budget optimiser</b> — ${opt.allocations.length} of ${_fleetResults.length} equipment selected · $${opt.total_spent_USD.toLocaleString()} of $${budget.toLocaleString()} spent · fleet PoF reduced by <b>${opt.fleet_PoF_reduction_per_yr.toExponential(2)}</b>/yr<br>
+    <table style="margin-top:8px;border-collapse:collapse;width:100%;font-size:11px">
+      <thead><tr style="color:var(--dim)"><th style="text-align:left;padding:4px 8px">ID</th>
+        <th style="text-align:left;padding:4px 8px">Technique</th>
+        <th style="padding:4px 8px;text-align:center">Eff</th>
+        <th style="padding:4px 8px;text-align:right">Cost</th>
+        <th style="padding:4px 8px;text-align:right">PoF before</th>
+        <th style="padding:4px 8px;text-align:right">PoF after</th>
+        <th style="padding:4px 8px;text-align:right">Δ%</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
+    <div class="explain"><span style="color:var(--dim)">${opt.ref}</span></div>`;
+  host.innerHTML += html;
+  // Refresh DMR-equipment picker with fleet IDs
+  const pick = $("fleet_dmr_pick");
+  if (pick && _fleetResults) {
+    while (pick.options.length > 1) pick.remove(1);
+    _fleetResults.forEach(r => {
+      const o = document.createElement("option"); o.value = r.id; o.textContent = r.id; pick.appendChild(o);
+    });
+  }
+}
+function _fleet_dmrGenerate() {
+  if (!window.RBIAdvanced || !window.RBILibrary || !_fleetResults) { alert("Run fleet first"); return; }
+  const pick = $("fleet_dmr_pick"); if (!pick || !pick.value) { alert("Pick an equipment ID"); return; }
+  const sel = pick.value;
+  // Find the equipment in fleet
+  const equip = _fleetResults.find(r => r.id === sel);
+  if (!equip) { alert("Equipment not in fleet"); return; }
+  // Look up the original CSV row to pass full opts
+  const csv = ($("fleet_paste") && $("fleet_paste").value) || "";
+  const lines = csv.trim().split(/\r?\n/);
+  const hdr = lines[0].split(",").map(s => s.trim());
+  const idIdx = hdr.indexOf("id");
+  const row = lines.slice(1).map(l => l.split(",").map(s => s.trim())).find(c => c[idIdx] === sel);
+  if (!row) { alert("Could not find row in CSV"); return; }
+  const opts = {
+    equipment_id: row[idIdx],
+    description: equip.active_mechanisms ? "Auto-detected: " + equip.active_mechanisms : "",
+    material_family: row[hdr.indexOf("family")] || "CS",
+    T_C: +row[hdr.indexOf("T_C")] || 25,
+    pH: +row[hdr.indexOf("pH")] || 7,
+    pH2S_kPa: +row[hdr.indexOf("pH2S_kPa")] || 0,
+    Cl_ppm: +row[hdr.indexOf("Cl_ppm")] || 0,
+    NaOH_wt_pct: +row[hdr.indexOf("NaOH_pct")] || 0,
+    HF_wt_pct: +row[hdr.indexOf("HF_pct")] || 0,
+    hardness_HRC: +row[hdr.indexOf("hardness_HRC")] || 22,
+    PWHT: (row[hdr.indexOf("PWHT")] || "").toLowerCase() === "true",
+    age_yr: +row[hdr.indexOf("age_yr")] || 10,
+    welded: true, water_phase_present: (+row[hdr.indexOf("HF_pct")] || 0) > 0,
+    inspection_history: [{ eff: row[hdr.indexOf("last_insp_eff")] || "B" }]
+  };
+  const dmr = window.RBIAdvanced.generateDMR(opts);
+  const host = $("fleet_results"); if (!host) return;
+  // Render the markdown as preformatted text with a download button
+  const dlBlob = new Blob([dmr.markdown || ""], { type: "text/markdown" });
+  const dlUrl = URL.createObjectURL(dlBlob);
+  host.innerHTML += `<div class="iso within" style="margin-top:10px">
+    <b>DMR generated for ${opts.equipment_id}</b> — ${dmr.n_active_mechanisms} mechanisms · ΣD_f = ${dmr.total_D_f.toFixed(1)}
+    <br><a href="${dlUrl}" download="DMR-${opts.equipment_id}.md" style="color:#7bd88f">Download DMR as Markdown ↓</a>
+    <details style="margin-top:6px"><summary style="cursor:pointer;color:var(--dim)">Show DMR text</summary>
+    <pre style="background:#0a0e14;padding:8px;font-size:11px;overflow-x:auto;white-space:pre-wrap">${dmr.markdown.replace(/</g,"&lt;")}</pre></details></div>
+    <div class="explain"><span style="color:var(--dim)">${dmr.ref}</span></div>`;
+}
+function _rv_compute() {
+  if (!window.RBIAdvanced) return;
+  const repl = +($("rv_repl") ? $("rv_repl").value : 500000);
+  const fail = +($("rv_fail") ? $("rv_fail").value : 5000000);
+  const disc = +($("rv_disc") ? $("rv_disc").value : 8);
+  const horizon = +($("rv_horizon") ? $("rv_horizon").value : 20);
+  // Use mean fleet PoF as the equipment-PoF input
+  const pofNow = _fleetResults && _fleetResults.length
+    ? _fleetResults.reduce((a,b) => a + b.annual_PoF, 0) / _fleetResults.length
+    : 1e-3;
+  const insp_cost = 10000;
+  const r = window.RBIAdvanced.replaceVsInspect({
+    replacement_cost_USD: repl,
+    inspection_cost_per_yr_USD: insp_cost,
+    failure_consequence_USD: fail,
+    annual_PoF_now: pofNow,
+    annual_PoF_growth_pct: 8,
+    discount_rate_pct: disc,
+    horizon_yr: horizon
+  });
+  const host = $("fleet_results"); if (!host) return;
+  const cls = r.recommendation === "REPLACE NOW" ? "exceeds" : "untabulated";
+  host.innerHTML += `<div class="iso ${cls}" style="margin-top:10px">
+    <b>Replacement-vs-Inspect (NPV over ${horizon} yr · using mean fleet PoF ${pofNow.toExponential(2)})</b><br>
+    NPV-inspect = <b>$${r.NPV_inspect_USD.toLocaleString()}</b> · NPV-replace = <b>$${r.NPV_replace_USD.toLocaleString()}</b> · Δ = $${Math.abs(r.delta_USD).toLocaleString()} ${r.delta_USD < 0 ? "(replace cheaper)" : "(inspect cheaper)"}<br>
+    Recommendation: <b style="color:${r.recommendation==='REPLACE NOW'?'#fbbf24':'#7bd88f'}">${r.recommendation}</b> ${r.crossover_year ? `· crossover at yr ${r.crossover_year}` : ""}
+    </div>
+    <div class="explain"><span style="color:var(--dim)">${r.ref}</span></div>`;
 }
 function _initFleetTemplates() {
   if (!window.RBILibrary) return;
