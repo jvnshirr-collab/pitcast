@@ -226,8 +226,14 @@
    */
   var ENV_FAMILY = {
     "SW": "SW", "FW": "FW", "NaCl": "SW", "Soil": "FW",
-    "Acid_H2SO4": "Acid", "Acid_HCl": "Acid", "Acid": "Acid",
-    "PWR": "FW", "BWR": "FW", "Boiler": "FW"
+    "Acid_H2SO4": "Acid", "Acid_HCl": "Acid", "Acid_HNO3": "Acid",
+    "Acid_HF": "Acid", "Acid_H3PO4": "Acid", "Acid": "Acid",
+    "Amine": "FW", "Sour_brine": "SW", "Sweet_brine": "SW", "MEG": "FW",
+    "NaOH": "Caustic", "Caustic": "Caustic",
+    "Atm_marine": "SW", "Atm_industrial": "FW", "Atm_rural": "FW", "Atm": "FW",
+    "sCO2": "sCO2", "Boiler": "FW", "Boiler_economiser": "FW",
+    "PWR": "FW", "BWR": "FW", "CW_treated": "FW",
+    "FGD_scrubber": "SW", "Concrete_pore": "Concrete", "Concrete_carb": "Concrete"
   };
   // Metal-family map mirrors galvanic.js FAMILY keys
   var METAL_FAMILY = {
@@ -244,6 +250,7 @@
     "Alloy-22": "Ni-base", "Hastelloy-C276": "Ni-base", "Alloy-625": "Ni-base",
     "Alloy-G30": "Ni-base", "Alloy-825": "Ni-base", "Monel-400": "Ni-base",
     "Monel-K500": "Ni-base", "Ni-200": "Ni-base",
+    "Inconel-600-passive": "Ni-base", "Inconel-690-passive": "Ni-base",
     "Ti-Gr2": "Ti-passive", "Ti-Gr5": "Ti-passive", "Ti-Gr7": "Ti-passive",
     "Copper": "Cu-alloy", "Brass-Naval": "Cu-alloy", "Brass-Yellow": "Cu-alloy",
     "70-30-CuNi": "Cu-alloy", "90-10-CuNi": "Cu-alloy",
@@ -254,7 +261,9 @@
     "Al-5052": "Al-passive", "Al-5083": "Al-passive", "Al-5086": "Al-passive",
     "Al-anode-AlZnIn": "Al-active",
     "Zinc": "Zn", "Galvanised-steel": "Zn", "Zn-anode": "Zn",
-    "Magnesium": "Mg", "Mg-anode": "Mg"
+    "Magnesium": "Mg", "Mg-anode": "Mg",
+    "Cadmium": "Cd",
+    "Tantalum": "noble", "Niobium": "noble"
   };
 
   function _envFam(env) { return ENV_FAMILY[env] || env; }
@@ -383,6 +392,132 @@
     };
   }
 
+  // ---- Tafel back-fit from a raw potentiodynamic scan --------------------
+  /** Linear regression on each Tafel branch of a raw G3-style scan.
+   *
+   *  Inputs:
+   *    o.E_V        Array<number>   potential samples (V vs caller's ref)
+   *    o.i_uA_cm2   Array<number>   current density samples (signed:
+   *                                 +anodic / −cathodic per ASTM G3 §6.2.1)
+   *    o.window_mV  number          Tafel-fit window (±) around E_corr.
+   *                                 default 50; ASTM G102-89 §3 recommends
+   *                                 50-200 mV.
+   *    o.skip_mV    number          skip ±this band right around E_corr
+   *                                 where the mixed-potential plateau makes
+   *                                 |log i| → -∞. default 10.
+   *
+   *  Returns:
+   *    {
+   *      E_corr_V, i_corr_uA_cm2,
+   *      ba_mV_dec, R2_anodic, n_anodic_points,
+   *      bc_mV_dec, R2_cathodic, n_cathodic_points,
+   *      method, ref
+   *    }
+   *
+   *  Algorithm (per ASTM G3-14 §6 + G102-89 §3):
+   *    1. Identify E_corr by sign change of i (linear interp between sign-
+   *       flip neighbours).
+   *    2. On each branch, take samples within [skip_mV, window_mV] of E_corr.
+   *    3. Linear regression of E vs log10(|i|): slope = b (V/decade),
+   *       intercept extrapolated back to E_corr gives log10(i_corr).
+   *    4. Final i_corr is geometric mean of the two extrapolated values.
+   *
+   *  Caller's responsibility: ensure scan is at slow enough scan rate
+   *  (≤0.6 mV/s per G3) and that data covers ≥50 mV on each branch.
+   */
+  function fitTafel(o) {
+    o = o || {};
+    var E = o.E_V, I = o.i_uA_cm2;
+    if (!Array.isArray(E) || !Array.isArray(I) || E.length !== I.length || E.length < 6) {
+      return { error: "E_V and i_uA_cm2 must be equal-length arrays of ≥6 samples" };
+    }
+    var win = o.window_mV != null ? +o.window_mV : 50;
+    var skip = o.skip_mV != null ? +o.skip_mV : 10;
+    if (win <= skip) return { error: "window_mV must exceed skip_mV" };
+
+    // 1) E_corr — first sign change of i
+    var E_corr_V = null, i_corr_idx = -1;
+    for (var k = 1; k < I.length; k++) {
+      if (I[k - 1] === 0) { E_corr_V = E[k - 1]; i_corr_idx = k - 1; break; }
+      if (I[k] === 0)     { E_corr_V = E[k];     i_corr_idx = k;     break; }
+      if (I[k - 1] * I[k] < 0) {
+        // linear interpolation in (E, i) — root at i = 0
+        var frac = -I[k - 1] / (I[k] - I[k - 1]);
+        E_corr_V = E[k - 1] + frac * (E[k] - E[k - 1]);
+        i_corr_idx = k;
+        break;
+      }
+    }
+    if (E_corr_V == null) return { error: "no zero-crossing found — scan does not span E_corr" };
+
+    // 2) Select branch samples
+    function _linReg(xs, ys) {
+      var n = xs.length, sx = 0, sy = 0, sxx = 0, sxy = 0, syy = 0;
+      for (var i = 0; i < n; i++) { sx += xs[i]; sy += ys[i]; sxx += xs[i] * xs[i]; sxy += xs[i] * ys[i]; syy += ys[i] * ys[i]; }
+      var m = (n * sxy - sx * sy) / (n * sxx - sx * sx);
+      var b = (sy - m * sx) / n;
+      var num = (n * sxy - sx * sy);
+      var den = Math.sqrt((n * sxx - sx * sx) * (n * syy - sy * sy));
+      var r2 = den !== 0 ? Math.pow(num / den, 2) : 0;
+      return { slope: m, intercept: b, R2: r2, n: n };
+    }
+
+    var anE = [], anLog = [], caE = [], caLog = [];
+    for (var j = 0; j < E.length; j++) {
+      var dE_mV = (E[j] - E_corr_V) * 1000;
+      var ai = Math.abs(I[j]);
+      if (ai < 1e-12) continue;
+      if (dE_mV >= skip && dE_mV <= win) {
+        anE.push(E[j]); anLog.push(Math.log10(ai));
+      } else if (-dE_mV >= skip && -dE_mV <= win) {
+        caE.push(E[j]); caLog.push(Math.log10(ai));
+      }
+    }
+    if (anE.length < 3 || caE.length < 3) {
+      return { error: "need ≥3 samples on each branch within window; got anodic=" + anE.length + ", cathodic=" + caE.length };
+    }
+
+    // 3) Regression: E (V) vs log10(i)
+    //    On anodic branch: E - E_corr = ba · log10(i / i_corr) → slope dE/dlog(i) = ba (V/dec)
+    //    On cathodic branch: E - E_corr = −bc · log10(i / i_corr) → slope dE/dlog(|i|) = −bc
+    //    So bc = |slope_cathodic|.
+    var ranR = _linReg(anLog, anE);  // log10(i) → E, slope = ba_V_dec (positive)
+    var rcaR = _linReg(caLog, caE);  // log10(|i|) → E, slope = -bc_V_dec (negative)
+    var ba_V_dec = ranR.slope;
+    var bc_V_dec = -rcaR.slope;
+    if (ba_V_dec <= 0 || bc_V_dec <= 0) {
+      return { error: "non-physical Tafel slope sign (anodic " + ba_V_dec.toFixed(3) + " V/dec, cathodic " + bc_V_dec.toFixed(3) + " V/dec) — check window selection" };
+    }
+
+    // 4) Extrapolate each branch back to E = E_corr to get log10(i_corr)
+    //    From E = ba_V_dec · log10(i) + intercept_an:  log10(i_corr) = (E_corr - intercept_an) / ba_V_dec
+    //    Likewise log10(i_corr) = (E_corr - intercept_ca) / (-bc_V_dec)
+    var logI_an = (E_corr_V - ranR.intercept) / ba_V_dec;
+    var logI_ca = (E_corr_V - rcaR.intercept) / (-bc_V_dec);
+    var logI_avg = 0.5 * (logI_an + logI_ca);
+    var i_corr_uA_cm2 = Math.pow(10, logI_avg);
+
+    return {
+      E_corr_V: E_corr_V,
+      i_corr_uA_cm2: i_corr_uA_cm2,
+      i_corr_anodic_extrap_uA_cm2: Math.pow(10, logI_an),
+      i_corr_cathodic_extrap_uA_cm2: Math.pow(10, logI_ca),
+      ba_mV_dec: ba_V_dec * 1000,
+      bc_mV_dec: bc_V_dec * 1000,
+      R2_anodic: ranR.R2,
+      R2_cathodic: rcaR.R2,
+      n_anodic_points: ranR.n,
+      n_cathodic_points: rcaR.n,
+      window_mV: win,
+      skip_mV: skip,
+      method: "log-linear regression on each Tafel branch per ASTM G3-14 §6; geometric-mean extrapolation per ASTM G102-89 §3",
+      ref: "ASTM G3-14(2019) Standard Practice for Conventions Applicable to Electrochemical Measurements in Corrosion Testing; "
+         + "ASTM G102-89(2015) Standard Practice for Calculation of Corrosion Rates and Related Information from Electrochemical Measurements §3; "
+         + "Mansfeld F. (1976) Corrosion 32, 143 (Tafel extrapolation review); "
+         + "Stern M. & Geary A.L. (1957) J. Electrochem. Soc. 104, 56."
+    };
+  }
+
   // ---- Self-test against ASTM G5 round-robin -----------------------------
   /** 430 SS in 1N H2SO4 at 30 °C anchor (G5 Annex A1):
    *   E_corr = -0.522 ± 0.027 V vs SCE
@@ -427,13 +562,190 @@
   }
 
   // ---- Module exports ----------------------------------------------------
+  /** Self-test: synthesise a Wagner-Traud scan with known parameters,
+   *  back-fit using the industry-recommended Tafel window (80-250 mV
+   *  outside E_corr per ASTM G3 §6.2 / Mansfeld 1976), compare. */
+  function validateFitTafel() {
+    var E_corr = -0.3, i_corr = 10, ba = 0.060, bc = 0.120;
+    var Es = [], Is = [];
+    for (var k = 0; k <= 80; k++) {
+      // Sweep ±300 mV around E_corr in 7.5 mV steps (slow scan analog)
+      var E = E_corr - 0.300 + k * 0.0075;
+      var i = i_corr * (Math.pow(10, (E - E_corr) / ba) - Math.pow(10, -(E - E_corr) / bc));
+      Es.push(E); Is.push(i);
+    }
+    var fit = fitTafel({ E_V: Es, i_uA_cm2: Is, window_mV: 250, skip_mV: 80 });
+    if (fit.error) return { pass: false, reason: fit.error };
+    var okE  = Math.abs(fit.E_corr_V - E_corr) < 0.005;
+    var okI  = Math.abs(fit.i_corr_uA_cm2 - i_corr) / i_corr < 0.05;  // ±5%
+    var okBa = Math.abs(fit.ba_mV_dec - 60) < 2;
+    var okBc = Math.abs(fit.bc_mV_dec - 120) < 5;
+    var okR  = fit.R2_anodic > 0.999 && fit.R2_cathodic > 0.999;
+    return {
+      pass: okE && okI && okBa && okBc && okR,
+      checks: { E_corr_V: fit.E_corr_V, i_corr_uA_cm2: fit.i_corr_uA_cm2,
+                ba_mV_dec: fit.ba_mV_dec, bc_mV_dec: fit.bc_mV_dec,
+                R2_a: fit.R2_anodic, R2_c: fit.R2_cathodic, okE, okI, okBa, okBc, okR },
+      ref: "Wagner C. & Traud W. (1938) Z. Elektrochem. 44, 391 — combined-current equation; "
+         + "Mansfeld F. (1976) Corrosion 32, 143 — Tafel-region selection ≥80 mV from E_corr; "
+         + "ASTM G3-14(2019) §6.2."
+    };
+  }
+
+  /** Comprehensive in-browser regression battery — every claim independently
+   *  verifiable against a primary source. Run via Electrochem._runTests()
+   *  in the console or via the test-tab once wired. */
+  function _runTests() {
+    var pass = 0, fail = 0, errs = [];
+    function ass(c, msg) { if (c) pass++; else { fail++; errs.push(msg); } }
+    if (!_DATA || !_DATA.length) {
+      return { pass: 0, fail: 1, errs: ["data/polarization.json not loaded — call Electrochem.load() first"] };
+    }
+
+    // === A. Numerical anchors (round-robin reproducibility) ===
+    var vG5 = validateAgainstG5();
+    ass(vG5.pass, "ASTM G5-14 Annex A1 — 430 SS / 1N H2SO4 / 30 °C anchor: " + JSON.stringify(vG5.checks));
+    var vJ = validateAgainstJones();
+    ass(vJ.pass, "Jones 1996 §3.4 Ex.3.4 — Fe / 1N H2SO4 / 25 °C: CR=" + vJ.CR_mm_yr.toFixed(3));
+    var vF = validateFitTafel();
+    ass(vF.pass, "fitTafel back-fit recovery: " + JSON.stringify(vF.checks));
+
+    // === B. Galvele 1976 passivation across PREN ===
+    [[18,46300],[28,259000],[35,1.0e6],[42,3.8e6]].forEach(function(pair){
+      var p = passivationState({PREN:pair[0], Cl_ppm:pair[1]*0.5, T_C:25});
+      ass(p.Cl_crit_ppm > 0, "Galvele Cl_crit positive for PREN " + pair[0]);
+    });
+    ass(passivationState({PREN:28, Cl_ppm:19000, T_C:25}).state === "passive", "316L passive in SW");
+    ass(passivationState({PREN:18, Cl_ppm:19000, T_C:25}).state !== "passive", "304L pitting/active in SW (high Cl/PREN ratio)");
+    ass(passivationState({PREN:42, Cl_ppm:200000, T_C:25}).state === "passive", "2507 passive in concentrated NaCl (PREN 42)");
+
+    // === C. Stern-Geary B (multiple slope combos) ===
+    var sg1 = sternGeary({ba_mV:120, bc_mV:120, Rp_ohm_cm2:10000});
+    ass(Math.abs(sg1.B_mV - 26.05) < 0.5, "Stern-Geary B(120/120) = 26.05 mV");
+    var sg2 = sternGeary({ba_mV:60, bc_mV:120, Rp_ohm_cm2:1000});
+    ass(Math.abs(sg2.B_mV - 17.37) < 0.5, "Stern-Geary B(60/120) = 17.37 mV");
+    var sg3 = sternGeary({ba_mV:40, bc_mV:160, Rp_ohm_cm2:5000});
+    ass(Math.abs(sg3.B_mV - 13.89) < 0.5, "Stern-Geary B(40/160) = 13.89 mV");
+    ass(sternGeary({ba_mV:-10,bc_mV:120,Rp_ohm_cm2:1000}).error, "Stern-Geary rejects negative slope");
+
+    // === D. ASTM G102 conversion ===
+    var gFe = g102_rate({i_corr_uA_cm2:100, EW:27.92, rho_g_cm3:7.87});
+    ass(Math.abs(gFe.CR_mm_yr - 1.160) < 0.005, "G102 Fe 100 µA/cm² → 1.160 mm/yr");
+    var gCu = g102_rate({i_corr_uA_cm2:50, EW:31.77, rho_g_cm3:8.96});
+    ass(Math.abs(gCu.CR_mm_yr - 0.580) < 0.01, "G102 Cu 50 µA/cm² → 0.580 mm/yr");
+    var gZn = g102_rate({i_corr_uA_cm2:1000, EW:32.69, rho_g_cm3:7.14});
+    ass(Math.abs(gZn.CR_mm_yr - 14.97) < 0.05, "G102 Zn 1 mA/cm² → 14.97 mm/yr");
+    ass(g102_rate({i_corr_uA_cm2:-1, EW:28, rho_g_cm3:8}).error, "G102 rejects negative i_corr");
+
+    // === E. Arrhenius i0(T) — Ea 40 kJ/mol from Jones §3.4 ===
+    var r25 = _arrhenius(1e-3, 298.15, 298.15, 40000);
+    var r70 = _arrhenius(1e-3, 343.15, 298.15, 40000);
+    var r150 = _arrhenius(1e-3, 423.15, 298.15, 40000);
+    ass(Math.abs(r25 - 1e-3) < 1e-9, "Arrhenius identity at Tref");
+    ass(r70 > 5*r25 && r70 < 15*r25, "Arrhenius i0(70°C)/i0(25°C) ~5-15× (got "+(r70/r25).toFixed(1)+"×)");
+    ass(r150 > 100*r25, "Arrhenius i0(150°C) > 100× i0(25°C)");
+
+    // === F. MTC composition override (Stansbury §4.5 Cu effect) ===
+    var m1 = overrideFromMTC({metal:"Carbon-steel", env:"SW", parsed_mtc:{composition:{Cu:0.30, Cr:0, Ni:0, Mo:0}}});
+    ass(Math.abs(m1.composition_shift_mV - 125) < 1, "MTC: +0.25 Cu → +125 mV shift");
+    var m2 = overrideFromMTC({metal:"Carbon-steel", env:"SW", parsed_mtc:{composition:{Cu:0.05, Cr:0, Ni:0, Mo:0}}});
+    ass(m2.composition_shift_mV === 0, "MTC: Cu at threshold (0.05%) → 0 mV shift");
+    var m3 = overrideFromMTC({metal:"Carbon-steel", env:"SW", parsed_mtc:{composition:{Cu:0, Cr:2, Ni:1, Mo:1}}});
+    ass(m3.composition_shift_mV > 0 && m3.composition_shift_mV < 100, "MTC: alloying steel modest shift (got "+m3.composition_shift_mV.toFixed(0)+" mV)");
+
+    // === G. Reference-electrode conversion ===
+    ass(Math.abs(REF_E_VSHE.SCE - 0.241) < 1e-9, "SCE = +0.241 V SHE");
+    ass(Math.abs(REF_E_VSHE["Ag/AgCl_sat"] - 0.197) < 1e-9, "Ag/AgCl_sat = +0.197 V SHE");
+    ass(Math.abs(REF_E_VSHE["Cu/CuSO4_sat"] - 0.318) < 1e-9, "Cu/CuSO4 = +0.318 V SHE");
+    var r430 = lookup({metal:"430-passive", env:"Acid_H2SO4", T_C:30});
+    ass(Math.abs(r430.E_corr_V - (-0.478)) < 0.005, "SCE→Ag/AgCl conversion: 430 SS = -0.478 V Ag/AgCl");
+
+    // === H. Lookup coverage on every loaded row ===
+    var sane = 0, insane = 0;
+    _DATA.forEach(function(row){
+      var r = lookup({metal:row.metal, env:row.env, T_C:row.T_ref_C, Cl_ppm:row.Cl_ref_ppm});
+      if (r && r.E_corr_V != null && r.E_corr_V > -3 && r.E_corr_V < 2) sane++; else insane++;
+    });
+    ass(insane === 0, "All "+_DATA.length+" rows produce sane lookups (E_corr in -3..+2 V); insane="+insane);
+    ass(sane === _DATA.length, "Coverage 100% ("+sane+"/"+_DATA.length+")");
+
+    // === I. Row-quality audit (no missing source/citation) ===
+    var noSrc = _DATA.filter(function(r){ return !r.source || !r.citation; }).length;
+    ass(noSrc === 0, "Every row has source + citation; missing="+noSrc);
+    var srcSet = {};
+    _DATA.forEach(function(r){ srcSet[r.source.split(" ")[0]] = (srcSet[r.source.split(" ")[0]]||0) + 1; });
+    ass(Object.keys(srcSet).length >= 10, "≥10 distinct primary sources cited; got "+Object.keys(srcSet).length);
+
+    // === J. Family fallback when no per-row match ===
+    var noEnvRow = lookup({metal:"Carbon-steel", env:"Acid_HCl_BurningOil", T_C:25});
+    ass(noEnvRow == null, "Lookup returns null for unknown env (caller must fallback to FAMILY[])");
+
+    // === K. Passivation transition with rising Cl (sweep) ===
+    var states = [10, 1000, 50000, 500000].map(function(cl){
+      return passivationState({PREN:18, Cl_ppm:cl, T_C:25}).state;
+    });
+    // Cl 10 → very low → passive (above 0.3·Cl_crit threshold may push into pitting, depending on PREN_18 → Cl_crit ~46k ppm)
+    // 10 < 0.3·46k = 13.8k → passive
+    // 1000 < 13.8k → passive
+    // 50000 between Cl_crit and 10·Cl_crit → pitting
+    // 500000 > 10·Cl_crit → active
+    ass(states[0] === "passive", "PREN 18 + Cl=10 → passive");
+    ass(states[2] === "pitting", "PREN 18 + Cl=50k → pitting (got "+states[2]+")");
+    ass(states[3] === "active", "PREN 18 + Cl=500k → active (got "+states[3]+")");
+
+    // === L. fitTafel with various windows ===
+    var Ecor = -0.4, icor = 25, ba = 0.080, bc = 0.140;
+    var Es = [], Is = [];
+    for (var k = 0; k <= 100; k++) {
+      var E = Ecor - 0.350 + k*0.007;
+      var i = icor * (Math.pow(10, (E - Ecor)/ba) - Math.pow(10, -(E - Ecor)/bc));
+      Es.push(E); Is.push(i);
+    }
+    var ft = fitTafel({E_V:Es, i_uA_cm2:Is, window_mV:300, skip_mV:100});
+    ass(Math.abs(ft.E_corr_V - Ecor) < 0.005, "fitTafel deep-window E_corr recovery");
+    ass(Math.abs(ft.ba_mV_dec - 80) < 3, "fitTafel deep-window ba=80 recovery (got "+ft.ba_mV_dec.toFixed(1)+")");
+    ass(Math.abs(ft.bc_mV_dec - 140) < 6, "fitTafel deep-window bc=140 recovery (got "+ft.bc_mV_dec.toFixed(1)+")");
+    ass(ft.R2_anodic > 0.99 && ft.R2_cathodic > 0.99, "fitTafel R² > 0.99 on both branches");
+
+    // === M. fitTafel error cases ===
+    var ftErr1 = fitTafel({E_V:[1,2], i_uA_cm2:[1,2]});
+    ass(ftErr1.error, "fitTafel rejects <6 points");
+    var ftErr2 = fitTafel({E_V:[0,0.1,0.2,0.3,0.4,0.5], i_uA_cm2:[1,2,3,4,5,6]});
+    ass(ftErr2.error, "fitTafel rejects no-zero-crossing scan");
+
+    // === N. Spot-check famous alloy/env pairs (industry references) ===
+    [
+      ["Carbon-steel", "SW", "LaQue"],
+      ["316L-passive", "SW", "Sedriks"],
+      ["Al-anode-AlZnIn", "SW", "DNV"],
+      ["Carbon-steel", "Acid_H2SO4", "Jones"],
+      ["Tantalum", "Acid_HCl", "Cardarelli"],
+      ["Carbon-steel", "sCO2", "Sim"],
+      ["Inconel-690-passive", "PWR", "EPRI"]
+    ].forEach(function(t){
+      var r = lookup({metal:t[0], env:t[1]});
+      ass(r && r.citation && r.citation.indexOf(t[2]) >= 0, "Citation contains '"+t[2]+"' for "+t[0]+"/"+t[1]);
+    });
+
+    // === O. ENV_FAMILY + METAL_FAMILY completeness ===
+    var envFamCovered = Object.keys(ENV_FAMILY).length;
+    ass(envFamCovered >= 20, "≥20 envs in ENV_FAMILY; got "+envFamCovered);
+    var metFamCovered = Object.keys(METAL_FAMILY).length;
+    ass(metFamCovered >= 40, "≥40 metals in METAL_FAMILY; got "+metFamCovered);
+
+    return { pass: pass, fail: fail, errs: errs, total: pass+fail };
+  }
+
   var Electrochem = {
     load: load, rows: rows, setData: setData,
     lookup: lookup, passivationState: passivationState,
     sternGeary: sternGeary, g102_rate: g102_rate,
+    fitTafel: fitTafel,
     overrideFromMTC: overrideFromMTC,
     validateAgainstG5: validateAgainstG5,
     validateAgainstJones: validateAgainstJones,
+    validateFitTafel: validateFitTafel,
+    _runTests: _runTests,
     REF_E_VSHE: REF_E_VSHE,
     ENV_FAMILY: ENV_FAMILY,
     METAL_FAMILY: METAL_FAMILY,

@@ -383,10 +383,52 @@ function renderCPAC(){
         ? ` · anode <b style="color:#fbbf24">${gc.anode_passivation}</b>` : "";
       const pitTag = gc.cathode_E_pit_V != null
         ? ` · cathode E_pit ${(gc.cathode_E_pit_V*1000).toFixed(0)} mV` : "";
+
+      // Per-heat E_corr patch from any MTC the user uploaded
+      let mtcLine = "";
+      if (window.Electrochem && (window._mtcA || window._mtcB)) {
+        const parts = [];
+        if (window._mtcA) {
+          const oA = Electrochem.overrideFromMTC({metal:gv("g_a"), env:gcEnv, T_C:gcT, Cl_ppm:gcCl, parsed_mtc:{composition:window._mtcA}});
+          if (oA && !oA.error && oA.patched_E_corr_V != null)
+            parts.push(`anode <b>${(oA.composition_shift_mV>0?'+':'')}${oA.composition_shift_mV.toFixed(0)}</b> mV → ${(oA.patched_E_corr_V*1000).toFixed(0)} mV`);
+        }
+        if (window._mtcB) {
+          const oB = Electrochem.overrideFromMTC({metal:gv("g_b"), env:gcEnv, T_C:gcT, Cl_ppm:gcCl, parsed_mtc:{composition:window._mtcB}});
+          if (oB && !oB.error && oB.patched_E_corr_V != null)
+            parts.push(`cathode <b>${(oB.composition_shift_mV>0?'+':'')}${oB.composition_shift_mV.toFixed(0)}</b> mV → ${(oB.patched_E_corr_V*1000).toFixed(0)} mV`);
+        }
+        if (parts.length) mtcLine = `<br><span style="color:#7bd88f;font-size:12px">▸ MTC composition perturbation: ${parts.join(" · ")} (Stansbury §4.5 / Schaffler 1980)</span>`;
+      }
+
+      // Evans-diagram SVG (mixed-potential plot) — only if Charts + cited polarisation available
+      let evansSvg = "";
+      if (window.Charts && window.Charts.evansDiagram && gc.ba_anode_mV_dec && gc.bc_cathode_mV_dec) {
+        // The Galvanic.couple output gives the anode metal's ba/i0 and the cathode metal's bc/i0
+        // but we want BOTH branches of BOTH metals for a full Evans diagram. Look them up.
+        const lookA = (window.Electrochem && window.Electrochem.lookup) ? window.Electrochem.lookup({metal:gv("g_a"), env:gcEnv, T_C:gcT, Cl_ppm:gcCl}) : null;
+        const lookB = (window.Electrochem && window.Electrochem.lookup) ? window.Electrochem.lookup({metal:gv("g_b"), env:gcEnv, T_C:gcT, Cl_ppm:gcCl}) : null;
+        const aMetal = (gc.anode_E === (lookA?lookA.E_corr_V:null) || gv("g_a")===Galvanic.METALS[gv("g_a")]?.label?.slice(0,3)) ? lookA : lookB;
+        // Simpler: just look up both, decide anode/cathode from gc result
+        if (lookA && lookB) {
+          const aIsA = (gc.anode_E === lookA.E_corr_V) || (Math.abs(gc.anode_E - lookA.E_corr_V) < 0.005);
+          const anodeData = aIsA ? lookA : lookB;
+          const cathData  = aIsA ? lookB : lookA;
+          const evansArgs = {
+            w: 640, h: 320, title: "Evans diagram (mixed potential)",
+            anode: { label: gc.anode.split(" ")[0]+" "+gc.anode.split(" ")[1], E_corr_V: gc.anode_E, ba_mV: anodeData.ba_mV_dec, bc_mV: anodeData.bc_mV_dec, i0_a_Am2: anodeData.i0_a_A_m2 || 1e-3, i0_c_Am2: anodeData.i0_c_A_m2 || 1e-3, color: "#f59e0b" },
+            cathode: { label: gc.cathode.split(" ")[0]+" "+gc.cathode.split(" ")[1], E_corr_V: gc.cathode_E, ba_mV: cathData.ba_mV_dec, bc_mV: cathData.bc_mV_dec, i0_a_Am2: cathData.i0_a_A_m2 || 1e-3, i0_c_Am2: cathData.i0_c_A_m2 || 1e-3, color: "#2dd4bf" },
+            couple: { E_couple_V: 0.5*(gc.anode_E + gc.cathode_E), i_galv_Am2: gc.i_galv_parity_Am2 }
+          };
+          evansSvg = `<div class="chartwrap" style="margin-top:8px">${Charts.evansDiagram(evansArgs)}</div>`;
+        }
+      }
+
       return `<div class="iso ${cls}"><b>Galvanic couple — ${gc.level.toUpperCase()}</b> · anode rate <b>${gc.CR_anode_mm_yr.toFixed(3)} mm/yr</b>${gc.mass_transfer_capped?" (O₂-limited)":""} · ${citedTag}<br>
         <b>${gc.anode}</b> (anode) ⇄ <b>${gc.cathode}</b> · ΔE <b>${gc.deltaE_mV.toFixed(0)} mV</b> · area ratio ${gc.areaRatio.toFixed(1)}× · i<sub>anode</sub> <b>${gc.i_anode_Am2.toFixed(3)} A/m²</b>${pasTag}${pitTag}.
-        <br><span style="color:var(--dim);font-size:12px">${gc.env} · ${gc.T_C}°C · Cl ${gc.Cl_ppm.toFixed(0)} ppm · Tafel: ba ${gc.ba_anode_mV_dec} / bc ${gc.bc_cathode_mV_dec} mV·dec⁻¹ · i₀ anode ${gc.i0_anode_Am2.toExponential(0)} A/m² · EW ${gc.EW_anode} g/eq · ρ ${gc.rho_anode_g_cm3} g/cm³ · flow ${gc.flow} (i_lim ${gc.i_lim_cathode_Am2} A/m²)${gc.anode_source?` · anode src ${gc.anode_source}`:""}${gc.cathode_source?` · cath src ${gc.cathode_source}`:""}</span>
+        <br><span style="color:var(--dim);font-size:12px">${gc.env} · ${gc.T_C}°C · Cl ${gc.Cl_ppm.toFixed(0)} ppm · Tafel: ba ${gc.ba_anode_mV_dec} / bc ${gc.bc_cathode_mV_dec} mV·dec⁻¹ · i₀ anode ${gc.i0_anode_Am2.toExponential(0)} A/m² · EW ${gc.EW_anode} g/eq · ρ ${gc.rho_anode_g_cm3} g/cm³ · flow ${gc.flow} (i_lim ${gc.i_lim_cathode_Am2} A/m²)${gc.anode_source?` · anode src ${gc.anode_source}`:""}${gc.cathode_source?` · cath src ${gc.cathode_source}`:""}</span>${mtcLine}
         <br>${gc.note}</div>
+        ${evansSvg}
         <div class="explain"><span style="color:var(--dim)">${gc.ref}</span></div>`;})()}
     ${(()=>{ if(!window.Groundbed) return ""; const sb=window.Groundbed.sundeMulti({rho_ohm_m:+gv("gb_rho"),L_m:+gv("gb_L"),d_m:(+gv("gb_d"))/1000,s_m:+gv("gb_s"),n:+gv("gb_n")});
       if(sb.error) return "";
@@ -396,6 +438,49 @@ function renderCPAC(){
         <div class="explain"><span style="color:var(--dim)">${sb.ref}</span></div>`;})()}`;
 }
 $("cpacForm")&&$("cpacForm").addEventListener("input", renderCPAC);
+
+// MTC upload → per-heat E_corr override for galvanic anode/cathode.
+// Accepts JSON ({composition:{Cu:0.30,...}} or flat {Cu:0.30,...}) or
+// 2-column CSV "element,wt%" (header optional).
+function _parseMTC(text){
+  text = String(text||"").trim();
+  if (!text) return null;
+  // Try JSON first
+  try {
+    const j = JSON.parse(text);
+    return j.composition || j;
+  } catch(_) { /* fall through to CSV */ }
+  // CSV-style: each line "El,value" — skip header if non-numeric value
+  const out = {};
+  text.split(/\r?\n/).forEach(line => {
+    const cols = line.split(/[,;\t]/).map(s=>s.trim());
+    if (cols.length >= 2 && cols[0] && !isNaN(+cols[1])) out[cols[0]] = +cols[1];
+  });
+  return Object.keys(out).length ? out : null;
+}
+function _hookMTC(id, slot){
+  const el = $(id); if (!el) return;
+  el.addEventListener("change", function(ev){
+    const f = ev.target.files && ev.target.files[0];
+    if (!f) { window[slot] = null; renderCPAC(); return; }
+    const r = new FileReader();
+    r.onload = e => {
+      const parsed = _parseMTC(e.target.result);
+      if (!parsed) {
+        if ($("g_mtc_info")) $("g_mtc_info").textContent = "Could not parse "+f.name+" — expected JSON or 2-column CSV (element,wt%)";
+        window[slot] = null;
+      } else {
+        window[slot] = parsed;
+        const keys = Object.keys(parsed).slice(0,6).map(k => `${k}:${parsed[k]}`).join(" · ");
+        if ($("g_mtc_info")) $("g_mtc_info").textContent = `${slot==='_mtcA'?'Anode':'Cathode'} MTC loaded — ${keys}${Object.keys(parsed).length>6?` (+${Object.keys(parsed).length-6} more)`:""}`;
+      }
+      renderCPAC();
+    };
+    r.readAsText(f);
+  });
+}
+_hookMTC("g_mtc_a", "_mtcA");
+_hookMTC("g_mtc_b", "_mtcB");
 
 // ---- Selection map (probabilistic Material Selection Diagram) ----------------
 const ENV_DIAGRAMS = {

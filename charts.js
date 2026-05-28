@@ -145,6 +145,82 @@ window.Charts={
     if(o.isoGrid){ky+=26;s+=`<line x1="${lx}" y1="${ky}" x2="${lx+14}" y2="${ky}" stroke="${PAL.amber}" stroke-width="1.6" stroke-dasharray="4 3"/><text x="${lx}" y="${ky+13}" fill="${PAL.muted}" font-size="9">ISO 15156</text>`;}
     if(o.point){ky+=26;s+=`<circle cx="${lx+7}" cy="${ky}" r="5" fill="none" stroke="#fff" stroke-width="2"/><text x="${lx}" y="${ky+15}" fill="${PAL.muted}" font-size="9">your point</text>`;}
     return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block;font-family:var(--mono,monospace)">${s}</svg>`;
+  },
+
+  /* Evans-diagram (E vs log|i|) for a galvanic couple.
+     Shows anodic + cathodic Tafel branches for both metals; the intersection
+     of anode-anodic with cathode-cathodic gives mixed potential E_couple
+     and corrosion current i_galv. Per Stansbury & Buchanan (2000) Fig.4-22,
+     Jones (1996) Fig.3-13.
+       o.anode    {label, E_corr_V, ba_mV, bc_mV, i0_a_Am2, i0_c_Am2, color?}
+       o.cathode  {label, E_corr_V, ba_mV, bc_mV, i0_a_Am2, i0_c_Am2, color?}
+       o.couple   {E_couple_V, i_galv_Am2}        (output of Galvanic.couple)
+       o.i_min/o.i_max  A/m² range (default 1e-6 to 1e2)                */
+  evansDiagram:function(o){
+    const a=o.anode, c=o.cathode, cp=o.couple;
+    const iMin = o.i_min || 1e-6, iMax = o.i_max || 1e2;
+    // Convert i [A/m²] to µA/cm² for display: factor 100
+    const i_to_ucm2 = v => v * 100;
+    const xMin = i_to_ucm2(iMin), xMax = i_to_ucm2(iMax);
+    const eAll = [a.E_corr_V, c.E_corr_V, cp && cp.E_couple_V].filter(v => v != null);
+    const yMin = Math.min(...eAll) - 0.25;
+    const yMax = Math.max(...eAll) + 0.25;
+    const p = plot({ w: o.w||640, h: o.h||320, title: o.title||'Evans diagram',
+      xmin: xMin, xmax: xMax, ymin: yMin, ymax: yMax, xlog: true,
+      xlabel: 'log |i|  (µA/cm²)', ylabel: 'E  (V vs ref)' });
+    // Build a Tafel line through (i_corr_per_branch, E_corr) with slope b
+    //   E = E_corr ± b·log10(i/i_corr_per_branch)
+    // Use the alloy's published i0 (anodic) for anodic branch and i0 (cathodic) for cathodic branch.
+    function tafel(metal, branch) {
+      // For each metal compute E vs i for the requested branch in (xMin,xMax)
+      const b_V = (branch==='anodic' ? metal.ba_mV : -metal.bc_mV) / 1000;
+      // i0 is in A/m²; the line passes through (i0, E_eq_branch≈E_corr) — approx
+      const i0_Am2 = branch==='anodic' ? metal.i0_a_Am2 : metal.i0_c_Am2;
+      const i0_uc = i_to_ucm2(i0_Am2);
+      const pts = [];
+      const n = 80;
+      for (let k = 0; k <= n; k++) {
+        const lo = Math.log10(xMin) + (Math.log10(xMax) - Math.log10(xMin)) * (k/n);
+        const i_uc = Math.pow(10, lo);
+        const E = metal.E_corr_V + b_V * Math.log10(i_uc / i0_uc);
+        // Clip outside frame
+        if (E >= yMin && E <= yMax) pts.push({ x: i_uc, y: E });
+      }
+      return pts;
+    }
+    // Colours
+    const cA = a.color || PAL.amber, cC = c.color || PAL.accent;
+    // Draw 4 branches: anode anodic (solid), anode cathodic (dashed),
+    //                   cathode anodic (dashed), cathode cathodic (solid)
+    function path(pts, color, dash) {
+      if (pts.length < 2) return '';
+      return `<path d="${linePath(pts, p.tx, p.ty)}" fill="none" stroke="${color}" stroke-width="2" ${dash?`stroke-dasharray="${dash}"`:''}/>`;
+    }
+    p.s += path(tafel(a,'anodic'),  cA, '');
+    p.s += path(tafel(a,'cathodic'),cA, '4 3');
+    p.s += path(tafel(c,'anodic'),  cC, '4 3');
+    p.s += path(tafel(c,'cathodic'),cC, '');
+    // E_couple horizontal line + i_galv vertical line
+    if (cp && cp.E_couple_V != null && cp.i_galv_Am2 != null) {
+      const i_galv_uc = i_to_ucm2(cp.i_galv_Am2);
+      const Yec = p.ty(cp.E_couple_V), Xig = p.tx(i_galv_uc);
+      p.s += `<line x1="${p.m.l}" y1="${Yec.toFixed(1)}" x2="${p.m.l+p.pw}" y2="${Yec.toFixed(1)}" stroke="${PAL.ink}" stroke-width="1.2" stroke-dasharray="2 2" opacity="0.85"/>`;
+      p.s += `<line x1="${Xig.toFixed(1)}" y1="${p.m.t}" x2="${Xig.toFixed(1)}" y2="${p.m.t+p.ph}" stroke="${PAL.ink}" stroke-width="1.2" stroke-dasharray="2 2" opacity="0.85"/>`;
+      p.s += `<circle cx="${Xig.toFixed(1)}" cy="${Yec.toFixed(1)}" r="6" fill="none" stroke="${PAL.ink}" stroke-width="2"/>`;
+      p.s += `<text x="${(Xig+8).toFixed(1)}" y="${(Yec-8).toFixed(1)}" fill="${PAL.ink}" font-size="10">E_couple ${(cp.E_couple_V*1000).toFixed(0)} mV · i_galv ${i_galv_uc.toFixed(1)} µA/cm²</text>`;
+    }
+    // Legend
+    const ly0 = p.m.t + 14, lx = p.m.l + p.pw - 230;
+    p.s += `<rect x="${lx-6}" y="${ly0-12}" width="232" height="64" fill="#0a0e14" stroke="${PAL.line}" opacity="0.92"/>`;
+    p.s += `<line x1="${lx}" y1="${ly0}" x2="${lx+22}" y2="${ly0}" stroke="${cA}" stroke-width="2"/>`;
+    p.s += `<text x="${lx+27}" y="${ly0+3}" fill="${PAL.ink}" font-size="10">${E(a.label)} anodic</text>`;
+    p.s += `<line x1="${lx}" y1="${ly0+14}" x2="${lx+22}" y2="${ly0+14}" stroke="${cA}" stroke-width="2" stroke-dasharray="4 3"/>`;
+    p.s += `<text x="${lx+27}" y="${ly0+17}" fill="${PAL.muted}" font-size="10">${E(a.label)} cathodic</text>`;
+    p.s += `<line x1="${lx}" y1="${ly0+28}" x2="${lx+22}" y2="${ly0+28}" stroke="${cC}" stroke-width="2" stroke-dasharray="4 3"/>`;
+    p.s += `<text x="${lx+27}" y="${ly0+31}" fill="${PAL.muted}" font-size="10">${E(c.label)} anodic</text>`;
+    p.s += `<line x1="${lx}" y1="${ly0+42}" x2="${lx+22}" y2="${ly0+42}" stroke="${cC}" stroke-width="2"/>`;
+    p.s += `<text x="${lx+27}" y="${ly0+45}" fill="${PAL.ink}" font-size="10">${E(c.label)} cathodic</text>`;
+    return wrap(p);
   }
 };
 })();
