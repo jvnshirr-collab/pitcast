@@ -1361,36 +1361,75 @@ function _bindIndustryHandlers(){
 function renderFFS(){
   var host = $("ffs_results"); if (!host || !window.FFS) return;
   var gv = function(id){ return $(id) ? +$(id).value : 0; };
+  var gvc = function(id){ return $(id) ? !!$(id).checked : false; };
+  // Part 5 LTA
   var p5 = FFS.part5_LTA_L1({
     tmm_mm: gv("ffs5_tmm"), t_nom_mm: gv("ffs5_tnom"),
     LOSS_mm: gv("ffs5_loss"), FCA_mm: gv("ffs5_fca"),
     s_axial_mm: gv("ffs5_s"), D_inside_mm: gv("ffs5_D"),
     MAWP_design_bar: gv("ffs5_mawp"), RSFa: gv("ffs5_rsfa")
   });
-  var p3 = FFS.part3_MAT_L1({
-    material_curve: $("ffs3_curve").value,
-    governing_thickness_mm: gv("ffs3_tg"),
-    T_op_min_C: gv("ffs3_top")
+  // Part 6 Pitting — Level 1 (auto from pit density + max depth) + Level 2 (pit-couple)
+  var p6L1 = FFS.part6_pitting_L1({
+    max_pit_depth_mm: gv("ffs6_d"),
+    pit_density_per_m2: gv("ffs6_n"),
+    t_nom_mm: gv("ffs5_tnom"),
+    MAWP_design_bar: gv("ffs5_mawp"),
+    RSFa: gv("ffs5_rsfa")
   });
-  var p14 = FFS.part14_fatigue_L1({
-    cycles_count: gv("ffs14_n"),
-    has_thermal_shock: $("ffs14_ts").checked
+  var p6L2 = FFS.part6_pitting_L2({
+    max_pit_depth_mm: gv("ffs6_d"),
+    pit_diameter_mm: gv("ffs6_dia"),
+    pit_spacing_mm: gv("ffs6_s"),
+    t_nom_mm: gv("ffs5_tnom"),
+    FCA_mm: gv("ffs5_fca"),
+    MAWP_design_bar: gv("ffs5_mawp"),
+    RSFa: gv("ffs5_rsfa")
+  });
+  // Part 7 HIC — Level 1 (NACE TM0284 ratio check) + Level 2 (blister density RSF)
+  var p7L1 = FFS.part7_HIC_L1({
+    CLR_pct: gv("ffs7_CLR"), CTR_pct: gv("ffs7_CTR"), CSR_pct: gv("ffs7_CSR"),
+    has_SOHIC: gvc("ffs7_sohic"), has_surface_breaking_crack: gvc("ffs7_sb")
+  });
+  var p7L2 = FFS.part7_HIC_L2({
+    blister_diameter_mm: gv("ffs7_bd"),
+    blister_density_per_m2: gv("ffs7_bn"),
+    t_loss_fraction: gv("ffs7_tl"),
+    t_nom_mm: gv("ffs5_tnom"),
+    FCA_mm: gv("ffs5_fca"),
+    MAWP_design_bar: gv("ffs5_mawp"),
+    RSFa: gv("ffs5_rsfa")
   });
   function cls(passes) { return passes === true ? "within" : passes === false ? "exceeds" : "untabulated"; }
+  function nv(v, d) { return v != null && isFinite(v) ? v.toFixed(d) : "—"; }
   host.innerHTML =
     '<div class="iso ' + cls(p5.passes) + '"><b>Part 5 LTA Level 1 — ' + (p5.passes === true ? 'PASS' : p5.passes === false ? 'FAIL' : 'GATES FAIL') + '</b><br>' +
-      'Rt = <b>' + (p5.Rt != null ? p5.Rt.toFixed(3) : '—') + '</b> · λ = <b>' + (p5.lambda != null ? p5.lambda.toFixed(3) : '—') + '</b> · Mt = <b>' + (p5.Mt != null ? p5.Mt.toFixed(3) : '—') + '</b> · RSF = <b>' + (p5.RSF != null ? p5.RSF.toFixed(3) : '—') + '</b> (RSFa = ' + p5.RSFa + ')<br>' +
-      'MAWP reduced: <b>' + (p5.MAWP_reduced_bar != null ? p5.MAWP_reduced_bar.toFixed(1) : '—') + ' bar</b><br>' +
+      'Rt = <b>' + nv(p5.Rt, 3) + '</b> · λ = <b>' + nv(p5.lambda, 3) + '</b> · Mt = <b>' + nv(p5.Mt, 3) + '</b> · RSF = <b>' + nv(p5.RSF, 3) + '</b> (RSFa = ' + p5.RSFa + ')<br>' +
+      'MAWP reduced: <b>' + nv(p5.MAWP_reduced_bar, 1) + ' bar</b><br>' +
       '<span style="color:var(--dim);font-size:12px">' + (p5.recommendation || '') + '</span></div>' +
     '<div class="explain"><span style="color:var(--dim)">' + (p5.ref || '') + '</span></div>' +
-    '<div class="iso ' + cls(p3.passes) + '"><b>Part 3 Brittle Fracture — ' + (p3.passes === true ? 'PASS' : p3.passes === false ? 'FAIL' : '—') + '</b><br>' +
-      'Curve ' + p3.material_curve + ' @ ' + p3.governing_thickness_mm + ' mm → MAT = <b>' + p3.MAT_C + ' °C</b>, op-min = ' + p3.T_op_min_C + ' °C, margin = <b>' + (p3.margin_C != null ? p3.margin_C.toFixed(1) : '?') + ' °C</b><br>' +
-      '<span style="color:var(--dim);font-size:12px">' + p3.recommendation + '</span></div>' +
-    '<div class="explain"><span style="color:var(--dim)">' + p3.ref + '</span></div>' +
-    '<div class="iso ' + cls(p14.passes) + '"><b>Part 14 Fatigue — ' + (p14.passes ? 'SCREENED OUT' : 'ESCALATE') + '</b><br>' +
-      p14.cycles_count + ' cycles, thermal shock: ' + (p14.has_thermal_shock ? 'YES' : 'no') + '<br>' +
-      '<span style="color:var(--dim);font-size:12px">' + p14.recommendation + '</span></div>' +
-    '<div class="explain"><span style="color:var(--dim)">' + p14.ref + '</span></div>';
+    '<div class="iso ' + cls(p6L1.passes) + '"><b>Part 6 Pitting Level 1 — ' + (p6L1.passes ? 'PASS' : 'FAIL') + '</b><br>' +
+      'Classification: <b>' + (p6L1.type || '—') + '</b><br>' +
+      'Depth ratio = <b>' + nv(p6L1.depth_ratio*100, 0) + '%</b> · density = <b>' + nv(p6L1.pit_density_per_m2, 0) + ' /m²</b> · RSF = <b>' + (p6L1.RSF != null ? p6L1.RSF.toFixed(2) : 'N/A') + '</b> (RSFa = ' + p6L1.RSFa + ')<br>' +
+      'MAWP reduced: <b>' + nv(p6L1.MAWP_reduced_bar, 1) + ' bar</b><br>' +
+      '<span style="color:var(--dim);font-size:12px">' + (p6L1.recommendation || '') + '</span></div>' +
+    '<div class="iso ' + (p6L2.error ? 'exceeds' : cls(p6L2.passes)) + '"><b>Part 6 Pitting Level 2 — ' +
+      (p6L2.error ? 'NOT APPLICABLE' : (p6L2.passes ? 'PASS' : 'FAIL')) + '</b><br>' +
+      (p6L2.error
+        ? '<span style="color:#fbbf24">' + p6L2.error + '</span>'
+        : 'R_wt = <b>' + nv(p6L2.R_wt, 3) + '</b> · Mt_pit = <b>' + nv(p6L2.Mt_pit, 3) + '</b> · RSF = <b>' + nv(p6L2.RSF, 3) + '</b><br>MAWP reduced: <b>' + nv(p6L2.MAWP_reduced_bar, 1) + ' bar</b><br><span style="color:var(--dim);font-size:12px">' + (p6L2.recommendation || '') + '</span>') +
+      '</div>' +
+    '<div class="explain"><span style="color:var(--dim)">' + (p6L1.ref || '') + ' · ' + (p6L2.ref || '') + '</span></div>' +
+    '<div class="iso ' + cls(p7L1.passes) + '"><b>Part 7 HIC Level 1 (NACE TM0284) — ' + (p7L1.passes ? 'PASS' : 'FAIL') + '</b><br>' +
+      'CLR <b>' + nv(p7L1.CLR_pct, 1) + '%</b> (≤15: ' + (p7L1.CLR_pass?'✓':'✗') + ') · CTR <b>' + nv(p7L1.CTR_pct, 1) + '%</b> (≤5: ' + (p7L1.CTR_pass?'✓':'✗') + ') · CSR <b>' + nv(p7L1.CSR_pct, 1) + '%</b> (≤2: ' + (p7L1.CSR_pass?'✓':'✗') + ')<br>' +
+      (p7L1.has_SOHIC ? '<b style="color:#fbbf24">SOHIC ACTIVE</b> · ' : '') + (p7L1.has_surface_breaking_crack ? '<b style="color:#c0392b">SURFACE-BREAKING CRACK</b><br>' : '') +
+      'Verdict: <b>' + (p7L1.verdict || '—') + '</b><br>' +
+      '<span style="color:var(--dim);font-size:12px">' + (p7L1.action || '') + '</span></div>' +
+    '<div class="iso ' + cls(p7L2.passes) + '"><b>Part 7 HIC Level 2 (blister-density RSF) — ' + (p7L2.passes ? 'PASS' : 'FAIL') + '</b><br>' +
+      'Blister-affected area = <b>' + nv(p7L2.blister_area_fraction*100, 2) + '%</b> · t-loss under blister = <b>' + nv(p7L2.t_loss_fraction*100, 0) + '%</b> · K_blister = ' + (p7L2.K_blister || 2) + '<br>' +
+      'RSF = <b>' + nv(p7L2.RSF, 3) + '</b> (RSFa = ' + p7L2.RSFa + ') · MAWP reduced: <b>' + nv(p7L2.MAWP_reduced_bar, 1) + ' bar</b><br>' +
+      '<span style="color:var(--dim);font-size:12px">' + (p7L2.recommendation || '') + '</span></div>' +
+    '<div class="explain"><span style="color:var(--dim)">' + (p7L1.ref || '') + ' · ' + (p7L2.ref || '') + '</span></div>';
 }
 if ($("ffsForm")) $("ffsForm").addEventListener("input", renderFFS);
 

@@ -571,9 +571,9 @@ D-002,95,2.1
     </div>
   </section>
 
-  <!-- FFS (API 579) -------------------------------------------------- -->
+  <!-- FFS (API 579) — corrosion-driven damage only ------------------ -->
   <section class="panel" id="tab-ffs">
-    <div class="datastat">API 579-1/ASME FFS-1 (2021) vessel/piping FFS — Part 5 LTA Level 1 (workhorse), Part 4 General Metal Loss PTR Level 1, Part 3 Brittle Fracture MAT Level 1, Part 14 Fatigue Level 1 screening. Closed-form per cited annex sections.</div>
+    <div class="datastat">API 579-1/ASME FFS-1 (2021) fitness-for-service — corrosion-damage subset: Part 4 General Metal Loss, Part 5 Local Metal Loss (LTA, workhorse), Part 6 Pitting (ASTM G46), Part 7 HIC / Hydrogen Blistering (NACE TM0284). Closed-form Level 1 + Level 2 per cited annex sections. Non-corrosion FFS (brittle fracture, fatigue, creep, dents) is out of scope — use a dedicated FFS tool.</div>
     <div class="grid">
       <form class="card inputs" id="ffsForm">
         <h3>Part 5 — Local Metal Loss (LTA)</h3>
@@ -593,22 +593,35 @@ D-002,95,2.1
           <label>MAWP design (bar)<input type="number" id="ffs5_mawp" value="21" step="1"></label>
           <label>RSFa<input type="number" id="ffs5_rsfa" value="0.90" step="0.05"></label>
         </div>
-        <h3>Part 3 — Brittle Fracture MAT</h3>
+        <h3>Part 6 — Pitting Damage (ASTM G46 + API 579 §6)</h3>
         <div class="row">
-          <label>Material curve<select id="ffs3_curve">
-            <option value="A">A (worst)</option><option value="B" selected>B (A516-70 normalised)</option>
-            <option value="C">C (A537 Q+T)</option><option value="D">D (best, Q+T low-impurity)</option>
-          </select></label>
-          <label>Governing thickness (mm)<input type="number" id="ffs3_tg" value="25" step="5"></label>
+          <label>Max pit depth (mm)<input type="number" id="ffs6_d" value="3" step="0.5"></label>
+          <label>Pit density (per m²)<input type="number" id="ffs6_n" value="10000" step="1000"></label>
         </div>
-        <label>Min operating T (°C)<input type="number" id="ffs3_top" value="0" step="5"></label>
-        <h3>Part 14 — Fatigue L1 screening</h3>
         <div class="row">
-          <label>Cycle count<input type="number" id="ffs14_n" value="50" step="10"></label>
-          <label class="rowchk"><input type="checkbox" id="ffs14_ts"> Thermal shock?</label>
+          <label>Pit diameter (mm, Level 2)<input type="number" id="ffs6_dia" value="2" step="0.5"></label>
+          <label>Pit spacing (mm, Level 2)<input type="number" id="ffs6_s" value="20" step="2"></label>
         </div>
+        <h3>Part 7 — HIC / Hydrogen Blistering (NACE TM0284)</h3>
+        <div class="row">
+          <label>CLR % (Crack Length Ratio)<input type="number" id="ffs7_CLR" value="10" step="1" min="0" max="100"></label>
+          <label>CTR % (Crack Thickness Ratio)<input type="number" id="ffs7_CTR" value="3" step="0.5" min="0" max="100"></label>
+        </div>
+        <div class="row">
+          <label>CSR % (Crack Sensitivity Ratio)<input type="number" id="ffs7_CSR" value="1.5" step="0.5" min="0" max="100"></label>
+          <label class="rowchk"><input type="checkbox" id="ffs7_sohic"> SOHIC active?</label>
+        </div>
+        <div class="row">
+          <label class="rowchk"><input type="checkbox" id="ffs7_sb"> Surface-breaking crack visible?</label>
+        </div>
+        <h3>Part 7 — Level 2 blister-density assessment</h3>
+        <div class="row">
+          <label>Blister diameter (mm)<input type="number" id="ffs7_bd" value="20" step="2" min="0"></label>
+          <label>Blister density (per m²)<input type="number" id="ffs7_bn" value="5" step="1" min="0"></label>
+        </div>
+        <label>Through-wall loss fraction under blister (0-1)<input type="number" id="ffs7_tl" value="0.10" step="0.05" min="0" max="1"></label>
       </form>
-      <div class="card results" id="ffs_results"><div class="placeholder">Enter LTA / MAT / fatigue inputs →</div></div>
+      <div class="card results" id="ffs_results"><div class="placeholder">Enter LTA / pitting / HIC inputs →</div></div>
     </div>
   </section>
 
@@ -811,14 +824,14 @@ D-002,95,2.1
 <script src="interaction.js?v=1"></script>
 <script src="mr0175.js?v=1"></script>
 <script src="cips.js?v=1"></script>
-<script src="ffs.js?v=1"></script>
+<script src="ffs.js?v=2"></script>
 <script src="rbi-detailed.js?v=2"></script>
 <script src="rbi-damage-mechanisms.js?v=3"></script>
 <script src="audit.js?v=1"></script>
 <script src="storage.js?v=1"></script>
 <script src="projects-ui.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=43"></script>
+<script src="app.js?v=44"></script>
 <script>
   // Wait for mr0175 annexes to load (async fetch)
   if (typeof window !== "undefined") {
