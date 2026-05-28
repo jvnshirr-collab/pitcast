@@ -122,60 +122,8 @@
 
   // ===========================================================================
   // Part 3 — Brittle Fracture (Level 1 — MAT exemption curve)
-  // ===========================================================================
-  // Curves A/B/C/D per UCS-66 / API 579-1 Fig 3.2-3.5
-  // Approximate MAT (°C) as function of governing-thickness t_g (mm) for each curve.
-  function part3_MAT_L1(opts) {
-    var curve = (opts.material_curve || "B").toUpperCase();  // A worst, D best
-    var t_g_mm = +opts.governing_thickness_mm;
-    if (!(t_g_mm > 0)) return { error: "governing_thickness_mm required" };
-
-    // Linear-ish approximation from PLAN-tier3.md anchor points (Curve B at 25 mm ≈ -29 °C; at 50 mm ≈ -10 °C)
-    var curveOffsets = { A: 20, B: 0, C: -10, D: -25 };  // worse curves = warmer MAT
-    var offset = curveOffsets[curve] != null ? curveOffsets[curve] : 0;
-    var MAT_base = -29 + (t_g_mm - 25) * (19 / 25);     // Curve B reference line
-    var MAT = MAT_base + offset;
-    if (MAT < -104) MAT = -104;   // standard floor
-
-    var T_op_min = +opts.T_op_min_C;
-    var passes = T_op_min != null ? (T_op_min >= MAT) : null;
-    var margin_C = T_op_min != null ? (T_op_min - MAT) : null;
-
-    return {
-      level: 1,
-      material_curve: curve,
-      governing_thickness_mm: t_g_mm,
-      MAT_C: Math.round(MAT * 10) / 10,
-      T_op_min_C: T_op_min,
-      margin_C: margin_C,
-      passes: passes,
-      recommendation: passes == null ? "Provide T_op_min_C for verdict"
-        : passes ? "Level 1 PASS — operating T above MAT; brittle fracture screened out"
-                 : "Level 1 FAIL — escalate to Level 2 (MAT + CET combined) or Level 3 (Annex 9F Master Curve)",
-      ref: "API 579-1/ASME FFS-1 (2021) Part 3 §3.4 Level 1 + Annex 3B exemption curves"
-    };
-  }
-
-  // ===========================================================================
-  // Part 14 — Fatigue (Level 1 screening only)
-  // ===========================================================================
-  function part14_fatigue_L1(opts) {
-    var cycles_count = +opts.cycles_count || 0;
-    var has_thermal_shock = !!opts.has_thermal_shock;
-    var method_screen = opts.method_screen || "C";  // ASME VIII-2 Part 5.5.2 Method A/B/C
-
-    // Level 1 screening rule: skip if cycles < 100 AND no thermal shock AND screen passes
-    var skip = cycles_count < 100 && !has_thermal_shock;
-    return {
-      level: 1,
-      cycles_count: cycles_count,
-      has_thermal_shock: has_thermal_shock,
-      passes: skip,
-      recommendation: skip ? "Level 1 PASS — fatigue screened out (cycles < 100, no thermal shock)"
-                            : "Level 1 not applicable — escalate to Level 2 (rainflow + S-N + Miner per ASME VIII-2 Annex 3-F)",
-      ref: "API 579-1/ASME FFS-1 (2021) Part 14 §14.4 Level 1 screening + ASME VIII-2 Part 5.5.2 Method " + method_screen
-    };
-  }
+  // Part 3 (Brittle-Fracture MAT) + Part 14 (Fatigue) removed — out of
+  // corrosion scope. Use a separate fitness-for-service tool for those.
 
   // ===========================================================================
   // Embedded regression tests
@@ -216,19 +164,7 @@
     ass(p4_var.passes === false, "Part 4 high COV → fail");
     ass(p4_var.recommendation.indexOf("Level 2") >= 0, "Recommends escalation to L2");
 
-    // Part 3 — Curve B at 25 mm thickness
-    var p3 = part3_MAT_L1({ material_curve: "B", governing_thickness_mm: 25, T_op_min_C: 0 });
-    ass(p3.MAT_C < 0, "Curve B @ 25 mm MAT < 0 °C got " + p3.MAT_C);
-    ass(p3.passes === true, "T_op=0 ≥ MAT → PASS");
-    var p3b = part3_MAT_L1({ material_curve: "A", governing_thickness_mm: 100, T_op_min_C: -50 });
-    ass(p3b.MAT_C > -50, "Curve A @ 100 mm MAT > -50 °C");
-    ass(p3b.passes === false, "T_op=-50 < MAT → FAIL");
-
-    // Part 14 — under 100 cycles screens out
-    var p14_skip = part14_fatigue_L1({ cycles_count: 50, has_thermal_shock: false });
-    ass(p14_skip.passes === true, "50 cycles screen out");
-    var p14_fail = part14_fatigue_L1({ cycles_count: 500, has_thermal_shock: false });
-    ass(p14_fail.passes === false, "500 cycles → escalate");
+    // (Part 3 MAT/brittle + Part 14 fatigue tests removed — out of corrosion scope)
 
     return { pass: pass, fail: fail, errs: errs };
   }
@@ -237,8 +173,6 @@
     foliasMt: foliasMt,
     part4_Level1: part4_Level1,
     part5_LTA_L1: part5_LTA_L1,
-    part3_MAT_L1: part3_MAT_L1,
-    part14_fatigue_L1: part14_fatigue_L1,
     _runTests: _runTests
   };
   root.FFS = FFS;

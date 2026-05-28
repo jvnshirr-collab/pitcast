@@ -42,8 +42,6 @@
     <button class="tab" data-tab="ffs">FFS (API 579)</button>
     <button class="tab" data-tab="mr0175">MR0175 spec</button>
     <button class="tab" data-tab="cips">CIPS / DCVG</button>
-    <button class="tab" data-tab="fleet">Fleet RBI</button>
-    <button class="tab" data-tab="psm">PSM scorer</button>
   </div>
   <div class="datastat" id="dataStat"></div>
   <div class="exportbar"><button type="button" id="btnPrint">🖶 Print / Save as PDF</button><button type="button" id="btnXLSX">⤓ Export XLSX</button><button type="button" id="btnCSV">⤓ Download CSV</button></div>
@@ -452,7 +450,7 @@
           <option value="acid">Strong acid</option>
         </select></label>
         <p class="hint">Reuses pipe geometry (t<sub>nom</sub>, t<sub>min</sub>) from above. Screening only — full API 581 uses detailed damage-factor tables.</p>
-        <h3>Detailed RBI — service envelope (API RP 581 §6 Annex 2)</h3>
+        <h3>Corrosion damage-mechanism screen (API RP 581 §6 Annex 2.C/D/G)</h3>
         <div class="row">
           <label>Service env<select id="rd_env">
             <option value="generic">Generic / clean</option>
@@ -461,8 +459,8 @@
             <option value="caustic">Caustic / NaOH</option>
             <option value="hf">HF alkylation</option>
             <option value="cryogenic">Cryogenic / low-T</option>
-            <option value="hightemp_h2">High-T hydrogen / hydroprocessing</option>
-            <option value="atmospheric">External atmospheric</option>
+            <option value="hightemp_h2">High-T hydrogen / hydroprocessing (HTHA)</option>
+            <option value="atmospheric">External atmospheric corrosion</option>
             <option value="cui">External CUI (insulated)</option>
           </select></label>
           <label>Material family<select id="rd_family">
@@ -499,22 +497,13 @@
           </select></label>
         </div>
         <div class="row">
-          <label>pH<sub>2</sub> (kPa, hydroprocessing)<input type="number" id="rd_pH2" value="0" step="500" min="0"></label>
-          <label>T<sub>min</sub> operating (°C, brittle)<input type="number" id="rd_Tmin" value="0" step="5"></label>
+          <label>pH<sub>2</sub> (kPa, hydroprocessing HTHA)<input type="number" id="rd_pH2" value="0" step="500" min="0"></label>
+          <label>Hardness (HRC)<input type="number" id="rd_HRC" value="22" step="1" min="0" max="60"></label>
         </div>
         <div class="row">
-          <label>Hardness (HRC)<input type="number" id="rd_HRC" value="22" step="1" min="0" max="60"></label>
           <label>PWHT applied<select id="rd_pwht">
             <option value="false">No</option>
             <option value="true">Yes</option>
-          </select></label>
-        </div>
-        <div class="row">
-          <label>Charpy curve (ASME UCS-66)<select id="rd_charpy">
-            <option value="A">A — mild steel, untested</option>
-            <option value="B" selected>B — normalised CS plate (SA-516-70N)</option>
-            <option value="C">C — impact tested at -29 °C</option>
-            <option value="D">D — impact tested at min design T</option>
           </select></label>
           <label>Welded<select id="rd_welded">
             <option value="true" selected>Yes</option>
@@ -535,7 +524,7 @@
             <option value="true">Yes</option>
           </select></label>
         </div>
-        <p class="hint">Service envelope drives the detailed-RBI damage-mechanism breakdown (API 581 Annexes 2.C SCC family, 2.D HTHA, 2.E Fatigue, 2.F Brittle Fracture, 2.G External / CUI).</p>
+        <p class="hint">Service envelope drives the corrosion damage-mechanism breakdown (API 581 Annexes 2.C SCC family, 2.D HTHA, 2.G External / CUI). Non-corrosion mechanisms (Brittle Fracture, Mechanical Fatigue, Refractory, Tank Settlement) are out of PitCast's corrosion scope — use a separate fitness-for-service tool.</p>
       </form>
       <div class="card results" id="integrity_results"><div class="placeholder">Set pipe geometry →</div></div>
     </div>
@@ -688,106 +677,6 @@ D-002,95,2.1
     </div>
   </section>
 
-  <!-- FLEET RBI — equipment-level dashboard ------------------------------ -->
-  <section class="panel" id="tab-fleet">
-    <div class="datastat">Equipment-level Fleet RBI dashboard per API RP 581 Part 2 §6.3 + Annex 2 (all damage mechanisms). Paste an equipment CSV → per-row combined Damage Factor + PoF · sortable + colour-coded · top-10 risk pin · CSV export. PSM scorer below drives F_MS factor across the whole fleet.</div>
-    <div class="grid">
-      <form class="card inputs" id="fleetForm">
-        <h3>Equipment fleet (paste CSV)</h3>
-        <label class="envwide">Columns: <code>id, type, env, family, age_yr, CR_mmyr, t_nom_mm, t_min_mm, last_insp_eff, NaOH_pct, HF_pct, pH2S_kPa, pH, T_C, Cl_ppm, PWHT, hardness_HRC</code><textarea id="fleet_paste" rows="14" placeholder="id,type,env,family,age_yr,CR_mmyr,t_nom_mm,t_min_mm,last_insp_eff,NaOH_pct,HF_pct,pH2S_kPa,pH,T_C,Cl_ppm,PWHT,hardness_HRC
-V-101,vessel,amine,CS,15,0.10,16,9,B,0,0,5,9,80,200,false,22
-V-102,vessel,sour,CS,20,0.15,20,12,A,0,0,80,4,60,5000,true,22
-E-201,exchanger-shell,FW,316L-passive,10,0.02,12,8,B,0,0,0,7,40,5,false,18
-T-301,AST-shell-welded-maintained,atmospheric,CS,25,0.08,12,6,C,0,0,0,7,35,50,false,22
-P-101,pump-centrifugal-single-seal,sour,CS,12,0.20,15,9,B,0,0,30,5,80,1000,true,22
-PIPE-04in-001,pipe-4-10in,sour,CS,18,0.18,9.5,4.8,A,0,0,40,4.5,75,2000,true,22" style="width:100%;font-family:monospace;font-size:11px;background:rgba(255,255,255,0.04);color:var(--text);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px"></textarea></label>
-        <div class="row">
-          <button type="button" id="fleet_process" class="primary">Compute fleet DF + PoF →</button>
-          <button type="button" id="fleet_export">Export CSV</button>
-        </div>
-        <h3>Plant-wide PSM (from PSM scorer tab)</h3>
-        <label>Override F_MS (auto from PSM scorer; 1.0 = no PSM effect)<input type="number" id="fleet_fms" value="1.0" step="0.1" min="0.1" max="10"></label>
-        <h3>Equipment library — add preset</h3>
-        <div class="row">
-          <label>Pick template<select id="fleet_template"><option value="">Select common equipment …</option></select></label>
-          <button type="button" id="fleet_addTemplate">Add as row to CSV →</button>
-        </div>
-        <h3>Fleet inspection-budget optimiser</h3>
-        <div class="row">
-          <label>Budget (USD)<input type="number" id="fleet_budget_USD" value="50000" step="5000" min="0"></label>
-          <button type="button" id="fleet_optimise">Optimise → which equipment to inspect</button>
-        </div>
-        <h3>Damage Mechanism Review (DMR) generator</h3>
-        <div class="row">
-          <label>Pick equipment by ID (from fleet results)<select id="fleet_dmr_pick"><option value="">— pick from fleet —</option></select></label>
-          <button type="button" id="fleet_dmr_generate">Generate DMR →</button>
-        </div>
-        <h3>Replacement-vs-inspect (NPV)</h3>
-        <div class="row">
-          <label>Replacement cost (USD)<input type="number" id="rv_repl" value="500000" step="50000" min="0"></label>
-          <label>Failure consequence (USD)<input type="number" id="rv_fail" value="5000000" step="500000" min="0"></label>
-        </div>
-        <div class="row">
-          <label>Discount rate (%)<input type="number" id="rv_disc" value="8" step="1" min="0"></label>
-          <label>Horizon (yr)<input type="number" id="rv_horizon" value="20" step="1" min="1"></label>
-        </div>
-        <button type="button" id="rv_compute">Compare options →</button>
-        <h3>Multi-period optimiser (5-yr fleet plan)</h3>
-        <div class="row">
-          <label>Annual budget (USD)<input type="number" id="mp_annual_budget" value="30000" step="5000" min="0"></label>
-          <label>Horizon (yr)<input type="number" id="mp_horizon" value="5" step="1" min="1" max="20"></label>
-        </div>
-        <div class="row">
-          <label>Consequence per equipment (USD)<input type="number" id="mp_consequence" value="2000000" step="500000" min="0"></label>
-          <button type="button" id="mp_compute">Build multi-yr plan →</button>
-        </div>
-        <h3>Tornado sensitivity (per input on first fleet equipment)</h3>
-        <button type="button" id="sobol_compute">Run Tornado analysis →</button>
-        <h3>Monte-Carlo uncertainty (P5/P50/P95)</h3>
-        <div class="row">
-          <label>N samples<input type="number" id="mc_n" value="500" step="100" min="100" max="5000"></label>
-          <button type="button" id="mc_compute">Compute MC bands →</button>
-        </div>
-        <h3>MOC (before / after service envelope change)</h3>
-        <div class="row">
-          <label>BEFORE pH<sub>2</sub>S kPa<input type="number" id="moc_pH2S_before" value="0.5" step="0.5" min="0"></label>
-          <label>AFTER pH<sub>2</sub>S kPa<input type="number" id="moc_pH2S_after" value="50" step="5" min="0"></label>
-        </div>
-        <div class="row">
-          <label>BEFORE T_C<input type="number" id="moc_T_before" value="50" step="5"></label>
-          <label>AFTER T_C<input type="number" id="moc_T_after" value="80" step="5"></label>
-        </div>
-        <button type="button" id="moc_compute">Compute MOC impact →</button>
-        <h3>HTHA replication staging (API 941 §3.4)</h3>
-        <div class="row">
-          <label>Field-replication stage<select id="htha_stage">
-            <option value="0">Stage 0 — no detectable damage</option>
-            <option value="1">Stage 1 — incipient decarburisation</option>
-            <option value="2">Stage 2 — intermediate fissures</option>
-            <option value="3">Stage 3 — advanced fissure network</option>
-            <option value="4">Stage 4 — severe through-wall fissuring</option>
-          </select></label>
-          <button type="button" id="htha_compute">Apply HTHA stage →</button>
-        </div>
-        <p class="hint">Each row computed with RBIDamage.combinedDF + RBIRefractoryTank.tank_bottom_DF for AST rows. PoF = GFF (per equipment type) × F_MS × ΣD_f. Recommended use: pre-turnaround / RBI workshop screen — not a substitute for full API 581 software seat or PE peer review.</p>
-      </form>
-      <div class="card results" id="fleet_results"><div class="placeholder">Paste equipment CSV + Compute →</div></div>
-    </div>
-  </section>
-
-  <!-- PSM SCORER — 14-element OSHA PSM evaluation ------------------------ -->
-  <section class="panel" id="tab-psm">
-    <div class="datastat">14-element OSHA Process Safety Management evaluation (29 CFR 1910.119) per API RP 581 Part 2 §5.5 + Annex 2.A.1.4. Score each element 0-100 (anchors shown), get F_MS factor that multiplies PoF across all equipment.</div>
-    <div class="grid">
-      <form class="card inputs" id="psmForm">
-        <h3>14 PSM elements + 1 RBPS (CCPS)</h3>
-        <div id="psm_inputs"></div>
-        <div class="row"><button type="button" id="psm_compute" class="primary">Score PSM →</button></div>
-        <p class="hint">Default: all elements at 50 (industry median, F_MS=1.0). Best-in-class programme (all 100) gives F_MS=0.1 (10× PoF reduction). Worst (all 0) gives F_MS=10 (10× PoF amplifier). Per OSHA 29 CFR 1910.119 + CCPS RBPS (2007).</p>
-      </form>
-      <div class="card results" id="psm_results"><div class="placeholder">Score PSM elements →</div></div>
-    </div>
-  </section>
 </main>
 
 <section id="how" class="info">
@@ -906,7 +795,7 @@ PIPE-04in-001,pipe-4-10in,sour,CS,18,0.18,9.5,4.8,A,0,0,40,4.5,75,2000,true,22" 
      metallurgists, FEED engineers, AMPP corrosion specialists, and PE pipeline-integrity engineers.</p>
 </section>
 
-<script src="charts.js?v=13"></script>
+<script src="charts.js?v=14"></script>
 <script src="co2.js?v=12"></script>
 <script src="cpac.js?v=11"></script>
 <script src="b31g.js?v=1"></script>
@@ -924,18 +813,12 @@ PIPE-04in-001,pipe-4-10in,sour,CS,18,0.18,9.5,4.8,A,0,0,40,4.5,75,2000,true,22" 
 <script src="cips.js?v=1"></script>
 <script src="ffs.js?v=1"></script>
 <script src="rbi-detailed.js?v=2"></script>
-<script src="rbi-damage-mechanisms.js?v=2"></script>
-<script src="rbi-refractory-tank.js?v=1"></script>
-<script src="rbi-psm.js?v=1"></script>
-<script src="rbi-planner.js?v=1"></script>
-<script src="rbi-library.js?v=1"></script>
-<script src="rbi-advanced.js?v=1"></script>
-<script src="rbi-advanced2.js?v=1"></script>
+<script src="rbi-damage-mechanisms.js?v=3"></script>
 <script src="audit.js?v=1"></script>
 <script src="storage.js?v=1"></script>
 <script src="projects-ui.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=42"></script>
+<script src="app.js?v=43"></script>
 <script>
   // Wait for mr0175 annexes to load (async fetch)
   if (typeof window !== "undefined") {

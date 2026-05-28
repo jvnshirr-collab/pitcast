@@ -484,80 +484,10 @@
     return res;
   }
 
-  // ============= 2.E Mechanical Fatigue (Piping) ==============================
-  /** Per API 581 §6.14 + API RP 579-1 Part 14 (low/high cycle fatigue).
-   *  Piping vibration + cyclic-loading screen. */
-  function mech_fatigue_DF(opts) {
-    opts = opts || {};
-    var has_visible_vibration = !!opts.has_visible_vibration;
-    var cycles_per_yr = +opts.cycles_per_yr || 0;
-    var stress_range_MPa = +opts.stress_range_MPa || 0;
-    var has_branch_connection = !!opts.has_unreinforced_branch_connection;
-    var has_corroded_socket_weld = !!opts.has_corroded_socket_weld;
-    var family = opts.material_family || "CS";
-
-    if (cycles_per_yr < 100 && !has_visible_vibration && !has_branch_connection)
-      return _notApplicable("Mech Fatigue", "low-cycle service, no vibration, no susceptible geometry");
-
-    var sus = "None";
-    if (has_visible_vibration) sus = "High";
-    if (has_branch_connection) sus = sus === "High" ? "V.High" : "Medium";
-    if (has_corroded_socket_weld) sus = sus === "V.High" ? "V.High" : "High";
-
-    // Stress-range amplifier per API 579 Annex F (Goodman / Soderberg style):
-    var Su = family === "CS" ? 414 : 517;      // typical Su for CS / SS (MPa)
-    var fatigue_endurance = 0.4 * Su;          // ~ S-N endurance limit
-    if (stress_range_MPa > fatigue_endurance) {
-      sus = sus === "None" ? "Medium" : sus === "Low" ? "High" : sus === "Medium" ? "High" : "V.High";
-    }
-
-    return _commonDF(opts, sus, "Mechanical Fatigue (Piping)",
-      "API RP 581 (3rd ed.) §6.14 + API RP 579-1/ASME FFS-1 (2021) Part 14 + "
-      + "ASME B31.3 Tab 302.3.5 (allowable stress in cyclic service). "
-      + "Visible vibration + branch connections + corroded socket welds are the three primary triggers.");
-  }
-
-  // ============= 2.F Brittle Fracture =========================================
-  /** Per API 581 §6.15 + ASME VIII Div 1 UG-20 + Fig UCS-66.
-   *  Susceptibility from MAT (Min Allowable Temperature per Charpy curves)
-   *  vs operating-minimum temperature. */
-  function brittle_DF(opts) {
-    opts = opts || {};
-    var T_min_op_C = opts.T_min_op_C != null ? +opts.T_min_op_C : 0;   // lowest operating T
-    var t_mm = +opts.thickness_mm || 25;
-    var family = opts.material_family || "CS";
-    var charpy_curve = opts.charpy_curve || (family === "low-alloy" ? "B" : "A");
-    var has_charpy_test = !!opts.has_charpy_test;
-    var post_weld_NDE = !!opts.has_post_weld_NDE;
-
-    // ASME VIII Div 1 Fig UCS-66 — MAT curves A/B/C/D for impact-exempt steels:
-    //   A (mild steel uncontrolled): MAT = -29 °C at 12 mm; rises 1 °C per mm above 12
-    //   B (typical CS plate SA-516-70 normalised): MAT = -48 °C at 12 mm
-    //   C (impact-tested at -29 °C): MAT = -55 °C at 12 mm
-    //   D (impact-tested at lowest design T): MAT = -101 °C at 12 mm
-    var MAT_base_at_12 = { "A": -29, "B": -48, "C": -55, "D": -101 }[charpy_curve] || -29;
-    var MAT_C = MAT_base_at_12 + Math.max(0, t_mm - 12) * 0.5;
-    // Margin = op_T - MAT; positive margin → safe
-    var margin_C = T_min_op_C - MAT_C;
-
-    var sus;
-    if (margin_C > 40) sus = "None";
-    else if (margin_C > 17) sus = "Low";
-    else if (margin_C > 0) sus = "Medium";
-    else if (margin_C > -17) sus = "High";
-    else sus = "V.High";
-
-    if (has_charpy_test) sus = sus === "V.High" ? "High" : sus === "High" ? "Medium" : sus === "Medium" ? "Low" : sus;
-    if (post_weld_NDE) sus = sus === "Medium" ? "Low" : sus;
-
-    var res = _commonDF(opts, sus, "Brittle Fracture",
-      "API RP 581 (3rd ed.) §6.15 + ASME Section VIII Div 1 UG-20 + Fig UCS-66 / UCS-66.1 + "
-      + "ASME B31.3 §323.2.2 + Charpy curves A/B/C/D. "
-      + "MAT depends on thickness, plate steel, and any impact testing performed.");
-    res.MAT_C = MAT_C;
-    res.margin_C = margin_C;
-    return res;
-  }
+  // Annex 2.E Mechanical Fatigue + Annex 2.F Brittle Fracture removed —
+  // out of corrosion scope; both are mechanical / structural integrity
+  // mechanisms, not corrosion. Use a separate FFS / mechanical-integrity
+  // tool for those (ASME UCS-66 + ASME B31.3 Tab 302.3.5 + API 579 Part 14).
 
   // ============= 2.G External Corrosion + CUI ==================================
   /** Per API 581 §6.16 + ISO 9223:2012 + API RP 583 (CUI inspection).
@@ -624,8 +554,6 @@
       hsc_hf_DF(opts),
       hic_hf_DF(opts),
       htha_DF(opts),
-      mech_fatigue_DF(opts),
-      brittle_DF(opts),
       external_DF(opts)
     ].filter(Boolean);
 
@@ -743,23 +671,7 @@
     var t4 = htha_DF({material_family:"CS", T_C:300, pH2_kPa:10});
     ass(!t4.applicable, "HTHA: pH2<50kPa → outside regime");
 
-    // === Mechanical Fatigue ===
-    var mf1 = mech_fatigue_DF({has_visible_vibration:true, material_family:"CS"});
-    ass(mf1.applicable && mf1.susceptibility !== "None", "Mech Fatigue: visible vibration → High");
-    var mf2 = mech_fatigue_DF({cycles_per_yr:50, has_visible_vibration:false, has_unreinforced_branch_connection:false});
-    ass(!mf2.applicable, "Mech Fatigue: no triggers → not applicable");
-
-    // === Brittle Fracture ===
-    var b1 = brittle_DF({T_min_op_C:25, thickness_mm:25, material_family:"CS", charpy_curve:"B"});
-    ass(b1.susceptibility === "None", "Brittle: 25 °C with curve B → None");
-    var b2 = brittle_DF({T_min_op_C:-50, thickness_mm:50, material_family:"CS", charpy_curve:"A"});
-    ass(b2.susceptibility === "V.High" || b2.susceptibility === "High", "Brittle: -50 °C / 50 mm / curve A → High/V.High");
-    // Curve D plate (impact-tested at lowest design T) is best, but at -100 °C
-    // 25 mm plate MAT ≈ -94.5 °C → margin -5.5 °C → "High" (still cracking-risk band)
-    var b3 = brittle_DF({T_min_op_C:-100, thickness_mm:25, material_family:"low-alloy", charpy_curve:"D"});
-    ass(b3.susceptibility === "High" || b3.susceptibility === "Medium", "Brittle: -100 °C / curve D / 25 mm → High/Medium (got "+b3.susceptibility+", MAT="+b3.MAT_C.toFixed(1)+", margin="+b3.margin_C.toFixed(1)+")");
-    var b3a = brittle_DF({T_min_op_C:-50, thickness_mm:12, material_family:"low-alloy", charpy_curve:"D"});
-    ass(b3a.susceptibility === "Low" || b3a.susceptibility === "None", "Brittle: -50 °C / curve D / 12 mm → safe (MAT="+b3a.MAT_C.toFixed(1)+", margin="+b3a.margin_C.toFixed(1)+")");
+    // (Mechanical Fatigue + Brittle Fracture tests removed — out of corrosion scope)
 
     // === External / CUI ===
     var e1 = external_DF({ext_type:"atmospheric", atm_category:"C5", coating_quality:"poor"});
@@ -808,8 +720,6 @@
     hsc_hf_DF: hsc_hf_DF,
     hic_hf_DF: hic_hf_DF,
     htha_DF: htha_DF,
-    mech_fatigue_DF: mech_fatigue_DF,
-    brittle_DF: brittle_DF,
     external_DF: external_DF,
     combinedDF: combinedDF,
     _runTests: _runTests
