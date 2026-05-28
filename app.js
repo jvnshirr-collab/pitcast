@@ -1555,6 +1555,204 @@ function _initFleetTab() {
   // wire replace-vs-inspect
   const rvBtn = $("rv_compute");
   if (rvBtn) rvBtn.addEventListener("click", _rv_compute);
+  // wire G3.push3
+  const mpBtn = $("mp_compute"); if (mpBtn) mpBtn.addEventListener("click", _mp_multiPeriod);
+  const sobolBtn = $("sobol_compute"); if (sobolBtn) sobolBtn.addEventListener("click", _sobol_tornado);
+  const mcBtn = $("mc_compute"); if (mcBtn) mcBtn.addEventListener("click", _mc_bands);
+  const mocBtn = $("moc_compute"); if (mocBtn) mocBtn.addEventListener("click", _moc_impact);
+  const hthaBtn = $("htha_compute"); if (hthaBtn) hthaBtn.addEventListener("click", _htha_apply);
+}
+function _mp_multiPeriod() {
+  if (!window.RBIAdvanced2 || !_fleetResults) { alert("Run fleet first"); return; }
+  const budget = +($("mp_annual_budget") ? $("mp_annual_budget").value : 30000) || 30000;
+  const horizon = +($("mp_horizon") ? $("mp_horizon").value : 5) || 5;
+  const consequence = +($("mp_consequence") ? $("mp_consequence").value : 2e6) || 2e6;
+  const equipment = _fleetResults.map(r => ({
+    id: r.id, annual_PoF: r.annual_PoF, type: r.type,
+    dominant_mechanism: r.active_mechanisms.split(" · ")[0]?.split(":")[0] || "Thinning",
+    size_m2: 50, weld_length_m: 20, n_joints: 5, years_since_last_inspection: 5
+  }));
+  const mp = window.RBIAdvanced2.multiPeriodOptimise({
+    equipment, annual_budget_USD: budget, horizon_yr: horizon,
+    consequence_per_equipment_USD: consequence
+  });
+  const host = $("fleet_results"); if (!host) return;
+  if (mp.error) { host.innerHTML += `<div class="iso exceeds">${mp.error}</div>`; return; }
+  const yrTables = mp.plan.map(y => {
+    if (!y.allocations.length) return `<div style="margin:8px 0"><b>Year ${y.year}</b>: no inspections (budget unused $${y.year_spent_USD.toLocaleString()})</div>`;
+    const tr = y.allocations.map(a =>
+      `<tr><td style="padding:3px 8px">${a.id}</td>
+          <td style="padding:3px 8px">${a.technique}</td>
+          <td style="padding:3px 8px;text-align:center">${a.effectiveness}</td>
+          <td style="padding:3px 8px;text-align:right">$${a.cost_USD.toLocaleString()}</td>
+          <td style="padding:3px 8px;text-align:right">${a.before_PoF.toExponential(2)}</td>
+          <td style="padding:3px 8px;text-align:right">${a.after_PoF.toExponential(2)}</td>
+      </tr>`).join("");
+    return `<div style="margin:8px 0"><b>Year ${y.year}</b> · spent $${y.year_spent_USD.toLocaleString()} of $${budget.toLocaleString()}<br>
+      <table style="margin-top:4px;border-collapse:collapse;width:100%;font-size:11px">
+        <thead><tr style="color:var(--dim)"><th style="text-align:left;padding:3px 8px">ID</th>
+          <th style="padding:3px 8px">Technique</th><th style="padding:3px 8px">Eff</th>
+          <th style="padding:3px 8px;text-align:right">Cost</th>
+          <th style="padding:3px 8px;text-align:right">PoF before</th>
+          <th style="padding:3px 8px;text-align:right">PoF after</th></tr></thead>
+        <tbody>${tr}</tbody></table></div>`;
+  }).join("");
+  host.innerHTML += `<div class="iso ${mp.net_benefit_USD > 0 ? 'within' : 'untabulated'}" style="margin-top:10px">
+    <b>Multi-period plan</b> — ${horizon} yr × ${equipment.length} equipment · ${mp.total_n_inspections} inspections total · spent $${mp.total_spent_USD.toLocaleString()}<br>
+    Expected loss <b>no plan</b>: $${mp.expected_loss_no_plan_USD.toLocaleString()} → <b>with plan</b>: $${mp.expected_loss_with_plan_USD.toLocaleString()}<br>
+    <b>Net benefit</b>: $${mp.net_benefit_USD.toLocaleString()} · <b>B/C ratio</b>: ${mp.benefit_to_cost_ratio} ${mp.benefit_to_cost_ratio > 1 ? '<span style="color:#7bd88f">(economically justified)</span>' : '<span style="color:#fbbf24">(below cost-of-capital threshold)</span>'}
+    ${yrTables}
+    </div>
+    <div class="explain"><span style="color:var(--dim)">${mp.ref}</span></div>`;
+}
+function _sobol_tornado() {
+  if (!window.RBIAdvanced2 || !window.RBIDamage || !_fleetResults || !_fleetResults.length) { alert("Run fleet first"); return; }
+  const eq = _fleetResults[0];
+  // Find CSV row
+  const csv = ($("fleet_paste") && $("fleet_paste").value) || "";
+  const lines = csv.trim().split(/\r?\n/);
+  const hdr = lines[0].split(",").map(s => s.trim());
+  const idIdx = hdr.indexOf("id");
+  const row = lines.slice(1).map(l => l.split(",").map(s => s.trim())).find(c => c[idIdx] === eq.id);
+  if (!row) { alert("No CSV row for first equipment"); return; }
+  const baseline = {
+    material_family: row[hdr.indexOf("family")] || "CS",
+    T_C: +row[hdr.indexOf("T_C")] || 25,
+    pH: +row[hdr.indexOf("pH")] || 7,
+    pH2S_kPa: +row[hdr.indexOf("pH2S_kPa")] || 0,
+    Cl_ppm: +row[hdr.indexOf("Cl_ppm")] || 0,
+    NaOH_wt_pct: +row[hdr.indexOf("NaOH_pct")] || 0,
+    hardness_HRC: +row[hdr.indexOf("hardness_HRC")] || 22,
+    PWHT: (row[hdr.indexOf("PWHT")] || "").toLowerCase() === "true",
+    age_yr: +row[hdr.indexOf("age_yr")] || 10,
+    CR_mmyr: +row[hdr.indexOf("CR_mmyr")] || 0.1,
+    t_rdi_mm: +row[hdr.indexOf("t_nom_mm")] || 12,
+    t_min_mm: +row[hdr.indexOf("t_min_mm")] || 7,
+    inspection_history: [{ eff: row[hdr.indexOf("last_insp_eff")] || "B" }]
+  };
+  const ranges = {
+    "CR_mmyr": [baseline.CR_mmyr * 0.5, baseline.CR_mmyr * 2],
+    "T_C": [baseline.T_C * 0.8, baseline.T_C * 1.2],
+    "pH2S_kPa": [Math.max(0, baseline.pH2S_kPa * 0.5), baseline.pH2S_kPa * 2 + 0.5],
+    "pH": [Math.max(3, baseline.pH - 1), Math.min(13, baseline.pH + 1)],
+    "Cl_ppm": [Math.max(0, baseline.Cl_ppm * 0.5), baseline.Cl_ppm * 2 + 100],
+    "age_yr": [baseline.age_yr * 0.8, baseline.age_yr * 1.2],
+    "hardness_HRC": [baseline.hardness_HRC - 3, baseline.hardness_HRC + 3]
+  };
+  const fn = (inp) => {
+    const o = Object.assign({}, baseline, inp);
+    return window.RBIDamage.combinedDF(o).total_D_f;
+  };
+  const t = window.RBIAdvanced2.sobolTornado(fn, baseline, ranges);
+  const chart = (window.Charts && Charts.tornadoChart)
+    ? Charts.tornadoChart({ w:640, title:"Tornado: input → ΔΣD_f for "+eq.id, rows:t.tornado_rows }) : "";
+  const host = $("fleet_results"); if (!host) return;
+  host.innerHTML += `<div class="iso within" style="margin-top:10px">
+    <b>Tornado sensitivity for ${eq.id}</b> — most sensitive input: <b>${t.most_sensitive}</b><br>
+    Baseline ΣD_f = ${t.baseline_result.toFixed(2)}
+    </div>${chart}
+    <div class="explain"><span style="color:var(--dim)">${t.ref}</span></div>`;
+}
+function _mc_bands() {
+  if (!window.RBIAdvanced2 || !window.RBIDamage || !_fleetResults || !_fleetResults.length) { alert("Run fleet first"); return; }
+  const N = +($("mc_n") ? $("mc_n").value : 500) || 500;
+  const eq = _fleetResults[0];
+  const csv = ($("fleet_paste") && $("fleet_paste").value) || "";
+  const lines = csv.trim().split(/\r?\n/);
+  const hdr = lines[0].split(",").map(s => s.trim());
+  const idIdx = hdr.indexOf("id");
+  const row = lines.slice(1).map(l => l.split(",").map(s => s.trim())).find(c => c[idIdx] === eq.id);
+  if (!row) { alert("No CSV row for first equipment"); return; }
+  const baseline = {
+    material_family: row[hdr.indexOf("family")] || "CS",
+    T_C: +row[hdr.indexOf("T_C")] || 25,
+    pH: +row[hdr.indexOf("pH")] || 7,
+    pH2S_kPa: +row[hdr.indexOf("pH2S_kPa")] || 0,
+    Cl_ppm: +row[hdr.indexOf("Cl_ppm")] || 0,
+    NaOH_wt_pct: +row[hdr.indexOf("NaOH_pct")] || 0,
+    hardness_HRC: +row[hdr.indexOf("hardness_HRC")] || 22,
+    PWHT: (row[hdr.indexOf("PWHT")] || "").toLowerCase() === "true",
+    age_yr: +row[hdr.indexOf("age_yr")] || 10,
+    CR_mmyr: +row[hdr.indexOf("CR_mmyr")] || 0.1,
+    t_rdi_mm: +row[hdr.indexOf("t_nom_mm")] || 12,
+    t_min_mm: +row[hdr.indexOf("t_min_mm")] || 7,
+    inspection_history: [{ eff: row[hdr.indexOf("last_insp_eff")] || "B" }]
+  };
+  const distributions = {
+    "CR_mmyr": { dist:"lognormal", mean: baseline.CR_mmyr, sigma: 0.4 },
+    "T_C": { dist:"normal", mean: baseline.T_C, sigma: 5 },
+    "pH2S_kPa": { dist:"lognormal", mean: Math.max(0.001, baseline.pH2S_kPa), sigma: 0.5 },
+    "Cl_ppm": { dist:"lognormal", mean: Math.max(1, baseline.Cl_ppm), sigma: 0.3 }
+  };
+  const fn = (inp) => {
+    const o = Object.assign({}, baseline, inp);
+    return window.RBIDamage.combinedDF(o).total_D_f;
+  };
+  const mc = window.RBIAdvanced2.mcPercentileBands(fn, baseline, distributions, N);
+  const host = $("fleet_results"); if (!host) return;
+  host.innerHTML += `<div class="iso untabulated" style="margin-top:10px">
+    <b>Monte-Carlo ΣD_f for ${eq.id}</b> — ${mc.n_samples} samples<br>
+    <b>P5</b>: ${mc.P5.toFixed(2)} · <b>P50</b>: ${mc.P50.toFixed(2)} · <b>P95</b>: ${mc.P95.toFixed(2)} · <b>mean</b>: ${mc.mean.toFixed(2)}<br>
+    <b>P5/P95 ratio</b>: ${mc.P5_P95_ratio.toFixed(1)} (higher = wider uncertainty)
+    </div>
+    <div class="explain"><span style="color:var(--dim)">${mc.ref}</span></div>`;
+}
+function _moc_impact() {
+  if (!window.RBIAdvanced2 || !window.RBIDamage || !_fleetResults || !_fleetResults.length) { alert("Run fleet first"); return; }
+  const eq = _fleetResults[0];
+  const csv = ($("fleet_paste") && $("fleet_paste").value) || "";
+  const lines = csv.trim().split(/\r?\n/);
+  const hdr = lines[0].split(",").map(s => s.trim());
+  const idIdx = hdr.indexOf("id");
+  const row = lines.slice(1).map(l => l.split(",").map(s => s.trim())).find(c => c[idIdx] === eq.id);
+  if (!row) { alert("No CSV row for first equipment"); return; }
+  const baseOpts = {
+    material_family: row[hdr.indexOf("family")] || "CS",
+    pH: +row[hdr.indexOf("pH")] || 7,
+    Cl_ppm: +row[hdr.indexOf("Cl_ppm")] || 0,
+    hardness_HRC: +row[hdr.indexOf("hardness_HRC")] || 22,
+    PWHT: (row[hdr.indexOf("PWHT")] || "").toLowerCase() === "true",
+    age_yr: +row[hdr.indexOf("age_yr")] || 10,
+    NaOH_wt_pct: +row[hdr.indexOf("NaOH_pct")] || 0, HF_wt_pct: 0,
+    inspection_history: [{ eff: row[hdr.indexOf("last_insp_eff")] || "B" }]
+  };
+  const before = Object.assign({}, baseOpts, {
+    T_C: +($("moc_T_before") ? $("moc_T_before").value : 50),
+    pH2S_kPa: +($("moc_pH2S_before") ? $("moc_pH2S_before").value : 0.5)
+  });
+  const after = Object.assign({}, baseOpts, {
+    T_C: +($("moc_T_after") ? $("moc_T_after").value : 80),
+    pH2S_kPa: +($("moc_pH2S_after") ? $("moc_pH2S_after").value : 50)
+  });
+  const moc = window.RBIAdvanced2.mocImpact({ before, after, GFF: eq.GFF || 3.06e-5, F_MS: eq.F_MS || 1 });
+  const host = $("fleet_results"); if (!host) return;
+  if (moc.error) { host.innerHTML += `<div class="iso exceeds">${moc.error}</div>`; return; }
+  const changes = moc.mechanism_changes.length
+    ? moc.mechanism_changes.map(c => `<li>${c.mechanism}: ${c.before} → <b>${c.after}</b> · ΔD_f = ${c.DF_change.toFixed(1)}</li>`).join("")
+    : "<li>No mechanism status changes</li>";
+  const cls = moc.direction.indexOf("WORSENED") >= 0 ? "exceeds" : moc.direction.indexOf("IMPROVED") >= 0 ? "within" : "untabulated";
+  host.innerHTML += `<div class="iso ${cls}" style="margin-top:10px">
+    <b>MOC impact on ${eq.id}</b> · ${moc.direction}<br>
+    ΣD_f: ${moc.DF_before.toFixed(1)} → <b>${moc.DF_after.toFixed(1)}</b> (${moc.DF_change_pct > 0 ? '+' : ''}${moc.DF_change_pct.toFixed(0)}%)<br>
+    Annual PoF: ${moc.PoF_before.toExponential(2)} → <b>${moc.PoF_after.toExponential(2)}</b>
+    <ul style="margin:6px 0 0 18px;padding:0;font-size:12px">${changes}</ul>
+    </div>
+    <div class="explain"><span style="color:var(--dim)">${moc.ref}</span></div>`;
+}
+function _htha_apply() {
+  if (!window.RBIAdvanced2) return;
+  const stage = +($("htha_stage") ? $("htha_stage").value : 0);
+  // Use a baseline HTHA DF of 50 (typical Medium) for illustration
+  const r = window.RBIAdvanced2.htha_stages({ replication_stage: stage, base_DF: 50 });
+  const host = $("fleet_results"); if (!host) return;
+  const cls = stage >= 3 ? "exceeds" : stage >= 1 ? "untabulated" : "within";
+  host.innerHTML += `<div class="iso ${cls}" style="margin-top:10px">
+    <b>HTHA staging — Stage ${r.replication_stage}</b><br>
+    ${r.description}<br>
+    DF multiplier: <b>×${r.DF_multiplier}</b> · Staged DF (from base 50): <b>${r.staged_DF.toFixed(1)}</b><br>
+    Recommendation: <b>${r.recommendation}</b>
+    </div>
+    <div class="explain"><span style="color:var(--dim)">${r.ref}</span></div>`;
 }
 function _fleet_optimiseBudget() {
   if (!window.RBIAdvanced || !_fleetResults) { alert("Run fleet first"); return; }

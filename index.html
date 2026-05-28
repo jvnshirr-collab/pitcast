@@ -732,6 +732,43 @@ PIPE-04in-001,pipe-4-10in,sour,CS,18,0.18,9.5,4.8,A,0,0,40,4.5,75,2000,true,22" 
           <label>Horizon (yr)<input type="number" id="rv_horizon" value="20" step="1" min="1"></label>
         </div>
         <button type="button" id="rv_compute">Compare options →</button>
+        <h3>Multi-period optimiser (5-yr fleet plan)</h3>
+        <div class="row">
+          <label>Annual budget (USD)<input type="number" id="mp_annual_budget" value="30000" step="5000" min="0"></label>
+          <label>Horizon (yr)<input type="number" id="mp_horizon" value="5" step="1" min="1" max="20"></label>
+        </div>
+        <div class="row">
+          <label>Consequence per equipment (USD)<input type="number" id="mp_consequence" value="2000000" step="500000" min="0"></label>
+          <button type="button" id="mp_compute">Build multi-yr plan →</button>
+        </div>
+        <h3>Tornado sensitivity (per input on first fleet equipment)</h3>
+        <button type="button" id="sobol_compute">Run Tornado analysis →</button>
+        <h3>Monte-Carlo uncertainty (P5/P50/P95)</h3>
+        <div class="row">
+          <label>N samples<input type="number" id="mc_n" value="500" step="100" min="100" max="5000"></label>
+          <button type="button" id="mc_compute">Compute MC bands →</button>
+        </div>
+        <h3>MOC (before / after service envelope change)</h3>
+        <div class="row">
+          <label>BEFORE pH<sub>2</sub>S kPa<input type="number" id="moc_pH2S_before" value="0.5" step="0.5" min="0"></label>
+          <label>AFTER pH<sub>2</sub>S kPa<input type="number" id="moc_pH2S_after" value="50" step="5" min="0"></label>
+        </div>
+        <div class="row">
+          <label>BEFORE T_C<input type="number" id="moc_T_before" value="50" step="5"></label>
+          <label>AFTER T_C<input type="number" id="moc_T_after" value="80" step="5"></label>
+        </div>
+        <button type="button" id="moc_compute">Compute MOC impact →</button>
+        <h3>HTHA replication staging (API 941 §3.4)</h3>
+        <div class="row">
+          <label>Field-replication stage<select id="htha_stage">
+            <option value="0">Stage 0 — no detectable damage</option>
+            <option value="1">Stage 1 — incipient decarburisation</option>
+            <option value="2">Stage 2 — intermediate fissures</option>
+            <option value="3">Stage 3 — advanced fissure network</option>
+            <option value="4">Stage 4 — severe through-wall fissuring</option>
+          </select></label>
+          <button type="button" id="htha_compute">Apply HTHA stage →</button>
+        </div>
         <p class="hint">Each row computed with RBIDamage.combinedDF + RBIRefractoryTank.tank_bottom_DF for AST rows. PoF = GFF (per equipment type) × F_MS × ΣD_f. Recommended use: pre-turnaround / RBI workshop screen — not a substitute for full API 581 software seat or PE peer review.</p>
       </form>
       <div class="card results" id="fleet_results"><div class="placeholder">Paste equipment CSV + Compute →</div></div>
@@ -869,7 +906,7 @@ PIPE-04in-001,pipe-4-10in,sour,CS,18,0.18,9.5,4.8,A,0,0,40,4.5,75,2000,true,22" 
      metallurgists, FEED engineers, AMPP corrosion specialists, and PE pipeline-integrity engineers.</p>
 </section>
 
-<script src="charts.js?v=12"></script>
+<script src="charts.js?v=13"></script>
 <script src="co2.js?v=12"></script>
 <script src="cpac.js?v=11"></script>
 <script src="b31g.js?v=1"></script>
@@ -893,11 +930,12 @@ PIPE-04in-001,pipe-4-10in,sour,CS,18,0.18,9.5,4.8,A,0,0,40,4.5,75,2000,true,22" 
 <script src="rbi-planner.js?v=1"></script>
 <script src="rbi-library.js?v=1"></script>
 <script src="rbi-advanced.js?v=1"></script>
+<script src="rbi-advanced2.js?v=1"></script>
 <script src="audit.js?v=1"></script>
 <script src="storage.js?v=1"></script>
 <script src="projects-ui.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=41"></script>
+<script src="app.js?v=42"></script>
 <script>
   // Wait for mr0175 annexes to load (async fetch)
   if (typeof window !== "undefined") {

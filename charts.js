@@ -259,6 +259,28 @@ window.Charts={
     return wrap(p);
   },
 
+  /* Tornado chart for sensitivity analysis — horizontal bars sorted by delta. */
+  tornadoChart: function(o) {
+    var rows = o.rows || [];
+    if (!rows.length) return "<svg viewBox='0 0 400 200'><text x='200' y='100' fill='#888' text-anchor='middle'>No data</text></svg>";
+    var W = o.w||640, H = o.h||(40 * rows.length + 60);
+    var m = { l: 140, r: 16, t: o.title?30:14, b: 30 };
+    var pw = W - m.l - m.r, ph = H - m.t - m.b;
+    var maxDelta = Math.max.apply(null, rows.map(function(r){ return r.delta; }));
+    var s = o.title ? `<text x="${m.l}" y="${m.t-12}" fill="${PAL.muted}" font-size="11" letter-spacing="1">${E(o.title).toUpperCase()}</text>` : "";
+    var bh = ph / rows.length;
+    rows.forEach(function(r, i){
+      var y = m.t + i * bh + bh*0.15;
+      var h = bh * 0.7;
+      var bw = (r.delta / maxDelta) * pw;
+      s += `<text x="${m.l-6}" y="${y+h/2+3}" fill="${PAL.ink}" font-size="10" text-anchor="end">${E(r.key)}</text>`;
+      s += `<rect x="${m.l}" y="${y}" width="${bw}" height="${h}" fill="${i===0?PAL.amber:PAL.accent}" opacity="0.85"/>`;
+      s += `<text x="${m.l + bw + 4}" y="${y+h/2+3}" fill="${PAL.dim}" font-size="9">Δ ${r.delta.toExponential(2)} (${r.rel_delta_pct.toFixed(0)}%)</text>`;
+    });
+    s += `<text x="${m.l+pw/2}" y="${H-6}" fill="${PAL.muted}" font-size="11" text-anchor="middle">Δ metric (sorted high→low)</text>`;
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" style="display:block;font-family:var(--mono,monospace)">${s}</svg>`;
+  },
+
   /* 5×5 PoF×CoF risk matrix per API RP 580 §8 — equipment plotted as dots. */
   riskMatrix5x5: function(o) {
     var W = o.w||540, H = o.h||440;
