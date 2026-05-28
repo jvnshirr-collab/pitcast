@@ -39,6 +39,9 @@
     <button class="tab" data-tab="cpac">CP / AC</button>
     <button class="tab" data-tab="integrity">Integrity (B31G)</button>
     <button class="tab" data-tab="ili">ILI batch</button>
+    <button class="tab" data-tab="ffs">FFS (API 579)</button>
+    <button class="tab" data-tab="mr0175">MR0175 spec</button>
+    <button class="tab" data-tab="cips">CIPS / DCVG</button>
   </div>
   <div class="datastat" id="dataStat"></div>
   <div class="exportbar"><button type="button" id="btnPrint">🖶 Print / Save as PDF</button><button type="button" id="btnXLSX">⤓ Export XLSX</button><button type="button" id="btnCSV">⤓ Download CSV</button></div>
@@ -467,6 +470,112 @@ D-002,95,2.1
       <div class="card results" id="ili_results"><div class="placeholder">Upload or paste an ILI defect CSV →</div></div>
     </div>
   </section>
+
+  <!-- FFS (API 579) -------------------------------------------------- -->
+  <section class="panel" id="tab-ffs">
+    <div class="datastat">API 579-1/ASME FFS-1 (2021) vessel/piping FFS — Part 5 LTA Level 1 (workhorse), Part 4 General Metal Loss PTR Level 1, Part 3 Brittle Fracture MAT Level 1, Part 14 Fatigue Level 1 screening. Closed-form per cited annex sections.</div>
+    <div class="grid">
+      <form class="card inputs" id="ffsForm">
+        <h3>Part 5 — Local Metal Loss (LTA)</h3>
+        <div class="row">
+          <label>tmm (min wall in LTA, mm)<input type="number" id="ffs5_tmm" value="17.78" step="0.1"></label>
+          <label>t_nom (mm)<input type="number" id="ffs5_tnom" value="31.75" step="0.1"></label>
+        </div>
+        <div class="row">
+          <label>LOSS (mm)<input type="number" id="ffs5_loss" value="2.54" step="0.1"></label>
+          <label>FCA (mm)<input type="number" id="ffs5_fca" value="3.175" step="0.1"></label>
+        </div>
+        <div class="row">
+          <label>s axial (mm)<input type="number" id="ffs5_s" value="250" step="10"></label>
+          <label>D inside (mm)<input type="number" id="ffs5_D" value="2438.4" step="10"></label>
+        </div>
+        <div class="row">
+          <label>MAWP design (bar)<input type="number" id="ffs5_mawp" value="21" step="1"></label>
+          <label>RSFa<input type="number" id="ffs5_rsfa" value="0.90" step="0.05"></label>
+        </div>
+        <h3>Part 3 — Brittle Fracture MAT</h3>
+        <div class="row">
+          <label>Material curve<select id="ffs3_curve">
+            <option value="A">A (worst)</option><option value="B" selected>B (A516-70 normalised)</option>
+            <option value="C">C (A537 Q+T)</option><option value="D">D (best, Q+T low-impurity)</option>
+          </select></label>
+          <label>Governing thickness (mm)<input type="number" id="ffs3_tg" value="25" step="5"></label>
+        </div>
+        <label>Min operating T (°C)<input type="number" id="ffs3_top" value="0" step="5"></label>
+        <h3>Part 14 — Fatigue L1 screening</h3>
+        <div class="row">
+          <label>Cycle count<input type="number" id="ffs14_n" value="50" step="10"></label>
+          <label class="rowchk"><input type="checkbox" id="ffs14_ts"> Thermal shock?</label>
+        </div>
+      </form>
+      <div class="card results" id="ffs_results"><div class="placeholder">Enter LTA / MAT / fatigue inputs →</div></div>
+    </div>
+  </section>
+
+  <!-- MR0175 spec issuer --------------------------------------------- -->
+  <section class="panel" id="tab-mr0175">
+    <div class="datastat">NACE MR0175 / ISO 15156:2020 sour-service material spec-issuer. Maps composition + service to applicable Annex A.x envelope + Region 0/1/2/3 (CS/LAS) → procurement-grade verdict with full standard citation.</div>
+    <div class="grid">
+      <form class="card inputs" id="mr0175Form">
+        <h3>Material</h3>
+        <label>UNS (optional)<input type="text" id="mr_uns" value="S41425" placeholder="e.g. S41425, S31803, N06625"></label>
+        <h4 style="margin-top:8px">Composition (wt %, optional if UNS given)</h4>
+        <div class="row">
+          <label>Cr<input type="number" id="mr_Cr" value="13" step="0.1"></label>
+          <label>Mo<input type="number" id="mr_Mo" value="0.5" step="0.1"></label>
+        </div>
+        <div class="row">
+          <label>Ni<input type="number" id="mr_Ni" value="5" step="0.1"></label>
+          <label>N<input type="number" id="mr_N" value="0.1" step="0.05"></label>
+        </div>
+        <h3>Service conditions</h3>
+        <div class="row">
+          <label>T (°C)<input type="number" id="mr_T" value="120" step="5"></label>
+          <label>pH₂S (kPa)<input type="number" id="mr_pH2S" value="8" step="1"></label>
+        </div>
+        <div class="row">
+          <label>Cl⁻ (mg/L)<input type="number" id="mr_Cl" value="70000" step="1000"></label>
+          <label>in-situ pH<input type="number" id="mr_pH" value="4.0" step="0.1"></label>
+        </div>
+        <div class="row">
+          <label>Sustained stress (% SMYS)<input type="number" id="mr_stress" value="80" step="5"></label>
+          <label>Supply hardness (HRC)<input type="number" id="mr_hrc" value="27" step="1"></label>
+        </div>
+        <div class="row">
+          <label>Equipment<select id="mr_equip">
+            <option value="general">General</option><option value="downhole" selected>Downhole / OCTG</option>
+            <option value="wellhead">Wellhead</option><option value="small-internal">Small internal</option>
+            <option value="spring">Spring / diaphragm</option>
+          </select></label>
+          <label>Scope<select id="mr_scope">
+            <option value="upstream-production" selected>Upstream production</option>
+            <option value="refining">Refining (MR0103)</option>
+          </select></label>
+        </div>
+      </form>
+      <div class="card results" id="mr0175_results"><div class="placeholder">Enter composition + service →</div></div>
+    </div>
+  </section>
+
+  <!-- CIPS / DCVG --------------------------------------------------- -->
+  <section class="panel" id="tab-cips">
+    <div class="datastat">CIPS / DCVG / PCM survey-data ingestion. Paste a vendor CSV (M.C. Miller G-Series / Radiodetection PCM / generic) → −850 mV instant-off exceedance scan + 100 mV polarisation shift + DCVG %IR severity + ECDA SP0502 prioritisation. Auto-detects mV vs V, ft vs m.</div>
+    <div class="grid">
+      <form class="card inputs" id="cipsForm">
+        <h3>Survey CSV</h3>
+        <label class="envwide">Paste CSV here<textarea id="cips_paste" rows="10" placeholder="station,E_on,E_off,dcvg&#10;100,-1100,-900,3&#10;200,-1180,-820,12&#10;..." style="width:100%;font-family:monospace;font-size:12px;background:rgba(255,255,255,0.04);color:var(--text);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px"></textarea></label>
+        <h3>CP criteria thresholds</h3>
+        <div class="row">
+          <label>E_off threshold (mV)<input type="number" id="cips_thr" value="-850" step="10"></label>
+          <label>Native potential (mV)<input type="number" id="cips_native" value="-650" step="10"></label>
+        </div>
+        <label>Limiting E_l over-protection (mV)<input type="number" id="cips_el" value="-1200" step="50"></label>
+        <div class="row"><button type="button" id="cips_process" class="primary">Process survey →</button></div>
+        <p class="hint">Verdicts cite NACE SP0207 / SP0169 / SP0502 / TM0109 + McKinney 1986 DCVG bands. ISO 15589-1:2015 over-protection floor.</p>
+      </form>
+      <div class="card results" id="cips_results"><div class="placeholder">Paste a CIPS/DCVG survey CSV →</div></div>
+    </div>
+  </section>
 </main>
 
 <section id="how" class="info">
@@ -597,7 +706,26 @@ D-002,95,2.1
 <script src="groundbed.js?v=1"></script>
 <script src="hic.js?v=1"></script>
 <script src="rbi.js?v=1"></script>
+<script src="interaction.js?v=1"></script>
+<script src="mr0175.js?v=1"></script>
+<script src="cips.js?v=1"></script>
+<script src="ffs.js?v=1"></script>
+<script src="rbi-detailed.js?v=1"></script>
+<script src="audit.js?v=1"></script>
+<script src="storage.js?v=1"></script>
+<script src="projects-ui.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=33"></script>
+<script src="app.js?v=34"></script>
+<script>
+  // Wait for mr0175 annexes to load (async fetch)
+  if (typeof window !== "undefined") {
+    fetch("data/mr0175-annexes.json").then(function(r){ return r.json(); }).then(function(a){
+      window._MR0175_ANNEXES = a;
+      if (window.MR0175 && window.MR0175.setAnnexes) window.MR0175.setAnnexes(a);
+    }).catch(function(){});
+    // Init projects UI when DOM ready
+    if (window.ProjectsUI && window.ProjectsUI.init) window.ProjectsUI.init();
+  }
+</script>
 </body>
 </html>

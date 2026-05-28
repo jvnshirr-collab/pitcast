@@ -1,0 +1,279 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pitcast.austenite.org/schema/project-v1.json",
+  "title": "PitCast Project File (v1)",
+  "description": "Canonical schema for `.pitcast` and `.pitcastz` (gzipped) project files emitted by PitCast (pitcast.austenite.org). Matches the file format documented in PLAN-tier3.md Gap G4. Conforms to JSON Schema 2020-12 (IETF draft-bhutton-json-schema-01).",
+  "type": "object",
+  "required": [
+    "$schema",
+    "format",
+    "format_version",
+    "project_id",
+    "name",
+    "created_utc",
+    "modified_utc",
+    "owner",
+    "asset",
+    "calculations",
+    "audit_chain",
+    "attachments"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "$schema": {
+      "description": "URI of this schema. Fixed for the v1 file format.",
+      "type": "string",
+      "format": "uri",
+      "const": "https://pitcast.austenite.org/schema/project-v1.json"
+    },
+    "format": {
+      "description": "Magic value identifying this as a PitCast project file. Used by importers to refuse non-PitCast JSON.",
+      "type": "string",
+      "const": "pitcast-project"
+    },
+    "format_version": {
+      "description": "Semver string for forward-compatibility. Major bump = breaking schema change.",
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:[-+][0-9A-Za-z\\.-]+)?$"
+    },
+    "project_id": {
+      "description": "ULID (Crockford base32, 26 chars, lexicographically sortable). Stable for the lifetime of the project; fork imports always receive a new ULID.",
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "name": {
+      "description": "Human-readable project name.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "created_utc": {
+      "description": "RFC 3339 / ISO-8601 UTC timestamp of project creation.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "modified_utc": {
+      "description": "RFC 3339 / ISO-8601 UTC timestamp of the most-recent modification (any header change, calculation append, audit append, or attachment).",
+      "type": "string",
+      "format": "date-time"
+    },
+    "owner": {
+      "description": "First-run-modal user identity. v1 stores name + initials in plaintext; v2 will add an ECDSA keypair binding.",
+      "type": "object",
+      "required": ["name", "initials"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string", "maxLength": 200 },
+        "initials": { "type": "string", "maxLength": 8 },
+        "pe_stamp": {
+          "description": "Reserved for a future P.E.-license binding. Null in v1.",
+          "type": ["null", "object"]
+        }
+      }
+    },
+    "asset": {
+      "description": "The physical asset under assessment (vessel / pipeline / tank / HEX / other).",
+      "type": "object",
+      "required": ["tag", "type"],
+      "additionalProperties": true,
+      "properties": {
+        "tag": {
+          "description": "Owner-assigned equipment tag (e.g. V-1201).",
+          "type": "string",
+          "maxLength": 64
+        },
+        "type": {
+          "description": "Asset family. Drives which engines are surfaced in the UI.",
+          "type": "string",
+          "enum": ["vessel", "pipeline", "tank", "hex", "other"]
+        },
+        "material_uns": {
+          "description": "UNS number of the construction material (e.g. S31803). Empty string if unknown.",
+          "type": "string",
+          "maxLength": 32
+        },
+        "service": {
+          "description": "Service conditions. All fields optional; engines fail loud when required values are missing.",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "T_C": { "type": ["number", "null"], "description": "Operating temperature, deg C" },
+            "P_MPa": { "type": ["number", "null"], "description": "Operating pressure, MPa" },
+            "Cl_ppm": { "type": ["number", "null"], "minimum": 0, "description": "Chloride concentration, ppm" },
+            "pH": { "type": ["number", "null"], "minimum": 0, "maximum": 14 },
+            "pH2S_kPa": { "type": ["number", "null"], "minimum": 0, "description": "H2S partial pressure, kPa" },
+            "pCO2_kPa": { "type": ["number", "null"], "minimum": 0, "description": "CO2 partial pressure, kPa" },
+            "stress_x_YS": { "type": ["number", "null"], "minimum": 0, "maximum": 2, "description": "Applied stress as fraction of yield" }
+          }
+        }
+      }
+    },
+    "calculations": {
+      "description": "Append-only ordered list of calculation snapshots. Each captures one engine invocation: inputs, outputs, module identity, and timestamp. The audit_chain is the authoritative history; calculations are derivable by replay.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/calculation" }
+    },
+    "audit_chain": {
+      "description": "Append-only SHA-256 hash chain (NIST SP 800-53 AU-10, IEC 62443-3-3 SR 2.8-2.12). Each entry binds the prior entry's hash; tampering with any past entry breaks every downstream hash. The head hash is embedded in exported PDFs to provide an external anchor (Certificate Transparency pattern).",
+      "type": "array",
+      "items": { "$ref": "#/$defs/audit_entry" }
+    },
+    "attachments": {
+      "description": "List of attached binary blobs (MTCs, ILI runs, NDE reports, photographs). Each entry stores metadata only; the binary payload lives either in browser IndexedDB (ref) or inlined as base64 in `attachments_inline` for self-contained exports.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/attachment" }
+    },
+    "attachments_inline": {
+      "description": "Optional map of attachment-id -> { mime, data_b64 }. Present in exported files so the .pitcast / .pitcastz is self-contained. NOT present in the live IndexedDB record (blobs live in the attachments object store).",
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["data_b64"],
+        "properties": {
+          "mime": { "type": "string", "maxLength": 128 },
+          "data_b64": { "type": "string", "description": "RFC 4648 base64 (no data: prefix)" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "ulid": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$"
+    },
+    "sha256_hex": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "iso_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "calculation": {
+      "description": "Single engine invocation snapshot. `module` identifies the PitCast engine (e.g. 'PitCast.assess', 'PitCast.couple', 'PitCast.co2', 'B31G.assess'). `inputs` and `outputs` are free-form per-engine — schema kept open intentionally.",
+      "type": "object",
+      "required": ["module", "inputs", "outputs", "timestamp_utc", "calc_id"],
+      "additionalProperties": true,
+      "properties": {
+        "calc_id": { "$ref": "#/$defs/ulid" },
+        "module": {
+          "type": "string",
+          "maxLength": 128,
+          "description": "Dotted module path that produced this snapshot."
+        },
+        "inputs": {
+          "type": ["object", "array", "null"],
+          "description": "Engine inputs as captured at calculation time. Free-form per engine."
+        },
+        "outputs": {
+          "type": ["object", "array", "null"],
+          "description": "Engine outputs returned to the user. Free-form per engine."
+        },
+        "timestamp_utc": { "$ref": "#/$defs/iso_utc" },
+        "seq": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Optional per-project monotonic sequence number assigned by the storage layer."
+        },
+        "warnings": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Soft diagnostics surfaced to the user (e.g. AccuracyBounds out-of-range, missing optional input)."
+        },
+        "validation_tier": {
+          "type": "string",
+          "enum": ["T1", "T2", "T3", "T4", "regression", "unverified"],
+          "description": "Validation hierarchy tier per ASME V&V 10 §4 (Gap G5)."
+        }
+      }
+    },
+    "audit_entry": {
+      "description": "Single hash-chained audit-trail entry. Every state-changing action emits one of these. `prev_hash` and `hash` together form the tamper-evident binding per Haber & Stornetta 1991.",
+      "type": "object",
+      "required": ["seq", "ts", "user", "action", "prev_hash", "hash"],
+      "additionalProperties": true,
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Monotonically increasing per-project sequence number, starting at 0."
+        },
+        "ts": { "$ref": "#/$defs/iso_utc" },
+        "user": {
+          "type": "string",
+          "maxLength": 8,
+          "description": "User initials (from first-run modal). Empty string allowed for system entries."
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "Action verb (snake_case). Canonical values include: create_project, rename_project, set_input, run_calculation, attach_blob, fork_import, imported_audit, pe_stamp_request."
+        },
+        "path": {
+          "type": "string",
+          "maxLength": 256,
+          "description": "Dotted path of the changed field (e.g. asset.service.T_C). Empty for whole-project actions."
+        },
+        "before": {
+          "description": "Prior value (null for create / append actions)."
+        },
+        "after": {
+          "description": "New value (null for delete actions)."
+        },
+        "prev_hash": {
+          "$ref": "#/$defs/sha256_hex",
+          "description": "Hash of the prior entry; 64 hex zeros for the genesis entry."
+        },
+        "hash": {
+          "$ref": "#/$defs/sha256_hex",
+          "description": "SHA-256 of the RFC 8785-canonicalized entry (excluding the hash field itself, per audit.js)."
+        },
+        "fork_of_project_id": {
+          "type": "string",
+          "description": "Set on imported-fork audit entries. Original project_id from the source .pitcast file."
+        },
+        "fork_of_audit_head_hash": {
+          "type": "string",
+          "description": "Set on imported-fork audit entries. The head hash of the imported source chain (anchors the source chain inside the fork)."
+        }
+      }
+    },
+    "attachment": {
+      "description": "Reference to a binary attachment. The binary payload itself is NOT inlined here; it lives in IndexedDB under the `attachments` object store, or in `attachments_inline` on exported files.",
+      "type": "object",
+      "required": ["id", "filename", "sha256", "size_bytes", "ref"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^att_[0-9A-HJKMNP-TV-Z]{26}$",
+          "description": "Attachment ID: 'att_' prefix + ULID."
+        },
+        "filename": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256_hex",
+          "description": "SHA-256 of the binary payload as stored."
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ref": {
+          "type": "string",
+          "pattern": "^indexeddb://blob/att_[0-9A-HJKMNP-TV-Z]{26}$",
+          "description": "Reference URI for the live IndexedDB blob."
+        },
+        "mime": {
+          "type": ["string", "null"],
+          "maxLength": 128
+        },
+        "created_utc": { "$ref": "#/$defs/iso_utc" }
+      }
+    }
+  }
+}

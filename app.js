@@ -20,6 +20,9 @@ document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
   if (t.dataset.tab === "integrity") renderIntegrity();
   if (t.dataset.tab === "compare") renderCompare();
   if (t.dataset.tab === "ili") renderILIPlaceholder();
+  if (t.dataset.tab === "ffs") renderFFS();
+  if (t.dataset.tab === "mr0175") renderMR0175();
+  if (t.dataset.tab === "cips") renderCIPSPlaceholder();
 });
 
 // ---- grade picker (searchable: curated grades + in-scope measured alloys) ---
@@ -1171,6 +1174,99 @@ function _bindIndustryHandlers(){
   const sL = $("ili_sample"); if (sL) sL.onclick = _downloadILISample;
   const bX = $("btnXLSX"); if (bX) bX.onclick = exportActiveXLSX;
 }
+
+// ===========================================================================
+//                  TIER-3 ENGINES — FFS / MR0175 / CIPS render
+// ===========================================================================
+function renderFFS(){
+  var host = $("ffs_results"); if (!host || !window.FFS) return;
+  var gv = function(id){ return $(id) ? +$(id).value : 0; };
+  var p5 = FFS.part5_LTA_L1({
+    tmm_mm: gv("ffs5_tmm"), t_nom_mm: gv("ffs5_tnom"),
+    LOSS_mm: gv("ffs5_loss"), FCA_mm: gv("ffs5_fca"),
+    s_axial_mm: gv("ffs5_s"), D_inside_mm: gv("ffs5_D"),
+    MAWP_design_bar: gv("ffs5_mawp"), RSFa: gv("ffs5_rsfa")
+  });
+  var p3 = FFS.part3_MAT_L1({
+    material_curve: $("ffs3_curve").value,
+    governing_thickness_mm: gv("ffs3_tg"),
+    T_op_min_C: gv("ffs3_top")
+  });
+  var p14 = FFS.part14_fatigue_L1({
+    cycles_count: gv("ffs14_n"),
+    has_thermal_shock: $("ffs14_ts").checked
+  });
+  function cls(passes) { return passes === true ? "within" : passes === false ? "exceeds" : "untabulated"; }
+  host.innerHTML =
+    '<div class="iso ' + cls(p5.passes) + '"><b>Part 5 LTA Level 1 — ' + (p5.passes === true ? 'PASS' : p5.passes === false ? 'FAIL' : 'GATES FAIL') + '</b><br>' +
+      'Rt = <b>' + (p5.Rt != null ? p5.Rt.toFixed(3) : '—') + '</b> · λ = <b>' + (p5.lambda != null ? p5.lambda.toFixed(3) : '—') + '</b> · Mt = <b>' + (p5.Mt != null ? p5.Mt.toFixed(3) : '—') + '</b> · RSF = <b>' + (p5.RSF != null ? p5.RSF.toFixed(3) : '—') + '</b> (RSFa = ' + p5.RSFa + ')<br>' +
+      'MAWP reduced: <b>' + (p5.MAWP_reduced_bar != null ? p5.MAWP_reduced_bar.toFixed(1) : '—') + ' bar</b><br>' +
+      '<span style="color:var(--dim);font-size:12px">' + (p5.recommendation || '') + '</span></div>' +
+    '<div class="explain"><span style="color:var(--dim)">' + (p5.ref || '') + '</span></div>' +
+    '<div class="iso ' + cls(p3.passes) + '"><b>Part 3 Brittle Fracture — ' + (p3.passes === true ? 'PASS' : p3.passes === false ? 'FAIL' : '—') + '</b><br>' +
+      'Curve ' + p3.material_curve + ' @ ' + p3.governing_thickness_mm + ' mm → MAT = <b>' + p3.MAT_C + ' °C</b>, op-min = ' + p3.T_op_min_C + ' °C, margin = <b>' + (p3.margin_C != null ? p3.margin_C.toFixed(1) : '?') + ' °C</b><br>' +
+      '<span style="color:var(--dim);font-size:12px">' + p3.recommendation + '</span></div>' +
+    '<div class="explain"><span style="color:var(--dim)">' + p3.ref + '</span></div>' +
+    '<div class="iso ' + cls(p14.passes) + '"><b>Part 14 Fatigue — ' + (p14.passes ? 'SCREENED OUT' : 'ESCALATE') + '</b><br>' +
+      p14.cycles_count + ' cycles, thermal shock: ' + (p14.has_thermal_shock ? 'YES' : 'no') + '<br>' +
+      '<span style="color:var(--dim);font-size:12px">' + p14.recommendation + '</span></div>' +
+    '<div class="explain"><span style="color:var(--dim)">' + p14.ref + '</span></div>';
+}
+if ($("ffsForm")) $("ffsForm").addEventListener("input", renderFFS);
+
+function renderMR0175(){
+  var host = $("mr0175_results"); if (!host || !window.MR0175) return;
+  var v = MR0175.issue({
+    uns: $("mr_uns").value.trim().toUpperCase(),
+    composition: { Cr: +$("mr_Cr").value, Mo: +$("mr_Mo").value, Ni: +$("mr_Ni").value, N: +$("mr_N").value, C: 0.05 },
+    T_C: +$("mr_T").value, pH2S_kPa: +$("mr_pH2S").value, Cl_mg_L: +$("mr_Cl").value, pH_in_situ: +$("mr_pH").value,
+    stress_pct_SMYS: +$("mr_stress").value, hardness_HRC: +$("mr_hrc").value,
+    equipment_class: $("mr_equip").value, scope: $("mr_scope").value
+  });
+  var cls = v.IN_SCOPE === true ? "within" : v.IN_SCOPE === false ? "exceeds" : "untabulated";
+  host.innerHTML =
+    '<div class="iso ' + cls + '"><b>MR0175 / ISO 15156 — ' + (v.IN_SCOPE === true ? 'IN-SCOPE' : 'OUT-OF-SCOPE') + '</b> · Route: <b>' + v.route + '</b><br>' +
+      (v.envelope ? 'Envelope: ' + JSON.stringify(v.envelope) + '<br>' : '') +
+      (v.manufacturing_annotations.length ? '<b>Manufacturing requirements:</b><ul style="margin:4px 0 0 18px;padding:0">' + v.manufacturing_annotations.map(function(a){ return '<li>' + a + '</li>'; }).join('') + '</ul>' : '') +
+      (v.warnings.length ? '<div style="margin-top:6px;color:#fbbf24"><b>Warnings:</b><ul style="margin:4px 0 0 18px;padding:0">' + v.warnings.map(function(w){ return '<li>' + w + '</li>'; }).join('') + '</ul></div>' : '') +
+      (v.failure_reasons.length ? '<div style="margin-top:6px;color:#f87171"><b>Failure reasons:</b><ul style="margin:4px 0 0 18px;padding:0">' + v.failure_reasons.map(function(f){ return '<li>' + f + '</li>'; }).join('') + '</ul></div>' : '') +
+      (v.alternative_recommendations.length ? '<div style="margin-top:6px"><b>Alternatives:</b><ul style="margin:4px 0 0 18px;padding:0">' + v.alternative_recommendations.map(function(a){ return '<li>' + a + '</li>'; }).join('') + '</ul></div>' : '') +
+    '</div>' +
+    '<div class="explain"><span style="color:var(--dim)">' + v.citations.join(' · ') + '</span></div>';
+}
+if ($("mr0175Form")) $("mr0175Form").addEventListener("input", renderMR0175);
+
+function renderCIPSPlaceholder(){
+  var host = $("cips_results"); if (!host) return;
+  if (host.innerHTML.indexOf('placeholder') < 0) return;  // don't overwrite if already rendered
+  host.innerHTML = '<div class="placeholder">Paste a CIPS/DCVG survey CSV →<br><span style="font-size:12px;color:var(--dim);margin-top:6px;display:block">Required: <code>station</code>; recommended: <code>E_on, E_off, dcvg</code>. Auto-detects mV vs V, ft vs m. Sample: 100,-1100,-900,3 newline 200,-1180,-820,12</span></div>';
+}
+function renderCIPS(){
+  var host = $("cips_results"); if (!host || !window.CIPS) return;
+  var txt = $("cips_paste") ? $("cips_paste").value : "";
+  if (!txt.trim()) { renderCIPSPlaceholder(); return; }
+  var s = CIPS.parseCSV(txt);
+  if (!s.readings.length) {
+    host.innerHTML = '<div class="iso exceeds"><b>Could not parse CSV</b><br>' + s.errors.join('<br>') + '</div>';
+    return;
+  }
+  var exc = CIPS.scanExceedances(s, { E_off_threshold_mV: +$("cips_thr").value, E_l_mV: +$("cips_el").value, native_potential_mV: +$("cips_native").value });
+  var inds = CIPS.findIndications(s);
+  var prio = CIPS.prioritizeECDA({ cips_results: exc, dcvg_results: inds });
+  var nFail = exc.perStation.filter(function(p){ return p.flags.length > 0; }).length;
+  host.innerHTML =
+    '<div class="iso ' + (nFail > 0 || prio.summary.IMMEDIATE > 0 ? 'exceeds' : 'within') + '">' +
+      '<b>CIPS survey — ' + s.readings.length + ' readings · type ' + s.type + '</b><br>' +
+      'Stations failing −850 mV / 100 mV shift: <b>' + nFail + '</b> · DCVG indications: <b>' + inds.length + '</b><br>' +
+      'ECDA prioritisation: <b style="color:#ef4444">IMMEDIATE ' + prio.summary.IMMEDIATE + '</b> · <b style="color:#fbbf24">SCHEDULED ' + prio.summary.SCHEDULED + '</b> · <b style="color:#34d399">MONITORED ' + prio.summary.MONITORED + '</b>' +
+      (s.errors.length ? '<br><span style="color:#fbbf24;font-size:12px">' + s.errors.join('; ') + '</span>' : '') +
+    '</div>' +
+    (exc.runs.length ? '<div class="iso untabulated"><b>Exceedance runs (' + exc.runs.length + ')</b><br>' + exc.runs.slice(0, 10).map(function(r){ return r.start_m.toFixed(1) + '–' + r.end_m.toFixed(1) + ' m · min E_off = ' + r.min_E_off_mV + ' mV · ' + r.flags.join(', '); }).join('<br>') + '</div>' : '') +
+    (inds.length ? '<div class="iso untabulated"><b>DCVG indications (' + inds.length + ')</b><br>' + inds.slice(0, 10).map(function(i){ return 'Station ' + i.station_m.toFixed(1) + ' m · %IR = ' + (i.percent_IR != null ? i.percent_IR.toFixed(1) : '?') + '% · <b style="color:' + i.color + '">' + i.severity + '</b> · ' + i.polarity; }).join('<br>') + '</div>' : '') +
+    '<div class="explain"><span style="color:var(--dim)">' + (exc.ref || '') + ' · ' + (inds.length ? inds[0].ref : '') + ' · ' + (prio.ref || '') + '</span></div>';
+}
+if ($("cips_process")) $("cips_process").onclick = renderCIPS;
+if ($("cips_paste")) $("cips_paste").addEventListener("blur", renderCIPS);
 
 async function init(){
   let meta = null;

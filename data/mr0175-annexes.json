@@ -1,0 +1,102 @@
+[
+  {"part":2,"region":0,"pH2S_max_kPa":0.3,"in_situ_pH_min":null,"treatment":"no SSC precautions; all standard C-Mn qualifies","ref":"ISO 15156-2:2020 Figure 1 + §7.1"},
+  {"part":2,"region":1,"pH2S_max_kPa":10,"in_situ_pH_min":3.5,"treatment":"standard 22 HRC C-Mn steels qualify","ref":"ISO 15156-2:2020 Figure 1"},
+  {"part":2,"region":2,"pH2S_max_kPa":100,"in_situ_pH_min":3.5,"treatment":"Annex B qualification required (TM0177 A/B at 0.1 MPa H2S)","ref":"ISO 15156-2:2020 Figure 1 + Annex B"},
+  {"part":2,"region":3,"pH2S_max_kPa":null,"in_situ_pH_min":null,"treatment":"Annex B qualification OR fit-for-purpose per Part 1 §8","ref":"ISO 15156-2:2020 Figure 1 + §7.1"},
+
+  {"table":"A.1","family":"GUIDANCE","title":"Guidance notes","envelope":null,"manufacturing":null,"ref":"ISO 15156-3:2020 Annex A.1"},
+
+  {"table":"A.2","family":"austenitic-SS","uns_list":["S30400","S30403","S31600","S31603","S31700","S31703","S34700"],"title":"Austenitic SS for general equipment",
+    "envelope":{"T_max_C":60,"pH2S_max_kPa":103,"Cl_max_mg_L":null,"in_situ_pH_min":null,"stress_max_pct_SMYS":null},
+    "manufacturing":{"condition":["solution-annealed","annealed + thermally stabilized"],"no_cold_work_for_strength":true,"HRC_max":22},
+    "notes":"If T > 60 °C, restricted to small internals (see A.3)","ref":"ISO 15156-3:2020 Table A.2 + Technical Circular 1 (2021)"},
+
+  {"table":"A.3","family":"austenitic-SS","uns_list":["S30400","S30403","S31600","S31603"],"title":"Austenitic SS for valve stems, pins, shafts, small internals",
+    "envelope":{"T_max_C":null,"pH2S_max_kPa":null,"Cl_max_mg_L":null,"needs_review":true},
+    "manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.3"},
+
+  {"table":"A.4","family":"hi-austenitic-SS","uns_list":["S31254","S31726","N08367","N08926"],"title":"Highly-alloyed austenitic SS — moderate envelope",
+    "envelope":{"T_max_C":null,"pH2S_max_kPa":null,"needs_review":"PLAN-tier3.md notes pre-qualified at higher T/pH2S — exact values from standard required"},
+    "manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.4"},
+
+  {"table":"A.5","family":"hi-austenitic-SS","title":"Highly-alloyed austenitic SS — sub-envelope 5","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.5"},
+  {"table":"A.6","family":"hi-austenitic-SS","title":"Highly-alloyed austenitic SS — sub-envelope 6","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.6"},
+  {"table":"A.7","family":"ferritic-SS","uns_list":["S43000","S40500"],"title":"Ferritic SS — limited application","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.7"},
+  {"table":"A.8","family":"hi-austenitic-SS","title":"Highly-alloyed austenitic — downhole","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.8"},
+  {"table":"A.9","family":"hi-austenitic-SS","title":"Highly-alloyed austenitic — sub 9","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.9"},
+  {"table":"A.10","family":"hi-austenitic-SS","uns_list":["N08825","N08028"],"title":"Highly-alloyed austenitic — Alloy 825 / Sanicro 28","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.10"},
+  {"table":"A.11","family":"hi-austenitic-SS","title":"Highly-alloyed austenitic — sub 11","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.11"},
+  {"table":"A.12","family":"ferritic-SS","uns_list":["S44400"],"title":"Ferritic SS — alternate equipment","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.12"},
+
+  {"table":"A.13","family":"Ni-Cr-Mo-solid","uns_list":["N06985","N06975"],"title":"Solid-solution Ni-Cr-Mo for downhole / production tubing",
+    "envelope":{"T_max_C":null,"pH2S_max_kPa":null,"Cl_max_mg_L":null,"in_situ_pH_min":null,"needs_review":"Higher Cl + T tolerance per PLAN-tier3.md; exact thresholds from standard required"},
+    "manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.13"},
+
+  {"table":"A.14","family":"Ni-Cr-Mo-solid","uns_list":["N10276","N06022","N06059","N06200"],"title":"Solid-solution Ni-Cr-Mo for general equipment — any combination envelope",
+    "envelope":{"T_max_C":null,"pH2S_max_kPa":null,"Cl_max_mg_L":null,"in_situ_pH_min":null,"any_combination":true,"needs_review":"any combination of T/Cl/pH2S/pH when annealed"},
+    "manufacturing":{"condition":["solution-annealed"],"no_cold_work_for_strength":true,"HRC_max":22},
+    "ref":"ISO 15156-3:2020 Table A.14"},
+
+  {"table":"A.15","family":"hi-austenitic-SS","title":"Highly-alloyed austenitic — additional","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.15"},
+  {"table":"A.16","family":"Ni-Cr-Mo-solid","title":"Solid-solution Ni alloys — alternate equipment","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.16"},
+  {"table":"A.17","family":"Ni-Cr-Mo-solid","title":"Solid-solution Ni alloys — alternate equipment","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.17"},
+
+  {"table":"A.18","family":"martensitic-SS","uns_list":["S41000","S41425","J91540"],"title":"Martensitic SS — general equipment",
+    "envelope":{"T_max_C":232,"pH2S_max_kPa":null,"needs_review":"232 °C cap for some sub-rows; HRC ≤ 22 typical"},
+    "manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.18"},
+
+  {"table":"A.19","family":"martensitic-SS","uns_list":["S41425"],"title":"Martensitic SS — downhole tubular (13Cr OCTG)",
+    "envelope":{"T_max_C":150,"pH2S_max_kPa":10,"in_situ_pH_min":3.5,"Cl_max_mg_L":null},
+    "manufacturing":{"condition":["Q+T"],"HRC_max":27},
+    "notes":"Sub-row variation exists by S41425 / S13Cr-110 — conservative defaults shown; verify per project against hard copy of standard.","ref":"ISO 15156-3:2020 Table A.19"},
+
+  {"table":"A.20","family":"martensitic-SS","title":"Martensitic SS — sub-envelope 20 (super-13Cr)","envelope":{"needs_review":true},"manufacturing":{"HRC_max":27},"ref":"ISO 15156-3:2020 Table A.20"},
+  {"table":"A.21","family":"martensitic-SS","title":"Martensitic SS — sub-envelope 21 (15Cr)","envelope":{"needs_review":true},"manufacturing":{"HRC_max":27},"ref":"ISO 15156-3:2020 Table A.21"},
+  {"table":"A.22","family":"martensitic-SS","title":"Martensitic SS — sub-envelope 22 (S13Cr-110)","envelope":{"needs_review":true},"manufacturing":{"HRC_max":27},"ref":"ISO 15156-3:2020 Table A.22"},
+  {"table":"A.23","family":"martensitic-SS","title":"Martensitic SS — sub-envelope 23","envelope":{"needs_review":true},"manufacturing":{"HRC_max":27},"ref":"ISO 15156-3:2020 Table A.23"},
+
+  {"table":"A.24.22Cr","family":"duplex-SS","uns_list":["S31803","S32205"],"title":"Duplex SS 22Cr — general equipment",
+    "envelope":{"T_max_C":232,"pH2S_max_kPa":10,"Cl_max_mg_L":180000,"in_situ_pH_min":null,"Cl_max_2020_added":true},
+    "manufacturing":{"HRC_max":32,"cold_work_max_pct":28,"ferrite_range_pct":[35,65]},
+    "notes":"22Cr lean-duplex envelope pH2S ≤ 10 kPa per PLAN-tier3.md","ref":"ISO 15156-3:2020 Table A.24 (22Cr sub-row) + Technical Circular 1 (2021)"},
+
+  {"table":"A.24.25Cr","family":"super-duplex-SS","uns_list":["S32750","S32760","S32550","S39274"],"title":"Super-duplex SS 25Cr — general equipment",
+    "envelope":{"T_max_C":232,"pH2S_max_kPa":20,"Cl_max_mg_L":180000,"in_situ_pH_min":null,"Cl_max_2020_added":true},
+    "manufacturing":{"HRC_max":32,"cold_work_max_pct":28,"ferrite_range_pct":[35,65],"PREN_min":40},
+    "notes":"25Cr super-duplex envelope per 2020 edition","ref":"ISO 15156-3:2020 Table A.24 (25Cr sub-row) + Technical Circular 1 (2021)"},
+
+  {"table":"A.25","family":"duplex-SS","title":"Duplex SS — downhole / pressure-containing alternate","envelope":{"needs_review":true},"manufacturing":{"HRC_max":32},"ref":"ISO 15156-3:2020 Table A.25"},
+  {"table":"A.26","family":"PH-austenitic","uns_list":["S66286"],"title":"Precipitation-hardened austenitic SS (A286)","envelope":{"stress_max_pct_SMYS":null,"needs_review":"lower stress fraction allowed"},"manufacturing":{"HRC_max":35},"ref":"ISO 15156-3:2020 Table A.26"},
+
+  {"table":"A.27","family":"PH-martensitic","uns_list":["S17400","S15500"],"title":"Precipitation-hardened martensitic SS (17-4PH / 15-5PH)",
+    "envelope":{"stress_max_pct_SMYS":50,"needs_review":"NEW 2020: sustained stress ≤ 50% SMYS at annotated envelope"},
+    "manufacturing":{"HRC_max":33,"condition":["H1150 double-aged"]},
+    "ref":"ISO 15156-3:2020 Table A.27 — Technical Circular 1 (2021) S17400 stress restriction"},
+
+  {"table":"A.28","family":"Ni-Cr-Mo-solid","title":"Solid-solution Ni-Cr-Mo / Ni-Fe-Cr alternate","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.28"},
+  {"table":"A.29","family":"Ni-Cr-Mo-solid","title":"Solid-solution Ni-Cr-Mo / Ni-Fe-Cr alternate","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.29"},
+  {"table":"A.30","family":"Ni-Cr-Mo-solid","uns_list":["N08825"],"title":"Alloy 825 alternate envelope","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.30"},
+  {"table":"A.31","family":"Ni-Cr-Mo-solid","uns_list":["N06059"],"title":"Alloy 59 envelope","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.31"},
+
+  {"table":"A.32","family":"PH-Ni","uns_list":["N07718","N07725","N09925","N09935","N09945","N09946","N09955","N07716","N07975"],"title":"Precipitation-hardened nickel-based alloys (restructured 2020)",
+    "envelope":{"T_max_C":null,"needs_review":"Two-step aging required for highest envelope; sub-rows per UNS"},
+    "manufacturing":{"HRC_max":45,"condition":["two-step age (Alloy 718 per API 6A CRA)"],"PREN_min":null},
+    "notes":"2020: UNS N09945/N09946 separated; N07718 added per API 6A CRA","ref":"ISO 15156-3:2020 Table A.32 (restructured) + Technical Circular 1 (2021)"},
+
+  {"table":"A.33","family":"Ni-Cr-Mo-solid","uns_list":["N06625"],"title":"Solid-solution Ni-Cr-Mo — Alloy 625 production tubing","envelope":{"any_combination":true},"manufacturing":{"condition":["solution-annealed"],"HRC_max":22,"HB_max":237},"notes":"Any combination of T/Cl/pH2S/pH when annealed (≤22 HRC).","ref":"ISO 15156-3:2020 Table A.33"},
+
+  {"table":"A.34","family":"Ni-Cr-Mo-solid","uns_list":["N06625","N10276","N06022"],"title":"Solid-solution Ni — Alloy 625 / C-276 / 22 valves general","envelope":{"any_combination":true},"manufacturing":{"condition":["annealed","solution-annealed"],"no_cold_work_for_strength":true,"HRC_max":22,"HB_max":237},"notes":"Any combination when annealed.","ref":"ISO 15156-3:2020 Table A.34"},
+
+  {"table":"A.35","family":"Ni-Cr-Mo-solid","title":"Solid-solution Ni — alternate sub-category 35","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.35"},
+  {"table":"A.36","family":"Ni-Cr-Mo-solid","title":"Solid-solution Ni — alternate sub-category 36","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.36"},
+  {"table":"A.37","family":"Ni-Cr-Mo-solid","title":"Solution-annealed solid-solution Ni alternate 37","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.37"},
+  {"table":"A.38","family":"Ni-Cr-Mo-solid","title":"Solution-annealed solid-solution Ni alternate 38","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.38"},
+  {"table":"A.39","family":"Ni-Cr-Mo-solid","title":"Solution-annealed solid-solution Ni alternate 39","envelope":{"needs_review":true},"manufacturing":{"HRC_max":22},"ref":"ISO 15156-3:2020 Table A.39"},
+
+  {"table":"A.40","family":"Co-base","uns_list":["R30003","R30035","R30159"],"title":"Cobalt-based alloys (diaphragms, pressure devices, seals, springs)","envelope":{"any_combination":true,"needs_review":"spring-temper allowed for diaphragms/springs"},"manufacturing":{"condition":["spring-temper acceptable for noted components"]},"ref":"ISO 15156-3:2020 Table A.40"},
+
+  {"table":"A.41","family":"Ti","uns_list":["R50250","R50400","R52400","R53400","R56260","R55400"],"title":"Titanium and titanium alloys",
+    "envelope":{"T_max_C":250,"pH2S_max_kPa":null,"needs_review":"T ≤ ~250 °C for α corrosion limit; R53400 must be annealed only; R55400 NEW α-β 2020"},
+    "manufacturing":{"condition":["annealed (R53400)"]},
+    "notes":"R55400 α-β titanium added in 2020 edition","ref":"ISO 15156-3:2020 Table A.41 + Technical Circular 1 (2021)"}
+]

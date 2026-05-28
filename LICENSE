@@ -1,0 +1,39 @@
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   Copyright 2026 Javanshir Hasanov / austenite.org
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+
+   NOTICE
+   ------
+   This software (PitCast) is a screening-grade computational aid for
+   corrosion engineering, fitness-for-service, and risk-based inspection
+   workflows. PitCast outputs are intended to support — NOT replace —
+   the independent professional judgment of a licensed Professional Engineer
+   working within their area of competence.
+
+   PitCast is NOT intended:
+     (a) as the calculation-of-record for any code-stamped vessel, piping,
+         or pipeline design under ASME BPVC, ASME B31, API 510/570/653,
+         API 579, ASME PCC-2, NACE/AMPP, or equivalent;
+     (b) for real-time safety-instrumented-system control or any application
+         requiring IEC 61508 SIL ≥ 2;
+     (c) for nuclear safety-related functions (10 CFR 50 App. B / ASME NQA-1);
+     (d) for any application where the consequence of an undetected wrong
+         output is loss of life, environmental release in excess of regulatory
+         thresholds, or catastrophic asset loss without independent verification
+         by the user PE.
+
+   See legal/IUS-v1.0.md for the full Intended Use Statement.
