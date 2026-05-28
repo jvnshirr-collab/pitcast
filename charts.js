@@ -221,6 +221,67 @@ window.Charts={
     p.s += `<line x1="${lx}" y1="${ly0+42}" x2="${lx+22}" y2="${ly0+42}" stroke="${cC}" stroke-width="2"/>`;
     p.s += `<text x="${lx+27}" y="${ly0+45}" fill="${PAL.ink}" font-size="10">${E(c.label)} cathodic</text>`;
     return wrap(p);
+  },
+
+  /* Polarisation curve (Wagner-Traud combined-current) — E vs log|i|.
+     Inputs: { E_corr_V, i_corr_uA_cm2, ba_mV, bc_mV, E_pit_V?, i_pass_uA_cm2?,
+               label, title?, w?, h? } */
+  polarisationCurve: function(o) {
+    var Ec = +o.E_corr_V, ic = +o.i_corr_uA_cm2;
+    var ba = (+o.ba_mV || 60) / 1000;
+    var bc = (+o.bc_mV || 120) / 1000;
+    var Epit = o.E_pit_V != null ? +o.E_pit_V : null;
+    var iPass = o.i_pass_uA_cm2 != null ? +o.i_pass_uA_cm2 : null;
+    if (!isFinite(Ec) || !isFinite(ic) || ic <= 0) {
+      return "<svg viewBox='0 0 400 200'><text x='200' y='100' fill='#888' text-anchor='middle'>No polarisation data</text></svg>";
+    }
+    var iMin = Math.max(1e-3, ic * 1e-4), iMax = Math.max(1e3, ic * 1e4);
+    var Emin = Ec - 0.4, Emax = Ec + 0.6;
+    if (Epit != null) Emax = Math.max(Emax, Epit + 0.1);
+    var p = plot({
+      w: o.w||640, h: o.h||320, title: o.title||("Polarisation — " + (o.label||"alloy")),
+      xmin: iMin, xmax: iMax, ymin: Emin, ymax: Emax, xlog: true,
+      xlabel: "log |i|  (µA/cm²)", ylabel: "E  (V vs ref)"
+    });
+    var anPts = [], caPts = [], combPts = [];
+    var nPts = 80;
+    for (var k = 0; k <= nPts; k++) {
+      var lo = Math.log10(iMin) + (Math.log10(iMax) - Math.log10(iMin)) * (k/nPts);
+      var i = Math.pow(10, lo);
+      var Ean = Ec + ba * Math.log10(i / ic);
+      var Eca = Ec - bc * Math.log10(i / ic);
+      if (Ean >= Emin && Ean <= Emax) anPts.push({x:i, y:Ean});
+      if (Eca >= Emin && Eca <= Emax) caPts.push({x:i, y:Eca});
+    }
+    for (var j = 0; j <= 80; j++) {
+      var E = Emin + (Emax - Emin) * (j/80);
+      var dE = E - Ec;
+      var ia = ic * Math.pow(10, dE/ba);
+      var icth = ic * Math.pow(10, -dE/bc);
+      var iObs = Math.abs(ia - icth);
+      if (iObs >= iMin) combPts.push({ x: iObs, y: E });
+    }
+    p.s += `<path d="${linePath(anPts, p.tx, p.ty)}" fill="none" stroke="${PAL.amber}" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+    p.s += `<path d="${linePath(caPts, p.tx, p.ty)}" fill="none" stroke="${PAL.accent2}" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+    p.s += `<path d="${linePath(combPts, p.tx, p.ty)}" fill="none" stroke="${PAL.accent}" stroke-width="2"/>`;
+    var Yec = p.ty(Ec), Xic = p.tx(ic);
+    p.s += `<line x1="${p.m.l}" y1="${Yec.toFixed(1)}" x2="${p.m.l+p.pw}" y2="${Yec.toFixed(1)}" stroke="${PAL.muted}" stroke-dasharray="2 2" opacity="0.6"/>`;
+    p.s += `<line x1="${Xic.toFixed(1)}" y1="${p.m.t}" x2="${Xic.toFixed(1)}" y2="${p.m.t+p.ph}" stroke="${PAL.muted}" stroke-dasharray="2 2" opacity="0.6"/>`;
+    p.s += `<circle cx="${Xic.toFixed(1)}" cy="${Yec.toFixed(1)}" r="5" fill="${PAL.ink}" stroke="#000" stroke-width="1"/>`;
+    p.s += `<text x="${(Xic+8).toFixed(1)}" y="${(Yec-6).toFixed(1)}" fill="${PAL.ink}" font-size="10">E_corr ${(Ec*1000).toFixed(0)} mV · i_corr ${ic.toFixed(1)} µA/cm²</text>`;
+    if (iPass != null && Epit != null) {
+      var Xip = p.tx(iPass), YEp = p.ty(Epit);
+      p.s += `<line x1="${Xip.toFixed(1)}" y1="${p.ty(Ec).toFixed(1)}" x2="${Xip.toFixed(1)}" y2="${YEp.toFixed(1)}" stroke="${PAL.green}" stroke-width="2"/>`;
+      p.s += `<line x1="${p.m.l}" y1="${YEp.toFixed(1)}" x2="${p.m.l+p.pw}" y2="${YEp.toFixed(1)}" stroke="${PAL.red}" stroke-width="1.2" stroke-dasharray="6 3"/>`;
+      p.s += `<text x="${(p.m.l+p.pw-2).toFixed(1)}" y="${(YEp-4).toFixed(1)}" fill="${PAL.red}" font-size="10" text-anchor="end">E_pit ${(Epit*1000).toFixed(0)} mV (breakdown)</text>`;
+      p.s += `<text x="${(Xip+5).toFixed(1)}" y="${((p.ty(Ec)+YEp)/2).toFixed(1)}" fill="${PAL.green}" font-size="9">i_pass ${iPass.toFixed(2)} µA/cm² (passive plateau)</text>`;
+    }
+    var lx = p.m.l + 8, ly0 = p.m.t + p.ph - 56;
+    p.s += `<rect x="${lx-4}" y="${ly0-12}" width="220" height="56" fill="#0a0e14" stroke="${PAL.line}" opacity="0.92"/>`;
+    p.s += `<line x1="${lx}" y1="${ly0}" x2="${lx+22}" y2="${ly0}" stroke="${PAL.accent}" stroke-width="2"/><text x="${lx+27}" y="${ly0+3}" fill="${PAL.ink}" font-size="10">combined |i(E)| (measured)</text>`;
+    p.s += `<line x1="${lx}" y1="${ly0+14}" x2="${lx+22}" y2="${ly0+14}" stroke="${PAL.amber}" stroke-width="2" stroke-dasharray="4 3"/><text x="${lx+27}" y="${ly0+17}" fill="${PAL.muted}" font-size="10">anodic Tafel (${(+o.ba_mV||60)} mV/dec)</text>`;
+    p.s += `<line x1="${lx}" y1="${ly0+28}" x2="${lx+22}" y2="${ly0+28}" stroke="${PAL.accent2}" stroke-width="2" stroke-dasharray="4 3"/><text x="${lx+27}" y="${ly0+31}" fill="${PAL.muted}" font-size="10">cathodic Tafel (${(+o.bc_mV||120)} mV/dec)</text>`;
+    return wrap(p);
   }
 };
 })();

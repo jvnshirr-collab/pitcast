@@ -42,6 +42,7 @@
     <button class="tab" data-tab="ffs">FFS (API 579)</button>
     <button class="tab" data-tab="mr0175">MR0175 spec</button>
     <button class="tab" data-tab="cips">CIPS / DCVG</button>
+    <button class="tab" data-tab="products">Vendor products</button>
   </div>
   <div class="datastat" id="dataStat"></div>
   <div class="exportbar"><button type="button" id="btnPrint">🖶 Print / Save as PDF</button><button type="button" id="btnXLSX">⤓ Export XLSX</button><button type="button" id="btnCSV">⤓ Download CSV</button></div>
@@ -560,6 +561,15 @@
 D-001,180,3.2
 D-002,95,2.1
 ..." style="width:100%;font-family:monospace;font-size:12px;background:rgba(255,255,255,0.04);color:var(--text);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px"></textarea></label>
+        <h3>Multi-defect interaction (clustering)</h3>
+        <div class="row">
+          <label>Cluster rule<select id="ili_cluster_rule">
+            <option value="none">None (each defect independent)</option>
+            <option value="dnv" selected>DNV-RP-F101 §3.7 (axial 2√(D·t), circ π√(D·t))</option>
+            <option value="modb31g">B31G/Mod-B31G (axial 25.4 mm threshold)</option>
+            <option value="pof">POF-100 §7 (interaction-box)</option>
+          </select></label>
+        </div>
         <div class="row"><button type="button" id="ili_process" class="primary">Process defects →</button></div>
         <p class="hint">Verdict bands per ASME B31G §3.6 + Kiefner 1989:
           <b style="color:#34d399">PASS</b> (P<sub>safe</sub> ≥ MAOP, d/t &lt; 50%) ·
@@ -690,6 +700,21 @@ D-002,95,2.1
     </div>
   </section>
 
+  <!-- VENDOR PRODUCTS — corrosion-prevention catalogue -->
+  <section class="panel" id="tab-products">
+    <div class="datastat">Cited vendor product database — coatings (FBE / 3LPE / TSA / epoxy / PU / zinc-rich / ceramic / glass-flake / CUI-resistant), sacrificial + impressed-current anodes, insulation (Ca-silicate / perlite / mineral-wool / ceramic-fibre / aerogel / PIR / glass-foam), CRA valves. Every entry cites a manufacturer data sheet + a recognised standard (NACE / AMPP / DNV / ISO / ASTM / API).</div>
+    <div class="grid">
+      <form class="card inputs" id="productsForm">
+        <h3>Filter</h3>
+        <label>Category<select id="prod_category"><option value="any">Any</option></select></label>
+        <label>Service-T (°C, optional)<input type="number" id="prod_T" value="" placeholder="leave empty for any" step="10"></label>
+        <label>Free-text search<input type="text" id="prod_search" placeholder="manufacturer / model / standard"></label>
+        <p class="hint">Search across product model, spec, service description, and reference. Filters AND'd together.</p>
+      </form>
+      <div class="card results" id="products_results"><div class="placeholder">Loading vendor product database…</div></div>
+    </div>
+  </section>
+
 </main>
 
 <section id="how" class="info">
@@ -808,14 +833,14 @@ D-002,95,2.1
      metallurgists, FEED engineers, AMPP corrosion specialists, and PE pipeline-integrity engineers.</p>
 </section>
 
-<script src="charts.js?v=14"></script>
+<script src="charts.js?v=15"></script>
 <script src="co2.js?v=12"></script>
 <script src="cpac.js?v=11"></script>
 <script src="b31g.js?v=1"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="anode.js?v=3"></script>
 <script src="cui.js?v=3"></script>
-<script src="electrochem.js?v=2"></script>
+<script src="electrochem.js?v=3"></script>
 <script src="galvanic.js?v=5"></script>
 <script src="mic.js?v=1"></script>
 <script src="groundbed.js?v=1"></script>
@@ -824,6 +849,7 @@ D-002,95,2.1
 <script src="interaction.js?v=1"></script>
 <script src="mr0175.js?v=2"></script>
 <script src="cips.js?v=1"></script>
+<script src="vendor-products.js?v=1"></script>
 <script src="ffs.js?v=2"></script>
 <script src="rbi-detailed.js?v=2"></script>
 <script src="rbi-damage-mechanisms.js?v=3"></script>
@@ -831,7 +857,7 @@ D-002,95,2.1
 <script src="storage.js?v=1"></script>
 <script src="projects-ui.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=44"></script>
+<script src="app.js?v=45"></script>
 <script>
   // Wait for mr0175 annexes to load (async fetch)
   if (typeof window !== "undefined") {

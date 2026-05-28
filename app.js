@@ -421,6 +421,20 @@ function renderCPAC(){
             couple: { E_couple_V: 0.5*(gc.anode_E + gc.cathode_E), i_galv_Am2: gc.i_galv_parity_Am2 }
           };
           evansSvg = `<div class="chartwrap" style="margin-top:8px">${Charts.evansDiagram(evansArgs)}</div>`;
+          // Per-metal polarisation curve (use anode by default)
+          if (Charts.polarisationCurve && anodeData) {
+            const polArgs = {
+              w: 640, h: 280, label: gc.anode,
+              title: "Polarisation curve — " + gc.anode + " in " + gcEnv + " @ " + gcT + "°C",
+              E_corr_V: anodeData.E_corr_V || gc.anode_E,
+              i_corr_uA_cm2: anodeData.i_corr_uA_cm2 || (anodeData.i0_a_A_m2 ? anodeData.i0_a_A_m2 * 100 : 10),
+              ba_mV: anodeData.ba_mV_dec || 60,
+              bc_mV: anodeData.bc_mV_dec || 120,
+              E_pit_V: anodeData.E_pit_V || null,
+              i_pass_uA_cm2: anodeData.i_pass_uA_cm2 || null
+            };
+            evansSvg += `<div class="chartwrap" style="margin-top:8px">${Charts.polarisationCurve(polArgs)}</div>`;
+          }
         }
       }
 
@@ -1116,9 +1130,18 @@ function _renderILITable(){
   }).join("");
   const headerStyle = 'style="padding:6px 8px;background:#0b1220;text-align:left;color:var(--dim);font-weight:600;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.1);position:sticky;top:0;cursor:pointer"';
   const cellStyle = 'style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,0.04);font-variant-numeric:tabular-nums;font-size:12px"';
+  const showClusters = (opts.cluster_rule && opts.cluster_rule !== "none" && res.some(r => r.cluster_id));
+  // Pre-compute cluster colour palette (one per cluster_id)
+  const clusterColours = {};
+  if (showClusters) {
+    const palette = ["#7dd3fc", "#fda4af", "#fde047", "#a7f3d0", "#d8b4fe", "#fdba74", "#fca5a5", "#86efac"];
+    const cIDs = [...new Set(res.map(r => r.cluster_id).filter(Boolean))];
+    cIDs.forEach((cid, i) => { clusterColours[cid] = palette[i % palette.length]; });
+  }
   let table = `<div style="max-height:380px;overflow:auto;border:1px solid rgba(255,255,255,0.08);border-radius:6px"><table style="border-collapse:collapse;width:100%">
     <thead><tr>
       <th ${headerStyle}>ID</th>
+      ${showClusters ? `<th ${headerStyle}>Cluster</th>` : ``}
       <th ${headerStyle}>Chainage (m)</th>
       <th ${headerStyle}>Clock</th>
       <th ${headerStyle}>L (mm)</th>
@@ -1131,8 +1154,10 @@ function _renderILITable(){
     </tr></thead><tbody>`;
   res.forEach(r => {
     const col = colours[r.status] || "#888";
+    const clusterCell = showClusters ? `<td ${cellStyle}>${r.cluster_id ? `<span title="${(r.cluster_members||[]).length ? 'Clustered with: '+r.cluster_members.join(', ')+'. Combined L='+(r.cluster_L_combined_mm||0).toFixed(0)+' mm, d='+(r.cluster_d_combined_mm||0).toFixed(1)+' mm' : 'Singleton cluster'}" style="background:${clusterColours[r.cluster_id]};color:#000;padding:2px 6px;border-radius:4px;font-weight:600;font-size:11px;cursor:help">${r.cluster_id}${r.cluster_n>1?'·'+r.cluster_n:''}</span>` : "—"}</td>` : ``;
     table += `<tr>
       <td ${cellStyle}><b>${r.id}</b></td>
+      ${clusterCell}
       <td ${cellStyle}>${r.chainage_m != null ? r.chainage_m.toFixed(1) : "—"}</td>
       <td ${cellStyle}>${r.clock_pos || "—"}</td>
       <td ${cellStyle}>${r.length_mm.toFixed(1)}</td>
@@ -1146,11 +1171,25 @@ function _renderILITable(){
   });
   table += `</tbody></table></div>`;
   const exportBtn = `<button type="button" id="ili_export_csv" style="margin-top:10px;padding:8px 14px;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);color:#7dd3fc;border-radius:6px;cursor:pointer;font-weight:600">⤓ Export processed results (CSV)</button>`;
+  // Cluster delta vs ungrouped baseline
+  let clusterLine = "";
+  if (showClusters && _iliCache.ungrouped && _iliCache.ungrouped.length) {
+    const nClusters = new Set(res.map(r => r.cluster_id).filter(Boolean)).size;
+    const nGrouped = res.filter(r => r.cluster_n > 1).length;
+    // Min P_safe across all defects: with clustering vs without
+    const psSorted = res.slice().map(r => r.P_safe_bar).sort((a,b) => a-b);
+    const psSortedUn = _iliCache.ungrouped.slice().map(r => r.P_safe_bar).sort((a,b) => a-b);
+    const minPS = psSorted[0] || 0;
+    const minPSun = psSortedUn[0] || 0;
+    const pctDrop = minPSun > 0 ? (100 * (1 - minPS / minPSun)) : 0;
+    const ruleName = { dnv:"DNV-RP-F101 §3.7", modb31g:"B31G/Mod-B31G §3.4.5", pof:"POF-100 §7" }[opts.cluster_rule] || opts.cluster_rule;
+    clusterLine = `<br><span style="color:${pctDrop>5?'#fbbf24':'#7dd3fc'}">▸ Interaction rule <b>${ruleName}</b>: ${nClusters} cluster(s), ${nGrouped} defect(s) interacted${pctDrop>0.5?` · worst-case P<sub>safe</sub> reduced <b>${pctDrop.toFixed(1)}%</b> vs ungrouped (${minPSun.toFixed(1)}→${minPS.toFixed(1)} bar)`:''}</span>`;
+  }
   const summary = `<div class="iso ${(counts.IMMEDIATE||counts.REPAIR)?'exceeds':(counts.MONITOR?'untabulated':'within')}">
     <b>ILI batch summary — ${total} defects processed</b><br>
     Pipeline: D ${opts.D} mm × t ${opts.t} mm · ${B31G.GRADES[opts.grade].label} · MAOP ${opts.MAOP_bar} bar · method ${opts.method === "modb31g" ? "Modified B31G (0.85 dL Kiefner)" : "Original B31G (0.667 dL)"}.<br>
     <b style="color:#34d399">PASS ${counts.PASS||0}</b> · <b style="color:#fbbf24">MONITOR ${counts.MONITOR||0}</b> · <b style="color:#fb923c">REPAIR ${counts.REPAIR||0}</b> · <b style="color:#ef4444">IMMEDIATE ${counts.IMMEDIATE||0}</b><br>
-    Worst defect: <b>${res[0].id}</b> · SF ${_fmt(res[0].SF, 2)} · d/t ${(res[0].depthRatio*100).toFixed(1)}% · P<sub>safe</sub> ${res[0].P_safe_bar.toFixed(1)} bar.</div>`;
+    Worst defect: <b>${res[0].id}</b> · SF ${_fmt(res[0].SF, 2)} · d/t ${(res[0].depthRatio*100).toFixed(1)}% · P<sub>safe</sub> ${res[0].P_safe_bar.toFixed(1)} bar.${clusterLine}</div>`;
   const errBlock = _iliCache.errors.length ? `<div class="iso untabulated" style="margin-top:8px"><b>${_iliCache.errors.length} parse note(s):</b><ul style="margin:4px 0 0 18px;font-size:12px">${_iliCache.errors.slice(0,8).map(e=>"<li>"+e+"</li>").join("")}${_iliCache.errors.length>8?"<li>… and "+(_iliCache.errors.length-8)+" more</li>":""}</ul></div>` : "";
   const histo = `<div style="display:flex;gap:8px;align-items:flex-end;margin:14px 0;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid rgba(255,255,255,0.05);min-height:220px">${bars}</div>`;
   host.innerHTML = summary + histo + table + exportBtn + `<div class="explain" style="margin-top:8px"><span style="color:var(--dim)">ASME B31G-2012 §2 (original parabolic) / Kiefner & Vieth 1989 (Modified B31G — 0.85 dL); Folias bulging factor M; Barlow thin-shell; classification per B31G §3.6 + API 1163 ILI guidance. Screening — each defect treated as axial external metal-loss; interaction rules (POF-W or NACE SP0102 close-defect grouping) not applied — engineer must re-check candidates for interaction.</span></div>` + errBlock;
@@ -1212,14 +1251,71 @@ function processILICSVText(text){
   const opts = {
     D: +gv("ili_D"), t: +gv("ili_t"), grade: gv("ili_grade") || "X65",
     MAOP_bar: +gv("ili_MAOP"), method: gv("ili_method") || "modb31g",
+    cluster_rule: gv("ili_cluster_rule") || "none",
     defects: parsed.defects
   };
   if (!(opts.D > 0 && opts.t > 0 && opts.MAOP_bar > 0)) {
     $("ili_results").innerHTML = `<div class="iso exceeds">Pipeline OD, WT, and MAOP must all be > 0.</div>`;
     return;
   }
-  _iliCache = { defects: parsed.defects, processed: _runILIBatch(opts), opts: opts, errors: parsed.errors };
+  // Run BOTH unclustered (baseline) + clustered (if rule != none) for delta comparison
+  const ungrouped = _runILIBatch(Object.assign({}, opts, { cluster_rule: "none" }));
+  const processed = (opts.cluster_rule && opts.cluster_rule !== "none" && window.Interaction)
+    ? _runILIBatchClustered(opts)
+    : ungrouped;
+  _iliCache = { defects: parsed.defects, processed: processed, ungrouped: ungrouped, opts: opts, errors: parsed.errors };
   _renderILITable();
+}
+
+// Cluster-aware batch — uses Interaction.cluster() per the chosen rule, then
+// runs B31G on each cluster using its combined L + max depth. Per-defect rows
+// inherit the cluster's P_safe / verdict so the grid shows interaction effect.
+function _runILIBatchClustered(opts) {
+  if (!window.Interaction) return _runILIBatch(opts);
+  // Convert defects to interaction-engine format
+  const features = opts.defects.map(d => ({
+    id: d.id,
+    x_axial_mm: (d.chainage_m || 0) * 1000,
+    clock_pos: d.clock_pos,
+    L_mm: d.length_mm,
+    W_mm: d.width_mm || (d.length_mm * 0.3),  // assume 30 % aspect if width missing
+    d_mm: d.depth_mm,
+    D_mm: opts.D,
+    t_mm: opts.t
+  }));
+  const clusters = window.Interaction.cluster(features, {
+    rule: opts.cluster_rule, D_mm: opts.D, t_mm: opts.t
+  });
+  // Build a per-defect map of cluster info
+  const defectByID = {};
+  opts.defects.forEach(d => { defectByID[d.id] = d; });
+  const SMYS = (B31G.GRADES[opts.grade] || B31G.GRADES["X65"]).SMYS;
+  const out = [];
+  clusters.forEach(c => {
+    // Run B31G on the cluster's combined dimensions
+    const fp = B31G.failurePressure({
+      D: c.D_mm || opts.D, t: c.t_mm || opts.t, SMYS: SMYS,
+      L: c.L_combined, d: c.d_combined, method: opts.method
+    });
+    const cls = B31G.classify(fp.P_safe_bar, opts.MAOP_bar, fp.depthRatio, fp.throughWall);
+    // Emit one row per cluster member, all inheriting the cluster's P_safe
+    c.member_ids.forEach(mid => {
+      const d = defectByID[mid];
+      if (!d) return;
+      out.push(Object.assign({}, d, {
+        P_f_bar: fp.P_f_bar, P_safe_bar: fp.P_safe_bar,
+        depthRatio: fp.depthRatio,
+        SF: opts.MAOP_bar > 0 ? fp.P_safe_bar / opts.MAOP_bar : null,
+        regime: fp.regime, throughWall: fp.throughWall,
+        status: cls.status, note: cls.note,
+        cluster_id: c.id, cluster_n: c.n_members,
+        cluster_regime: c.regime, cluster_L_combined_mm: c.L_combined,
+        cluster_d_combined_mm: c.d_combined,
+        cluster_members: c.member_ids.filter(x => x !== mid)
+      }));
+    });
+  });
+  return out;
 }
 
 // ===========================================================================
@@ -1482,7 +1578,99 @@ function renderCIPS(){
     '</div>' +
     (exc.runs.length ? '<div class="iso untabulated"><b>Exceedance runs (' + exc.runs.length + ')</b><br>' + exc.runs.slice(0, 10).map(function(r){ return r.start_m.toFixed(1) + '–' + r.end_m.toFixed(1) + ' m · min E_off = ' + r.min_E_off_mV + ' mV · ' + r.flags.join(', '); }).join('<br>') + '</div>' : '') +
     (inds.length ? '<div class="iso untabulated"><b>DCVG indications (' + inds.length + ')</b><br>' + inds.slice(0, 10).map(function(i){ return 'Station ' + i.station_m.toFixed(1) + ' m · %IR = ' + (i.percent_IR != null ? i.percent_IR.toFixed(1) : '?') + '% · <b style="color:' + i.color + '">' + i.severity + '</b> · ' + i.polarity; }).join('<br>') + '</div>' : '') +
+    _cipsGrowthPanel(inds) +
+    _cipsGPSMap(s.readings, inds) +
     '<div class="explain"><span style="color:var(--dim)">' + (exc.ref || '') + ' · ' + (inds.length ? inds[0].ref : '') + ' · ' + (prio.ref || '') + '</span></div>';
+  // After DOM injected, init the Leaflet map if any GPS readings present
+  setTimeout(function(){ _cipsInitMap(s.readings, inds); }, 50);
+}
+
+// Sub-linear pit-growth phase-2: project pit depth over time per BS 7910 + API 1163
+// d(t) = K · t^n  with n = 0.5 (sub-linear, oxide-protective behaviour). For
+// "active corrosion" with no inhibitor n→1.0 (linear). Returns 1/5/10/20-yr horizon.
+function _cipsGrowthPanel(inds) {
+  if (!inds || !inds.length) return "";
+  // Take the worst DCVG indication as the baseline
+  const worst = inds.slice().sort(function(a,b){ return (b.percent_IR||0) - (a.percent_IR||0); })[0];
+  if (!worst || worst.percent_IR == null) return "";
+  // Assume baseline pit depth from %IR severity:
+  //  Severe ≈ 3 mm, Moderate ≈ 1.5 mm, Minor ≈ 0.5 mm
+  const d0 = worst.severity === "Severe" ? 3.0 : worst.severity === "Immediate" ? 5.0 : worst.severity === "Moderate" ? 1.5 : 0.5;
+  // Sub-linear growth K from t=1 yr: d(1) = d0 → K = d0
+  function dAt(t, n) { return d0 * Math.pow(t, n); }
+  const sublinear = [1,5,10,20].map(function(t){ return { t: t, d: dAt(t, 0.5) }; });
+  const linear    = [1,5,10,20].map(function(t){ return { t: t, d: dAt(t, 1.0) }; });
+  return '<div class="iso untabulated" style="margin-top:8px"><b>Pit-growth projection (worst DCVG indication)</b><br>'
+       + 'Baseline pit depth (assumed from severity): <b>' + d0.toFixed(2) + ' mm</b><br>'
+       + 'Sub-linear (n=0.5, oxide-protective): '
+       + sublinear.map(function(p){ return p.t + ' yr → ' + p.d.toFixed(2) + ' mm'; }).join(' · ') + '<br>'
+       + 'Linear (n=1.0, active corrosion): '
+       + linear.map(function(p){ return p.t + ' yr → ' + p.d.toFixed(2) + ' mm'; }).join(' · ')
+       + '<br><span style="color:var(--dim);font-size:11px">Per BS 7910 (2019) Annex M + API STD 1163 (3rd ed., 2021) §7.5 pit-growth power-law d=K·tⁿ. n=0.5 typical for soil-side passivated CS; n=1.0 conservative for active corrosion or coating-failure exposure.</span></div>';
+}
+
+// Render a placeholder div + load Leaflet on demand if any readings have lat/lon
+function _cipsGPSMap(readings, inds) {
+  if (!readings || !readings.some(function(r){ return r.lat && r.lon; })) return "";
+  return '<div id="cips_map" style="height:360px;margin-top:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.08);background:#0b1220"></div>';
+}
+function _cipsInitMap(readings, inds) {
+  const host = document.getElementById("cips_map");
+  if (!host) return;
+  if (!readings || !readings.some(function(r){ return r.lat && r.lon; })) return;
+  // Lazy-load Leaflet
+  if (!window.L) {
+    const css = document.createElement("link");
+    css.rel = "stylesheet"; css.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+    document.head.appendChild(css);
+    const js = document.createElement("script");
+    js.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    js.onload = function(){ _cipsDrawMap(readings, inds); };
+    document.head.appendChild(js);
+  } else {
+    _cipsDrawMap(readings, inds);
+  }
+}
+function _cipsDrawMap(readings, inds) {
+  const host = document.getElementById("cips_map");
+  if (!host || !window.L) return;
+  if (host._leaflet_id) return;   // already initialized
+  // Compute centroid
+  const pts = readings.filter(function(r){ return r.lat && r.lon; });
+  if (!pts.length) return;
+  const latC = pts.reduce(function(a,b){ return a + b.lat; }, 0) / pts.length;
+  const lonC = pts.reduce(function(a,b){ return a + b.lon; }, 0) / pts.length;
+  const map = L.map(host, { zoomControl: true }).setView([latC, lonC], 14);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19, attribution: "© OpenStreetMap"
+  }).addTo(map);
+  // Group readings by station to find indications nearby
+  const indByStn = {};
+  (inds || []).forEach(function(i){ indByStn[Math.round(i.station_m / 5) * 5] = i; });
+  // Place a marker at each reading; colour by DCVG severity if present
+  pts.forEach(function(r){
+    const stnRound = Math.round(r.station_m / 5) * 5;
+    const ind = indByStn[stnRound];
+    const sev = ind ? ind.severity : (r.E_off_mV != null && r.E_off_mV > -850 ? "Exceedance" : "OK");
+    const color = sev === "Immediate" ? "#ef4444"
+                : sev === "Severe" ? "#fb923c"
+                : sev === "Moderate" ? "#fbbf24"
+                : sev === "Minor" ? "#7dd3fc"
+                : sev === "Exceedance" ? "#fbbf24"
+                : "#34d399";
+    L.circleMarker([r.lat, r.lon], {
+      radius: 6, color: color, fillColor: color, fillOpacity: 0.7, weight: 1
+    }).addTo(map).bindPopup(
+      "<b>Station " + r.station_m.toFixed(1) + " m</b><br>" +
+      "E_on: " + (r.E_on_mV != null ? r.E_on_mV + " mV" : "—") + "<br>" +
+      "E_off: " + (r.E_off_mV != null ? r.E_off_mV + " mV" : "—") + "<br>" +
+      "DCVG: " + (r.dcvg_mV != null ? r.dcvg_mV + " mV" : "—") +
+      (ind ? "<br><b style='color:"+color+"'>" + sev + "</b> · %IR " + (ind.percent_IR||0).toFixed(0) + "%" : "")
+    );
+  });
+  // Fit bounds
+  const bounds = L.latLngBounds(pts.map(function(r){ return [r.lat, r.lon]; }));
+  map.fitBounds(bounds.pad(0.1));
 }
 if ($("cips_process")) $("cips_process").onclick = renderCIPS;
 if ($("cips_paste")) $("cips_paste").addEventListener("blur", renderCIPS);
@@ -1521,5 +1709,62 @@ async function init(){
   renderILIPlaceholder();
   _bindIndustryHandlers();
   renderValidations();
+  _initProductsTab();
 }
 init();
+
+// ===========================================================================
+// Vendor products tab (G9)
+// ===========================================================================
+function _initProductsTab() {
+  if (!window.VendorProducts) return;
+  // Wait for products to load, then populate UI
+  VendorProducts.load().then(function(){
+    const cs = VendorProducts.categories();
+    const sel = $("prod_category");
+    if (sel) {
+      cs.forEach(function(c){
+        const opt = document.createElement("option");
+        opt.value = c.key;
+        opt.textContent = c.key + "  (" + c.count + ")";
+        sel.appendChild(opt);
+      });
+      sel.addEventListener("change", _renderProducts);
+    }
+    const t = $("prod_T"); if (t) t.addEventListener("input", _renderProducts);
+    const s = $("prod_search"); if (s) s.addEventListener("input", _renderProducts);
+    _renderProducts();
+  });
+}
+function _renderProducts() {
+  if (!window.VendorProducts) return;
+  const host = $("products_results"); if (!host) return;
+  const cat = $("prod_category") ? $("prod_category").value : "any";
+  const T = $("prod_T") && $("prod_T").value !== "" ? +$("prod_T").value : null;
+  const search = $("prod_search") ? $("prod_search").value.trim() : "";
+  const rows = VendorProducts.filter({ category: cat, T_C: T, search: search });
+  if (!rows.length) { host.innerHTML = '<div class="placeholder">No products match the filter.</div>'; return; }
+  // Group by category for display
+  const byCategory = {};
+  rows.forEach(function(p){ (byCategory[p.category] = byCategory[p.category] || []).push(p); });
+  let html = '<div class="iso within"><b>' + rows.length + ' of ' + VendorProducts.rows().length + ' products</b>'
+           + ' · ' + Object.keys(byCategory).length + ' categories</div>';
+  Object.keys(byCategory).sort().forEach(function(cat){
+    html += '<div style="margin-top:10px"><b style="color:#7dd3fc">' + cat + '</b> · ' + byCategory[cat].length + '<br>';
+    html += '<table style="margin-top:6px;border-collapse:collapse;width:100%;font-size:12px"><thead><tr style="color:var(--dim)"><th style="text-align:left;padding:4px 8px">Manufacturer</th><th style="text-align:left;padding:4px 8px">Model</th><th style="text-align:left;padding:4px 8px">Spec / Compliance</th><th style="text-align:left;padding:4px 8px">Service envelope</th></tr></thead><tbody>';
+    byCategory[cat].forEach(function(p){
+      const tRange = p.service_T_C ? (p.service_T_C[0] + " to " + p.service_T_C[1] + " °C") : "—";
+      const detail = p.DFT_um ? ("DFT " + p.DFT_um[0] + "-" + p.DFT_um[1] + " µm")
+                  : p.eps_th_Ah_kg ? ("ε_th " + p.eps_th_Ah_kg + " A·h/kg · util " + p.util_factor + " · " + p.alloy)
+                  : p.k_W_mK ? ("k " + p.k_W_mK + " W/m·K · Cl<sub>C871</sub> ≤ " + p.Cl_ppm_C871_max + " ppm")
+                  : p.alloy ? p.alloy : "";
+      html += '<tr><td style="padding:4px 8px">' + p.manufacturer + '</td>'
+            + '<td style="padding:4px 8px"><b>' + p.model + '</b></td>'
+            + '<td style="padding:4px 8px;color:var(--dim);font-size:11px">' + p.spec + '</td>'
+            + '<td style="padding:4px 8px;font-size:11px">' + (p.service || "") + ' · ' + tRange + (detail ? ' · ' + detail : '') + '<br><span style="color:var(--dim);font-size:10px">' + p.ref + '</span></td></tr>';
+    });
+    html += '</tbody></table></div>';
+  });
+  html += '<div class="explain"><span style="color:var(--dim)">PitCast vendor product database is a screening reference only. For project specification, retrieve the current manufacturer data sheet (PDS) and verify the current spec-compliance + service-envelope per your project conditions. Per NACE / AMPP / DNV / ISO / ASTM / API.</span></div>';
+  host.innerHTML = html;
+}
