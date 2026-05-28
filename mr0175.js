@@ -128,14 +128,20 @@
   }
 
   // ----- ENVELOPE CONTAINMENT ---------------------------------------------
-  function _envelopeContains(env, T_C, pH2S_kPa, Cl_mg_L, pH_in_situ) {
+  function _envelopeContains(env, T_C, pH2S_kPa, Cl_mg_L, pH_in_situ, stress_pct_SMYS) {
     if (!env) return false;
-    if (env.any_combination === true) return true; // "any combination" envelope per A.14/A.33/A.34
+    if (env.any_combination === true) {
+      // "any combination" envelope per A.14/A.33/A.34 — but stress + T cap if specified
+      if (env.T_max_C != null && T_C != null && T_C > env.T_max_C) return false;
+      if (env.stress_max_pct_SMYS != null && stress_pct_SMYS != null && stress_pct_SMYS > env.stress_max_pct_SMYS) return false;
+      return true;
+    }
     var ok = true;
     if (env.T_max_C != null && T_C != null && T_C > env.T_max_C) ok = false;
     if (env.pH2S_max_kPa != null && pH2S_kPa != null && pH2S_kPa > env.pH2S_max_kPa) ok = false;
     if (env.Cl_max_mg_L != null && Cl_mg_L != null && Cl_mg_L > env.Cl_max_mg_L) ok = false;
     if (env.in_situ_pH_min != null && pH_in_situ != null && pH_in_situ < env.in_situ_pH_min) ok = false;
+    if (env.stress_max_pct_SMYS != null && stress_pct_SMYS != null && stress_pct_SMYS > env.stress_max_pct_SMYS) ok = false;
     return ok;
   }
 
@@ -282,6 +288,24 @@
       // Also consider super-duplex envelope if PREN > 40
       if (_pren(c) >= 40) candidates = candidates.concat(rows.filter(function(r){ return r.family === "super-duplex-SS"; }));
     }
+    // When UNS is supplied, prefer tables whose UNS list matches; otherwise
+    // fall back to all family candidates. This prevents matching e.g. Alloy 625
+    // against A.13 which is restricted to G3/G30 (N06985/N06975).
+    if (uns) {
+      var unsMatch = candidates.filter(function(r){
+        return r.uns_list && r.uns_list.map(function(u){ return u.toUpperCase(); }).indexOf(uns) >= 0;
+      });
+      if (unsMatch.length) candidates = unsMatch;
+    }
+    // Sort candidates: prefer "any_combination" envelopes (most useful verdict
+    // for an engineer — unrestricted use beats narrow sub-envelope), then by
+    // table number to keep order stable for tests.
+    candidates.sort(function(a, b) {
+      var aAC = (a.envelope && a.envelope.any_combination) ? 1 : 0;
+      var bAC = (b.envelope && b.envelope.any_combination) ? 1 : 0;
+      if (aAC !== bAC) return bAC - aAC;     // any_combination first
+      return (a.table || "").localeCompare(b.table || "");
+    });
     for (var i = 0; i < candidates.length; i++) {
       var row = candidates[i];
       var env = row.envelope;
@@ -289,7 +313,7 @@
         warnings.push("Table " + row.table + " envelope has incomplete documented thresholds (needs_review); engineer must cross-check against ISO 15156-3:2020 hard copy before relying on this verdict.");
         continue;  // skip rows with unknown thresholds — never make up numbers
       }
-      if (!_envelopeContains(env, T_C, pH2S, Cl, pH)) continue;
+      if (!_envelopeContains(env, T_C, pH2S, Cl, pH, stress)) continue;
       var mfg = _checkManufacturing(c, HRC, CW, opts.PWHT, stress, row);
       if (!mfg.passes) {
         failure_reasons = failure_reasons.concat(mfg.warnings);
