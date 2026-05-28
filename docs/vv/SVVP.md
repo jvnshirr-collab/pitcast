@@ -133,4 +133,4 @@ docs/vv/
 
 ---
 
-**Document status**: v1.0 minimum viable SVVP. Future work: full per-engine CVR/VR/UQ-SA expansion per the matrix in §3. See PLAN-tier3.md Gap G5 for the full 65-100 work-day formal V&V package roadmap.
+**Document status**: v1.0 minimum viable SVVP. Future work: full per-engine CVR/VR/UQ-SA expansion per the matrix in §3. The framework above scales — additional validation tiers and per-engine documentation can be added as engines mature, without changing the SVVP architecture.

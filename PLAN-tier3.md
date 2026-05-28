@@ -1,9 +1,10 @@
 # PitCast — Tier-3 Industry-Readiness Plan
 
 **Audience**: working PE corrosion / mechanical-integrity engineers + the PitCast development team.
-**Purpose**: a primary-source-grounded engineering plan to close the ten gaps that separate today's PitCast (Tier-2 screening tool) from a defensible Tier-3 detailed-design-grade product an engineer can cite in a stamped deliverable.
+**Purpose**: a primary-source-grounded engineering plan to close the ten gaps that separate today's PitCast (Tier-2 screening tool) from a defensible Tier-3 detailed-design-grade tool an engineer can cite in a stamped deliverable.
 **Method**: each gap was researched via parallel agents pulling from published standards, peer-reviewed papers, vendor data sheets, and recognized industry handbooks. Every algorithm, formula, and effort estimate carries a citation.
-**Honesty**: where the gap requires non-engineering work (legal, insurance, attorney review) it is flagged explicitly. Where two competing methods exist (e.g. ASME B31G interaction rule vs DNV-RP-F101) both are documented with the reason to prefer one as default.
+**Honesty**: where two competing methods exist (e.g. ASME B31G interaction rule vs DNV-RP-F101) both are documented with the reason to prefer one as default.
+**Note on commercial framing**: PitCast is offered free under Apache 2.0 as a research project of austenite.org. This plan focuses on the *engineering* work to reach Tier-3 (V&V documentation, validation hierarchy, intended-use scope, output disclaimers). Commercial-vendor concerns (entity formation, insurance, paid legal review) are out of scope — they're not the path that fits today.
 
 ---
 
@@ -13,11 +14,11 @@
 Tier 1 — Personal sidebar / sanity-check tool                        [PitCast IS this, today]
 Tier 2 — Documented screening / FEED-stage triage tool               [PitCast IS this, today]
 Tier 3 — Defensible detailed-design tool an engineer cites in a      [PitCast is NOT this — yet]
-         stamped deliverable, backed by V&V package + Tech E&O
+         stamped deliverable, backed by V&V package + cited validation
 Tier 4 — Calculation of record / replaces Cathwell, OLI, FEPipe      [Out of scope — don't aim here]
 ```
 
-PitCast's target is **Tier 3**, defined precisely as: a working PE in responsible charge of a stamped FFS / RBI / CP / material-selection report can cite PitCast output as a screening or supporting calculation, with documented validation evidence, a contractual basis that bounds the engineer's reliance, and a Tech E&O policy covering the publisher's residual liability.
+PitCast's target is **Tier 3**, defined precisely as: a working PE in responsible charge of a stamped FFS / RBI / CP / material-selection report can cite PitCast output as a screening or supporting calculation, with documented validation evidence, intended-use scope clearly stated, and the engineer-of-record's professional-judgment standard preserved (same standard that applies when any engineer uses any third-party engineering software — ANSYS, COMSOL, Caesar II).
 
 The ten gaps below, when closed, move PitCast across that tier boundary.
 
@@ -36,19 +37,19 @@ The ten gaps below, when closed, move PitCast across that tier boundary.
 | G7 | NACE MR0175 / ISO 15156 spec-issuer (Annex A.1–A.41 + EPC overlays) | 5–7 | ~2,400 | — | **P1** |
 | G8 | CIPS / DCVG / PCM survey-data ingestion + ECDA prioritisation | 6.5 | ~1,600 | — | **P1** |
 | G9 | Vendor product database (60–100 specific products, cited datasheets) | 6–9 + curation | ~4,200 + 60 hand-rows | — | P3 |
-| G10 | E&O liability framework (IUS + EULA + Apache 2.0 + footer + Tech E&O) | 15–25 | docs only | $6–20k + $2–4k/yr | **P4** |
-| | **Total to Tier 3** | **~190–240** | **~20,850** | **$8–25k + $3k/yr** | |
+| G10 | Engineer-of-record framing (IUS + Apache 2.0 + output footer + Verification Responsibilities checklist) | 5–8 | docs only | — | **P4** |
+| | **Total to Tier 3** | **~180–215** | **~20,850** | **— (open-source, no fees)** | |
 
 Calendar time at 50% allocation: **~9–12 months**. At full-time single-engineer: **~5–6 months**.
 
 ### Recommended phase sequence
 
 - **Phase 1 (~26 eng-days, ~6 weeks calendar)** — G7 MR0175 issuer + G1 ILI interaction + G8 CIPS/DCVG + G4 persistence. These are the four highest-leverage, well-bounded engineering deliverables. After P1: PitCast is *visibly* a daily workhorse for a CP/CRA-selection/pipeline-integrity engineer.
-- **Phase 2 (~74 eng-days, ~16 weeks calendar)** — G6 API 579 vessel FFS + G3 API 581 detailed DF. The two biggest pieces, the moat. After P2: PitCast competes feature-for-feature with the screening modules of commercial RBI/FFS tools.
+- **Phase 2 (~74 eng-days, ~16 weeks calendar)** — G6 API 579 vessel FFS + G3 API 581 detailed DF. The two biggest pieces, the moat. After P2: PitCast competes feature-for-feature with the screening modules of comparable RBI/FFS tools.
 - **Phase 3 (~13–16 eng-days)** — G2 vendor Tafel + G9 vendor product DB. Both turn families into specific products; both compound over time as the curated dataset grows.
-- **Phase 4 (~80–125 eng-days + cash)** — G5 V&V package + G10 legal/insurance. These convert the engineering work into a *defensible commercial offering* an underwriter will write a Tech E&O policy against.
+- **Phase 4 (~70–110 eng-days)** — G5 formal V&V package (SVVP + CVR + VR + UQ/SA) + G10 published Intended Use Statement + Verification Responsibilities checklist + output-page disclaimer. Engineering-grade documentation; no commercial / insurance / entity-formation work.
 
-Phase 1+2 alone gives an engineer 80% of the daily-use value. Phase 3+4 is what converts "useful tool" into "tool the engineer cites in a stamped deliverable."
+Phase 1+2 alone gives an engineer 80% of the daily-use value. Phase 3+4 is what makes the engineer's reliance defensible at the standard's published-worked-example level.
 
 ---
 
@@ -494,7 +495,7 @@ Export format: `.pitcast` (JSON) + `.pitcastz` (gzipped via CompressionStream). 
 ## Gap G5 — Formal V&V package (SVVP + CVR + VR + UQ/SA + SQAP)
 
 ### Engineering context
-PitCast's 5,500+ in-Chrome tests are software regression evidence — useful but **not** what an underwriter (Marsh / Lockton Tech E&O), NRC reviewer (RG 1.168), or aerospace DER (DO-178C DAL-D) would call V&V. ASME V&V framework would call them unstructured Code Verification with no Solution Verification, no Validation Hierarchy, no UQ, no document traceability. If PitCast output is ever proximate cause of failure, opposing counsel's first discovery request is "produce the V&V package" — answering "5,500 tests, here's a GitHub commit hash" is not survivable.
+PitCast's 5,500+ in-Chrome tests are software regression evidence — useful but **not** what an NRC reviewer (RG 1.168), an aerospace DER (DO-178C DAL-D), or any rigorous engineering V&V framework would call validation. ASME V&V 10 would call them unstructured Code Verification with no Solution Verification, no Validation Hierarchy, no UQ, no document traceability. The gap that matters at any engineering review is whether the test suite can be traced to physical reality through a documented validation hierarchy — and today it isn't.
 
 ### Authoritative sources
 1. **ASME V&V 10-2019**, *Standard for V&V in Computational Solid Mechanics* — Verification (math right) vs Validation (right math), validation hierarchy, UQ role.
@@ -1056,10 +1057,10 @@ Failure modes to design out:
 
 ---
 
-## Gap G10 — Errors-and-Omissions liability framework
+## Gap G10 — Engineer-of-record framing (Intended Use + open-source disclaimer)
 
 ### Engineering context
-A PE who pulls a PitCast number into a stamped FFS / RBI / CP report is — under NSPE Code §II.2.b and NCEES Model Rules §240.20 — personally on the hook for the entire calculation. Plan-stamping (sealing work the engineer didn't perform or fully review) is illegal in every U.S. jurisdiction. The fact that PitCast generated the number does NOT transfer responsibility to PitCast — it never has for any commercial engineering software. ANSYS, COMSOL, Caesar II all carry "we make no warranty as to accuracy" disclaimers, and engineers stamp output anyway. What's MISSING on the PitCast side is the matching legal scaffolding: Intended Use Statement, EULA, output disclaimer, license selection, E&O insurance posture.
+A PE who pulls a PitCast number into a stamped FFS / RBI / CP report is — under NSPE Code §II.2.b and NCEES Model Rules §240.20 — personally on the hook for the entire calculation. This is the standard rule for any third-party engineering software (ANSYS, COMSOL, Caesar II all carry no-warranty disclaimers, and engineers stamp output anyway). What PitCast needs to publish is the *engineering* scaffolding that makes engineer-of-record reliance defensible: a clear Intended Use Statement that bounds reliance, an output-page disclaimer that travels with every result, a Verification Responsibilities checklist for the user PE, and an open-source license disclaimer that travels with the source. Apache 2.0 already supplies the no-warranty / limitation-of-liability text courts have engaged with directly. No fee-bearing commercial-vendor scaffolding is required for the engineering case.
 
 ### Authoritative sources
 1. **NSPE Code of Ethics**, §II.2 (Competence) — II.2.a, II.2.b (no signature on plans lacking competence or not under direction), II.2.c (coordination).
@@ -1067,31 +1068,26 @@ A PE who pulls a PitCast number into a stamped FFS / RBI / CP report is — unde
 3. **California BPELSG Title 16 CCR §404.1 / PE Act §6735** — "responsible charge" definition.
 4. **Texas TBPELS Engineering Practice Act §1001.401 / 22 TAC §137.33** — analogous.
 5. **ASCE Code of Ethics (2020)** — Canon I (safety), Canon V (competence).
-6. **ANSYS Software License Agreement (Aug 2020)** — industry-standard disclaimer floor.
+6. **ANSYS Software License Agreement (Aug 2020)** — industry-standard third-party disclaimer floor — what an open-source engineering tool should structurally match.
 7. **COMSOL SLA** — same template.
 8. **ISO/IEC 25010:2011/2023** — quality model (Functional Suitability, Performance, Compatibility, Interaction, Reliability, Security, Maintainability, Flexibility, Safety).
-9. **IEC 61508 / ISO 26262** — SIL framework. PitCast → SIL 1 ("low risk reduction, advisory") or out-of-scope (not real-time control).
+9. **IEC 61508 / ISO 26262** — SIL framework. PitCast self-classifies as out-of-scope for real-time control (not a SIL-rated component).
 10. **IMDRF SaMD** — "intended use bounds liability" principle transferable.
-11. **Economic Loss Doctrine** — majority US jurisdictions; bars tort recovery for purely economic loss when parties in privity; the principal shield for software vendors against negligence claims when a valid EULA exists.
-12. **MIT / Apache 2.0** licenses — Apache 2.0 includes explicit patent grant + warranty disclaimer.
-13. **Marsh / Lockton Tech E&O guidance** — covers "third party financial loss due to product/service not performing as expected." Tech E&O (not A&E E&O) is the right product for a software publisher.
-14. **Florida BPE** — supervisory control may affect PE liability (concrete state-board guidance).
+11. **Apache License, Version 2.0** — includes explicit patent grant + warranty disclaimer + limitation-of-liability sections; the canonical open-source engineering-software license.
 
 ### Model Intended Use Statement (publishable)
 
 > **PitCast Intended Use Statement (v1.0).** PitCast is a **screening-grade computational aid** for corrosion engineering, fitness-for-service, and risk-based inspection workflows. PitCast outputs are intended to support — not replace — the independent professional judgment of a licensed Professional Engineer ("PE") working within their area of competence. PitCast is **not** intended (a) as the calculation-of-record for any code-stamped vessel, piping, or pipeline design under ASME BPVC, ASME B31, API 510/570/653, API 579, ASME PCC-2, NACE/AMPP, or equivalent; (b) for real-time safety-instrumented-system control or any application requiring IEC 61508 SIL ≥ 2; (c) for nuclear safety-related functions (10 CFR 50 App. B / ASME NQA-1); (d) for any application where the consequence of an undetected wrong output is loss of life, environmental release in excess of regulatory thresholds, or catastrophic asset loss without independent verification by the user PE. PitCast outputs are **advisory screening calculations**; the user PE in responsible charge must independently verify any quantity relied upon for a stamped engineering deliverable, by reference to the cited standard or by independent calculation. By using PitCast, the user accepts these scope limits.
 
-### EULA — seven clauses that matter
+### Engineering scope of G10 — what to publish
 
-(Final language requires licensed software-contracts attorney in relevant jurisdiction — flagged below)
+PitCast publishes three short documents that together do the engineering work of bounding reliance, without any commercial-vendor scaffolding:
 
-1. **License grant** — narrow, revocable, non-transferable, for engineering analysis in support of PE's professional services
-2. **Intended Use Statement** — incorporates the above by reference; user warrants understanding
-3. **Disclaimer of warranties** — "AS IS / AS AVAILABLE; no warranty of merchantability, fitness, accuracy, non-infringement" (mirrors ANSYS WLA)
-4. **Limitation of liability** — cap at greater of (i) fees paid prior 12 months or (ii) $100; exclude indirect/consequential/special/punitive; preserve fraud + IP-infringement carve-outs (industry standard, ELD-supported)
-5. **Responsibility allocation** — explicit: user is engineer in responsible charge; solely responsible for verifying PitCast output against code before sealing
-6. **Indemnification** — user indemnifies PitCast against third-party claims arising from user's use of output
-7. **Governing law + dispute resolution** — choose jurisdiction (Delaware conventional; non-US with strong ELD-equivalent if outside US)
+1. **Apache 2.0 LICENSE** in repository root — supplies the no-warranty, no-liability, patent-grant text that already governs source redistribution
+2. **Intended Use Statement (IUS-v1.0.md)** — explicit scope: screening-grade, supports not replaces engineer judgment, not calc-of-record, not SIL-rated, not nuclear, not for catastrophic-consequence applications without independent verification
+3. **Verification Responsibilities checklist (in IUS)** — the 5-step list the engineer-of-record runs through before relying on any PitCast output
+
+The standard third-party-engineering-software pattern is: software publisher disclaims warranty + engineer-of-record verifies + engineer stamps. This pattern works today for ANSYS, COMSOL, Caesar II, and works for PitCast without additional scaffolding. There's no fee-bearing service to disclaim; the software is free under Apache 2.0.
 
 ### Verification Responsibilities checklist (publishable Appendix)
 
@@ -1104,74 +1100,48 @@ PE must, prior to relying on PitCast output for stamped deliverable:
 
 ### Per-page output disclaimer (footer on every PitCast PDF)
 
-> *PitCast v[X.Y] — Screening-Grade Computational Aid. Validation tier: [T1–T4]. Reference: [standard + clause cited above]. Not a calculation-of-record. The licensed Professional Engineer in responsible charge is solely responsible for independent verification before sealing any deliverable. Per Intended Use Statement v1.0 incorporated in the PitCast EULA.*
+> *PitCast v[X.Y] — Screening-Grade Computational Aid. Validation tier: [T1–T4]. Reference: [standard + clause cited above]. Not a calculation-of-record. The engineer in responsible charge is solely responsible for independent verification before sealing any deliverable. Per Intended Use Statement v1.0.*
 
-This footer accomplishes three legal functions: (a) limits PitCast's exposure under ELD by reinforcing contractual scope; (b) satisfies engineer's NSPE II.2.b duty to know whether reliance is appropriate; (c) creates evidence PitCast was NOT held out as calc-of-record.
+This footer accomplishes three things: (a) makes the intended-use scope visible on every output; (b) satisfies engineer's NSPE II.2.b duty to know whether reliance is appropriate; (c) creates a paper-trail that PitCast was not held out as the calc-of-record.
 
-### License selection — **Apache 2.0** (recommended)
+### License selection — **Apache 2.0**
 
-Better than MIT for engineering software because: (a) explicit patent grant (protects users from contributor-held patent claims); (b) explicit no-warranty / limitation-of-liability clauses courts have engaged with directly. MIT is fine for simplicity. **Avoid GPLv3** — forces downstream open-source, incompatible with most consulting workflows. **Avoid BUSL / PolyForm** unless commercializing.
+Better than MIT for engineering software because: (a) explicit patent grant (protects users from contributor-held patent claims); (b) explicit no-warranty / limitation-of-liability clauses courts have engaged with directly. MIT is fine for simplicity. Avoid GPLv3 — forces downstream open-source, incompatible with most consulting workflows.
 
-Recommendation: **Apache 2.0 for the public code repository + a separate proprietary EULA / Terms of Use governing the hosted PitCast service.** Open-source license disclaims liability for code use; service EULA disclaims liability for output use. Both layers needed.
+Apache 2.0 alone is sufficient for the engineering case. PitCast is free; there's no separate commercial layer to govern.
 
-### Insurance posture
-
-For *individual hosting PitCast as a free or low-fee tool*: **personal Tech E&O policy** via Hiscox, The Hartford, Insureon, or Marsh/Lockton small-business product. $1M / $2M aggregate ≈ $1.5–3.5k/yr for sole-practitioner with strong contractual disclaimers. Marsh and Lockton both publish that **Tech E&O is the correct product** (not A&E E&O) because PitCast is publishing software, not practicing engineering — categorically different professional services priced differently.
-
-To become "insurance-friendly" the carrier wants:
-- Documented EULA with the 7 clauses (underwriter reviews verbatim)
-- Intended Use Statement bounding consequence
-- QMS evidence — ISO/IEC 25010 self-assessment, SOC 2 Type I (light) or II (heavy if enterprise), or documented SVVP (Gap G5)
-- Incident-response plan + bug-tracking workflow
-- No claim of "calculation of record" or "regulatory compliance" anywhere in marketing
-
-### Tier-to-Tier path
+### Tier-to-Tier path (engineering only)
 
 | Tier | Means | Needed |
 |---|---|---|
-| **Tier 1 (today)** | Personal engineering tool | Done — but unlimited personal liability if a user harmed |
-| **Tier 2** | Documented screening tool an outside PE could reasonably use; written EULA + IUS; OSS license | EULA + IUS + Apache 2.0 + footer + Gap G5 SVVP. ~3–5 days legal-template + ~$1.5k attorney review |
-| **Tier 3 (target)** | Insurance-backed, defensible commercial product; Tech E&O policy; SVVP published; citable as screening aid in regulated deliverable | Tier 2 + full Gap G5 + entity formation (LLC min) + Tech E&O ($2-4k/yr) + attorney-reviewed EULA ($3-8k one-time). **~10-15 days + ~$5-15k cash + ~$3k/yr** |
-| **Tier 4** | Calc-of-record (replace engineer's slide-rule) | Full NQA-1 / IEC 61508 SIL-2+ certification, third-party audit, multi-jurisdiction legal opinions. **Out of scope.** Tier 3 is realistic ceiling. |
-
-### Where a real lawyer is non-negotiable
-
-1. **EULA itself** — jurisdiction-specific enforceability of LoL cap, indemnification, choice-of-law requires local counsel
-2. **Entity formation + personal-liability shielding** — LLC vs C-Corp in your jurisdiction (Azerbaijan/Türkiye/US). Corporate veil stops plaintiff after E&O limit exhausted.
-3. **Insurance broker engagement + policy review** — coverage exclusions in Tech E&O are the entire game; "professional services" carve-outs can leave engineering-software claims uncovered.
-4. **Cross-border issues** — international choice-of-law and forum-selection clauses are fact-specific.
+| **Tier 1 (today)** | Personal engineering tool | Done. |
+| **Tier 2 (today)** | Documented screening tool an outside engineer could reasonably use; IUS + open-source license published | Done — Apache 2.0 LICENSE + IUS-v1.0.md + output footer all shipped. |
+| **Tier 3 (target)** | Citable as a screening aid in a regulated deliverable, with validation hierarchy + cited worked-example reproduction + intended-use scope visible on every output | + full Gap G5 SVVP/CVR/VR/UQ-SA documentation per ASME V&V 10 |
+| **Tier 4** | Calculation-of-record (replace OLI/Cathwell/FEPipe) | Out of scope — would require an entirely different resourcing model. |
 
 ### Implementation
 
 ```
 legal/
   IUS-v1.0.md                        # Intended Use Statement
-  EULA-v1.0.md                       # 7-clause EULA (attorney-reviewed)
-  TERMS-OF-USE.md                    # Hosted-service terms
-  PRIVACY.md                         # If any user data
-  LICENSE                            # Apache 2.0 in repo root
-  VERIFICATION-RESPONSIBILITIES.md   # PE checklist
+  EULA-v1.0.md                       # Terms of Use (open-source framing)
+  VERIFICATION-RESPONSIBILITIES.md   # engineer-of-record checklist (in IUS)
   output-footer-template.md          # exact PDF footer text
-  insurance/
-    coverage-summary.md              # Tech E&O policy summary
-    qms-attestation.md               # ISO/IEC 25010 + SVVP linkage
+LICENSE                              # Apache 2.0 in repo root
 ```
 
 ### Effort
 
-| Activity | Effort | Cash | Notes |
-|---|---|---|---|
-| Draft IUS + EULA + Terms (self) | 3–5 days | — | ANSYS/COMSOL EULA templates as starting point |
-| Apache 2.0 license adoption | 1 hr | — | One-line addition |
-| Output footer + per-page disclaimer | 1–2 days | — | Code change in PDF generator |
-| Attorney review of EULA (Tier 2) | 5–10 hrs | $1.5k–4k | Software-contracts boutique or Big Law associate |
-| Entity formation (LLC) | 1–2 days | $300–1.5k | Stripe Atlas / Clerky |
-| Tech E&O policy procurement | 1 wk broker engagement | $1.5k–4k/yr | Hiscox / Insureon for sole-practitioner |
-| Cross-border legal opinion (if needed) | 10–20 hrs | $3k–10k | Only if hosting + use straddle jurisdictions |
-| **Total Tier 3 ready** | **~15–25 eng-days + ~3–4 weeks elapsed** | **~$6k–20k one-time + ~$2k–4k/yr** | Legal piece is THE gating cost |
+| Activity | Effort |
+|---|---|
+| Draft IUS + Terms (self) | 3–5 days |
+| Apache 2.0 license adoption | 1 hr |
+| Output footer + per-page disclaimer | 1–2 days |
+| Verification Responsibilities checklist | 0.5 day |
+| **Total** | **~5–8 days, all engineering / docs / no fees** |
 
 ### Dependencies
-- Reinforced by Gap G5 — V&V package is the technical evidence that makes EULA's "we tested and bounded the tool" clause defensible at deposition. Doing one without the other leaves a hole.
+- Reinforced by Gap G5 — V&V package is the technical evidence that makes the intended-use scope a *defensible* claim. Doing one without the other leaves a credibility hole.
 
 ---
 
@@ -1189,33 +1159,32 @@ legal/
 - **G6 API 579-1 vessel FFS** (Parts 3, 4, 5, 6, 7, 8, 9, 14; the FFS moat)
 - **G3 API 581 detailed DF** (Thinning + 5 SCC + HTHA + External + Brittle + Fatigue + Lining + Tank Appx O; the RBI moat)
 
-**After P2**: PitCast competes feature-for-feature with the screening modules of commercial RBI/FFS tools at $50–250k/seat.
+**After P2**: PitCast covers the same screening-grade FFS and RBI capability surface as the equivalent modules of commercial tools.
 
 ### Phase 3 — Vendor-specific depth (P3) · 4 weeks calendar / 13–16 eng-days
 - **G9 Vendor product DB** (60–100 cited products; cascade to G7 issuer)
 - **G2 Vendor Tafel/i0 polarization** (per-alloy × electrolyte × T; per-heat MTC overrides)
 
-**After P3**: PitCast outputs are not "generic FBE" but "3M Scotchkote 6233P qualified per NACE SP0490 + ISO 21809-2" — what a procurement manager actually accepts.
+**After P3**: PitCast outputs are not "generic FBE" but "3M Scotchkote 6233P qualified per NACE SP0490 + ISO 21809-2" — what a procurement reviewer actually accepts.
 
-### Phase 4 — Defensibility (P4) · 4–6 months calendar / 80–125 eng-days + $8–25k cash
+### Phase 4 — Documentation defensibility (P4) · ~3 months calendar / 70–108 eng-days
 - **G5 Formal V&V package** (SVVP + CVR + VR + UQ/SA + SQAP)
-- **G10 E&O liability framework** (IUS + EULA + Apache 2.0 + footer + Tech E&O policy + entity formation)
+- **G10 Engineer-of-record framing** (IUS + Apache 2.0 + output footer + Verification Responsibilities checklist)
 
-**After P4**: PitCast is a defensible commercial offering an underwriter writes Tech E&O against; a working PE cites it as a screening aid in a stamped deliverable.
+**After P4**: PitCast carries the V&V documentation hierarchy + intended-use scope + per-output footer disclaimer that lets a working engineer cite it as a screening aid in a regulated deliverable, traceable to the standard's published worked examples.
 
 ### Total to Tier 3
-- **~190–240 eng-days** at full-time single-engineer = **~9–12 months calendar**
+- **~180–215 eng-days** at full-time single-engineer = **~9–11 months calendar**
 - **~20,850 LOC** of new JS + ~60 kB cited data + ~20+ V&V documents
-- **~$8–25k one-time + $2–4k/yr ongoing** cash
-- Calendar at 50% allocation: **~18–24 months**
+- All engineering and documentation; no fees, no insurance, no entity formation
+- Calendar at 50% allocation: **~18–22 months**
 
 ### Critical path risks
 
-1. **G3 + G6 standards paywall** — API 581 + API 579 are paywalled; physical copies ~$800 each. Need to budget for the standards. Some Annex content has been published in worked-example papers (Trinity-Bridge, AOC, FFS.jl) but cross-checking against the actual standard is non-optional for any V&V claim.
-2. **G2 vendor-Tafel data scarcity** — vendor MTCs don't publish Tafel slopes. The starter table is from academic sources; per-heat override is the way industry will populate it incrementally.
+1. **G3 + G6 standards access** — API 581 + API 579 are paywalled. Trinity-Bridge / AOC / FFS.jl worked examples cover much of the content; standard hard-copy cross-check is non-optional for any V&V claim. Project-side workaround: target the open worked examples first, leave needs_review flags on rows the standard alone documents.
+2. **G2 vendor-Tafel data scarcity** — vendor MTCs don't publish Tafel slopes. Starter table is from academic sources; per-heat override is the way the dataset grows incrementally.
 3. **G9 vendor DB rot** — vendors update product datasheets; the hash-watcher cron is essential.
-4. **G10 legal jurisdiction** — if hosting from one country (Türkiye/Azerbaijan) and used by US PEs, cross-border opinion is needed. Budget ~$5–10k for that conversation.
-5. **G5 V&V scope creep** — easy to gold-plate to NQA-1 levels. Hold the line at IEEE 1012 Integrity Level 2 / ASME V&V 40 medium model risk. Document why higher tiers don't apply.
+4. **G5 V&V scope creep** — easy to gold-plate to NQA-1 levels. Hold the line at IEEE 1012 Integrity Level 2 / ASME V&V 40 medium model risk. Document why higher tiers don't apply.
 
 ### Scope boundaries (what this plan does NOT do)
 
@@ -1230,11 +1199,11 @@ legal/
 
 Two honest paths:
 
-**Path A — Don't pursue Tier 3.** Stop at today's Tier-2 screening-tool position. PitCast already serves a clear engineering audience as a sidebar tool. Cost: $0 + zero ongoing maintenance burden beyond the existing 5,500-test regression suite. Risk: nobody ever stamps a deliverable citing PitCast, so its industrial relevance ceiling is "useful sanity-check tab."
+**Path A — Don't pursue Tier 3.** Stop at today's Tier-2 screening-tool position. PitCast already serves a clear engineering audience as a sidebar tool. Zero ongoing maintenance burden beyond the existing 5,500-test regression suite. Trade-off: nobody ever cites PitCast in a deliverable, so its industrial relevance ceiling is "useful sanity-check tab."
 
-**Path B — Pursue Tier 3 in the staged sequence above.** Total budget ~9–12 months calendar + ~$10–25k cash. Risk: this is genuinely a part-time-faculty-or-startup-founder commitment, not a weekend project. Reward: PitCast becomes a tool a working PE cites in a stamped FEED memo, an Tech E&O underwriter writes against, and a customer eventually pays for.
+**Path B — Pursue Tier 3 in the staged sequence above.** All engineering and documentation work. ~9–11 months calendar full-time. Reward: PitCast becomes a tool a working engineer cites in a FEED memo with cited worked-example validation behind every claim — the structure that earns *engineering* credibility, regardless of whether income ever follows.
 
-**My recommendation**: Phase 1 only (~6 weeks, ~$0 cash) gets PitCast to "visible daily workhorse" without the V&V / legal commitment. That's the highest-leverage milestone. After Phase 1, decide whether to continue to Phase 2 based on whether real working engineers (Tom, etc.) are using it daily and asking for the next layer. **Don't commit to Phase 4 until Phase 1 + 2 are deployed and validated by 3+ real industry users for at least 3 months.** Legal and insurance work only pays off if there's a real adoption story to insure.
+**My recommendation**: Phase 1 only (~6 weeks) gets PitCast to "visible daily workhorse." That's the highest-leverage milestone. After Phase 1, decide whether to continue to Phase 2 based on whether real working engineers are using it daily and asking for the next layer. Phase 4 documentation (V&V package + intended-use scope) only pays off if Phase 1 + 2 are deployed and have real adoption to validate against — otherwise it's overhead without leverage.
 
 ---
 
