@@ -450,6 +450,90 @@
           <option value="acid">Strong acid</option>
         </select></label>
         <p class="hint">Reuses pipe geometry (t<sub>nom</sub>, t<sub>min</sub>) from above. Screening only — full API 581 uses detailed damage-factor tables.</p>
+        <h3>Detailed RBI — service envelope (API RP 581 §6 Annex 2)</h3>
+        <div class="row">
+          <label>Service env<select id="rd_env">
+            <option value="generic">Generic / clean</option>
+            <option value="sour">Sour service (H₂S)</option>
+            <option value="amine">Amine treating</option>
+            <option value="caustic">Caustic / NaOH</option>
+            <option value="hf">HF alkylation</option>
+            <option value="cryogenic">Cryogenic / low-T</option>
+            <option value="hightemp_h2">High-T hydrogen / hydroprocessing</option>
+            <option value="atmospheric">External atmospheric</option>
+            <option value="cui">External CUI (insulated)</option>
+          </select></label>
+          <label>Material family<select id="rd_family">
+            <option value="CS" selected>Carbon steel</option>
+            <option value="low-alloy">Low-alloy steel</option>
+            <option value="C-Mo">C-0.5Mo</option>
+            <option value="1Cr-0.5Mo">1Cr-0.5Mo</option>
+            <option value="1.25Cr-0.5Mo">1.25Cr-0.5Mo</option>
+            <option value="2.25Cr-1Mo">2.25Cr-1Mo</option>
+            <option value="3Cr-1Mo">3Cr-1Mo</option>
+            <option value="5Cr-0.5Mo">5Cr-0.5Mo</option>
+            <option value="9Cr-1Mo">9Cr-1Mo</option>
+            <option value="austenitic-SS">Austenitic SS (304/316)</option>
+            <option value="duplex-SS">Duplex SS (2205/2507)</option>
+            <option value="super-austenitic">Super-austenitic (904L/254SMO)</option>
+          </select></label>
+        </div>
+        <div class="row">
+          <label>NaOH wt% (caustic service)<input type="number" id="rd_NaOH" value="0" step="5" min="0" max="100"></label>
+          <label>HF wt% (HF service)<input type="number" id="rd_HF" value="0" step="1" min="0" max="100"></label>
+        </div>
+        <div class="row">
+          <label>Amine type<select id="rd_amine">
+            <option value="">(none)</option>
+            <option value="MEA">MEA</option>
+            <option value="DEA">DEA</option>
+            <option value="MDEA">MDEA</option>
+            <option value="DGA">DGA</option>
+            <option value="DIPA">DIPA</option>
+          </select></label>
+          <label>Amine state<select id="rd_amine_state">
+            <option value="lean">Lean (post-stripper)</option>
+            <option value="rich">Rich (post-absorber)</option>
+          </select></label>
+        </div>
+        <div class="row">
+          <label>pH<sub>2</sub> (kPa, hydroprocessing)<input type="number" id="rd_pH2" value="0" step="500" min="0"></label>
+          <label>T<sub>min</sub> operating (°C, brittle)<input type="number" id="rd_Tmin" value="0" step="5"></label>
+        </div>
+        <div class="row">
+          <label>Hardness (HRC)<input type="number" id="rd_HRC" value="22" step="1" min="0" max="60"></label>
+          <label>PWHT applied<select id="rd_pwht">
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select></label>
+        </div>
+        <div class="row">
+          <label>Charpy curve (ASME UCS-66)<select id="rd_charpy">
+            <option value="A">A — mild steel, untested</option>
+            <option value="B" selected>B — normalised CS plate (SA-516-70N)</option>
+            <option value="C">C — impact tested at -29 °C</option>
+            <option value="D">D — impact tested at min design T</option>
+          </select></label>
+          <label>Welded<select id="rd_welded">
+            <option value="true" selected>Yes</option>
+            <option value="false">No (seamless)</option>
+          </select></label>
+        </div>
+        <div class="row">
+          <label>CO<sub>3</sub><sup>2-</sup> (ppm, FCC overhead)<input type="number" id="rd_CO3" value="0" step="100" min="0"></label>
+          <label>Cyanide (ppm, sour service)<input type="number" id="rd_CN" value="0" step="10" min="0"></label>
+        </div>
+        <div class="row">
+          <label>HIC-resistant (Ca-treated, low-S)<select id="rd_HICres">
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select></label>
+          <label>Sensitised (austenitic SS in long H₂S)<select id="rd_sens">
+            <option value="false">No</option>
+            <option value="true">Yes</option>
+          </select></label>
+        </div>
+        <p class="hint">Service envelope drives the detailed-RBI damage-mechanism breakdown (API 581 Annexes 2.C SCC family, 2.D HTHA, 2.E Fatigue, 2.F Brittle Fracture, 2.G External / CUI).</p>
       </form>
       <div class="card results" id="integrity_results"><div class="placeholder">Set pipe geometry →</div></div>
     </div>
@@ -737,11 +821,12 @@ D-002,95,2.1
 <script src="cips.js?v=1"></script>
 <script src="ffs.js?v=1"></script>
 <script src="rbi-detailed.js?v=1"></script>
+<script src="rbi-damage-mechanisms.js?v=1"></script>
 <script src="audit.js?v=1"></script>
 <script src="storage.js?v=1"></script>
 <script src="projects-ui.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=37"></script>
+<script src="app.js?v=38"></script>
 <script>
   // Wait for mr0175 annexes to load (async fetch)
   if (typeof window !== "undefined") {

@@ -665,7 +665,63 @@ function renderIntegrity(){
       return `<div class="iso ${cls}"><b>RBI screen — ${rs.riskLevel.toUpperCase()}</b> · cell ${rs.CoF}${rs.PoF}<br>
         PoF=<b>${rs.PoF}</b> · CoF=<b>${rs.CoF}</b> · driver ${rs.driver.toFixed(2)} (DF ${rs.damageFactor.toFixed(2)} / remaining margin ${(rs.remainingMargin*100).toFixed(0)}%).
         Recommended inspection interval: <b>${rs.inspectionInterval}</b>.${mtx}</div>
-        <div class="explain"><span style="color:var(--dim)">${rs.ref}</span></div>`;})()}`;
+        <div class="explain"><span style="color:var(--dim)">${rs.ref}</span></div>`;})()}
+    ${(()=>{ if(!window.RBIDamage) return "";
+      const env = gv("rd_env") || "generic";
+      const opts = {
+        material_family: gv("rd_family") || "CS",
+        T_C: +gv("r_T") || +gv("u_T") || 25,
+        T_min_op_C: +gv("rd_Tmin") || 0,
+        pH: +gv("h_pH") || 7,
+        pH2S_kPa: +gv("h_pH2S") || 0,
+        pH2_kPa: +gv("rd_pH2") || 0,
+        Cl_ppm: +gv("u_Cl") || 0,
+        NaOH_wt_pct: +gv("rd_NaOH") || 0,
+        amine_type: gv("rd_amine") || "",
+        amine_state: gv("rd_amine_state") || "lean",
+        HF_wt_pct: +gv("rd_HF") || 0,
+        water_phase_present: env === "hf",
+        CO3_ppm: +gv("rd_CO3") || 0,
+        cyanide_ppm: +gv("rd_CN") || 0,
+        hardness_HRC: +gv("rd_HRC") || 22,
+        PWHT: gv("rd_pwht") === "true",
+        welded: gv("rd_welded") !== "false",
+        HIC_resistant_steel: gv("rd_HICres") === "true",
+        sensitised: gv("rd_sens") === "true",
+        H2S_service: env === "sour" || (+gv("h_pH2S") || 0) > 0.3,
+        charpy_curve: gv("rd_charpy") || "B",
+        thickness_mm: +gv("b_t") || 25,
+        age_yr: +gv("r_age") || 10,
+        inspection_history: [{ eff: "B" }],
+        ext_type: env === "atmospheric" ? "atmospheric" : env === "cui" ? "CUI" : null,
+        atm_category: "C3",
+        insulated: env === "cui",
+        T_C_external: env === "cui" ? (+gv("r_T") || 80) : 25,
+        coating_quality: "fair",
+        coating_age_yr: 3
+      };
+      const cdf = window.RBIDamage.combinedDF(opts);
+      const rows = cdf.mechanisms.map(m => {
+        const susColour = { "None":"#374151", "Low":"#0e3b24", "Medium":"#8a6d1a", "High":"#b5651d", "V.High":"#c0392b" }[m.susceptibility] || "#374151";
+        const applicableLabel = m.applicable ? `<b style="color:#fff">${m.susceptibility}</b>` : `<span style="color:var(--dim)">n/a</span>`;
+        const dfDisplay = m.applicable ? m.D_f.toFixed(1) : "—";
+        const why = !m.applicable && m.why ? `<span style="color:var(--dim);font-size:11px"> · ${m.why}</span>` : "";
+        return `<tr><td style="padding:4px 8px">${m.mechanism}</td>
+                    <td style="padding:4px 8px;background:${m.applicable?susColour:"transparent"};text-align:center">${applicableLabel}</td>
+                    <td style="padding:4px 8px;text-align:right;font-family:var(--mono,monospace)">${dfDisplay}</td>
+                    <td style="padding:4px 8px;color:var(--dim);font-size:11px">${m.applicable ? `eff ${m.effectiveness} · age ×${m.F_age.toFixed(2)} · ins ×${m.F_eff.toFixed(2)}` : ""}${why}</td>
+                </tr>`;
+      }).join("");
+      const totalLevel = cdf.total_D_f > 100 ? "exceeds" : cdf.total_D_f > 10 ? "untabulated" : "within";
+      return `<div class="iso ${totalLevel}"><b>Detailed RBI — API 581 damage mechanisms</b> · ${cdf.n_active} active · <b>ΣD<sub>f</sub> = ${cdf.total_D_f.toFixed(1)}</b><br>
+        <table style="margin-top:8px;border-collapse:collapse;width:100%;font-size:12px">
+          <thead><tr style="color:var(--dim)"><th style="text-align:left;padding:4px 8px">Mechanism</th>
+            <th style="padding:4px 8px;text-align:center">Susceptibility</th>
+            <th style="padding:4px 8px;text-align:right">D<sub>f</sub></th>
+            <th style="padding:4px 8px;text-align:left">Factors</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table></div>
+        <div class="explain"><span style="color:var(--dim)">${cdf.ref}</span></div>`;})()}`;
 }
 $("b31gForm") && $("b31gForm").addEventListener("input", renderIntegrity);
 
