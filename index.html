@@ -42,6 +42,8 @@
     <button class="tab" data-tab="ffs">FFS (API 579)</button>
     <button class="tab" data-tab="mr0175">MR0175 spec</button>
     <button class="tab" data-tab="cips">CIPS / DCVG</button>
+    <button class="tab" data-tab="fleet">Fleet RBI</button>
+    <button class="tab" data-tab="psm">PSM scorer</button>
   </div>
   <div class="datastat" id="dataStat"></div>
   <div class="exportbar"><button type="button" id="btnPrint">🖶 Print / Save as PDF</button><button type="button" id="btnXLSX">⤓ Export XLSX</button><button type="button" id="btnCSV">⤓ Download CSV</button></div>
@@ -685,6 +687,45 @@ D-002,95,2.1
       <div class="card results" id="cips_results"><div class="placeholder">Paste a CIPS/DCVG survey CSV →</div></div>
     </div>
   </section>
+
+  <!-- FLEET RBI — equipment-level dashboard ------------------------------ -->
+  <section class="panel" id="tab-fleet">
+    <div class="datastat">Equipment-level Fleet RBI dashboard per API RP 581 Part 2 §6.3 + Annex 2 (all damage mechanisms). Paste an equipment CSV → per-row combined Damage Factor + PoF · sortable + colour-coded · top-10 risk pin · CSV export. PSM scorer below drives F_MS factor across the whole fleet.</div>
+    <div class="grid">
+      <form class="card inputs" id="fleetForm">
+        <h3>Equipment fleet (paste CSV)</h3>
+        <label class="envwide">Columns: <code>id, type, env, family, age_yr, CR_mmyr, t_nom_mm, t_min_mm, last_insp_eff, NaOH_pct, HF_pct, pH2S_kPa, pH, T_C, Cl_ppm, PWHT, hardness_HRC</code><textarea id="fleet_paste" rows="14" placeholder="id,type,env,family,age_yr,CR_mmyr,t_nom_mm,t_min_mm,last_insp_eff,NaOH_pct,HF_pct,pH2S_kPa,pH,T_C,Cl_ppm,PWHT,hardness_HRC
+V-101,vessel,amine,CS,15,0.10,16,9,B,0,0,5,9,80,200,false,22
+V-102,vessel,sour,CS,20,0.15,20,12,A,0,0,80,4,60,5000,true,22
+E-201,exchanger-shell,FW,316L-passive,10,0.02,12,8,B,0,0,0,7,40,5,false,18
+T-301,AST-shell-welded-maintained,atmospheric,CS,25,0.08,12,6,C,0,0,0,7,35,50,false,22
+P-101,pump-centrifugal-single-seal,sour,CS,12,0.20,15,9,B,0,0,30,5,80,1000,true,22
+PIPE-04in-001,pipe-4-10in,sour,CS,18,0.18,9.5,4.8,A,0,0,40,4.5,75,2000,true,22" style="width:100%;font-family:monospace;font-size:11px;background:rgba(255,255,255,0.04);color:var(--text);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px"></textarea></label>
+        <div class="row">
+          <button type="button" id="fleet_process" class="primary">Compute fleet DF + PoF →</button>
+          <button type="button" id="fleet_export">Export CSV</button>
+        </div>
+        <h3>Plant-wide PSM (from PSM scorer tab)</h3>
+        <label>Override F_MS (auto from PSM scorer; 1.0 = no PSM effect)<input type="number" id="fleet_fms" value="1.0" step="0.1" min="0.1" max="10"></label>
+        <p class="hint">Each row computed with RBIDamage.combinedDF + RBIRefractoryTank.tank_bottom_DF for AST rows. PoF = GFF (per equipment type) × F_MS × ΣD_f. Recommended use: pre-turnaround / RBI workshop screen — not a substitute for full API 581 software seat or PE peer review.</p>
+      </form>
+      <div class="card results" id="fleet_results"><div class="placeholder">Paste equipment CSV + Compute →</div></div>
+    </div>
+  </section>
+
+  <!-- PSM SCORER — 14-element OSHA PSM evaluation ------------------------ -->
+  <section class="panel" id="tab-psm">
+    <div class="datastat">14-element OSHA Process Safety Management evaluation (29 CFR 1910.119) per API RP 581 Part 2 §5.5 + Annex 2.A.1.4. Score each element 0-100 (anchors shown), get F_MS factor that multiplies PoF across all equipment.</div>
+    <div class="grid">
+      <form class="card inputs" id="psmForm">
+        <h3>14 PSM elements + 1 RBPS (CCPS)</h3>
+        <div id="psm_inputs"></div>
+        <div class="row"><button type="button" id="psm_compute" class="primary">Score PSM →</button></div>
+        <p class="hint">Default: all elements at 50 (industry median, F_MS=1.0). Best-in-class programme (all 100) gives F_MS=0.1 (10× PoF reduction). Worst (all 0) gives F_MS=10 (10× PoF amplifier). Per OSHA 29 CFR 1910.119 + CCPS RBPS (2007).</p>
+      </form>
+      <div class="card results" id="psm_results"><div class="placeholder">Score PSM elements →</div></div>
+    </div>
+  </section>
 </main>
 
 <section id="how" class="info">
@@ -820,13 +861,15 @@ D-002,95,2.1
 <script src="mr0175.js?v=1"></script>
 <script src="cips.js?v=1"></script>
 <script src="ffs.js?v=1"></script>
-<script src="rbi-detailed.js?v=1"></script>
-<script src="rbi-damage-mechanisms.js?v=1"></script>
+<script src="rbi-detailed.js?v=2"></script>
+<script src="rbi-damage-mechanisms.js?v=2"></script>
+<script src="rbi-refractory-tank.js?v=1"></script>
+<script src="rbi-psm.js?v=1"></script>
 <script src="audit.js?v=1"></script>
 <script src="storage.js?v=1"></script>
 <script src="projects-ui.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=38"></script>
+<script src="app.js?v=39"></script>
 <script>
   // Wait for mr0175 annexes to load (async fetch)
   if (typeof window !== "undefined") {

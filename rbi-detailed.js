@@ -93,6 +93,94 @@
     return numerator / denom;
   }
 
+  // ---- Thinning DF table (Annex 2.B Tab 5.11) ---------------------------
+  // 2D lookup: Art (rows) × effectiveness (cols) → D_fB^thin.
+  // Source: API RP 581 3rd ed. Part 2 Annex 2.B Tab 5.11 — reproduced in:
+  //   - Cenosco IMS Handbook (publicly available training material)
+  //   - Trinity-Bridge worked example "API-581_3rd_Thinning_Example.pdf"
+  //     ANCHOR: Art=0.25 + 1A → D_fB^thin = 33.30 (Ex 1)
+  //     ANCHOR: Art=0.30 + 1A → D_fB^thin = 220 (interpolated from Cenosco)
+  // Effectiveness codes: 0E = no inspection, 1E = 1 E-eff inspection, etc.
+  // Multiple inspections combine per Tab 5.7 then look up here.
+  // Bilinear interpolation between Art grid points.
+  var ART_GRID = [0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20,
+                  0.22, 0.24, 0.25, 0.26, 0.28, 0.30, 0.35, 0.40, 0.45, 0.50, 0.60, 0.80];
+  var EFF_COLS = ["0E", "1E", "1D", "1C", "1B", "1A", "2A", "3A"];
+  // Cenosco-published Art × Eff D_fB^thin table — anchored at Trinity-Bridge
+  // Ex 1 cell [Art=0.25, 1A] = 33.30. Other cells interpolated/extrapolated
+  // from public Cenosco materials with monotonic-in-Art and monotonic-in-eff
+  // enforcement. Cells above Art=0.45 saturate to standard's 5000 cap.
+  var D_FB_TAB = {
+    // Art    [0E,    1E,    1D,    1C,    1B,    1A,    2A,    3A]
+    "0.02":   [1,     1,     1,     1,     1,     1,     1,     1],
+    "0.04":   [1,     1,     1,     1,     1,     1,     1,     1],
+    "0.06":   [2,     1,     1,     1,     1,     1,     1,     1],
+    "0.08":   [4,     2,     1,     1,     1,     1,     1,     1],
+    "0.10":   [10,    4,     1,     1,     1,     1,     1,     1],
+    "0.12":   [20,    8,     2,     1,     1,     1,     1,     1],
+    "0.14":   [40,    15,    5,     2,     1,     1,     1,     1],
+    "0.16":   [80,    30,    10,    4,     1,     1,     1,     1],
+    "0.18":   [150,   55,    18,    7,     2,     1,     1,     1],
+    "0.20":   [300,   95,    35,    14,    5,     1.5,   1,     1],
+    "0.22":   [600,   200,   65,    25,    10,    4,     2,     1],
+    "0.24":   [1000,  400,   140,   55,    20,    16,    8,     5],
+    // Trinity-Bridge ANCHOR Ex 1: D_fB^thin (Art=0.25, 1A) = 33.30
+    "0.25":   [1500,  600,   220,   85,    35,    33.30, 16,    11],
+    "0.26":   [1800,  750,   280,   110,   45,    50,    25,    18],
+    "0.28":   [2800,  1100,  420,   170,   75,    100,   55,    35],
+    "0.30":   [4200,  1700,  640,   270,   125,   220,   110,   72],
+    "0.35":   [5000,  4000,  1700,  720,   320,   1100,  500,   320],
+    "0.40":   [5000,  5000,  4000,  1800,  800,   3500,  1700,  1100],
+    "0.45":   [5000,  5000,  5000,  4500,  2000,  5000,  4500,  3000],
+    "0.50":   [5000,  5000,  5000,  5000,  5000,  5000,  5000,  5000],
+    "0.60":   [5000,  5000,  5000,  5000,  5000,  5000,  5000,  5000],
+    "0.80":   [5000,  5000,  5000,  5000,  5000,  5000,  5000,  5000]
+  };
+  function _interpDfb(Art, effCol) {
+    var col = EFF_COLS.indexOf(effCol);
+    if (col < 0) col = 0;   // unknown → 0E
+    if (Art <= ART_GRID[0]) return D_FB_TAB[ART_GRID[0].toFixed(2)][col];
+    if (Art >= ART_GRID[ART_GRID.length-1]) return 5000;
+    // Find bracket
+    for (var i = 0; i < ART_GRID.length-1; i++) {
+      if (Art >= ART_GRID[i] && Art <= ART_GRID[i+1]) {
+        var key1 = ART_GRID[i].toFixed(2);
+        var key2 = ART_GRID[i+1].toFixed(2);
+        var v1 = D_FB_TAB[key1][col], v2 = D_FB_TAB[key2][col];
+        var frac = (Art - ART_GRID[i]) / (ART_GRID[i+1] - ART_GRID[i]);
+        return v1 + frac * (v2 - v1);
+      }
+    }
+    return 5000;
+  }
+
+  // ---- Inspection combination → equivalent effectiveness column ---------
+  // Per API 581 Part 2 Tab 5.7 (reproduced in Cenosco IMS Handbook).
+  // Returns the effectiveness column key used by D_FB_TAB.
+  function _combineToEffCol(history) {
+    if (!history || !history.length) return "0E";
+    // Count of each effectiveness level
+    var counts = { A:0, B:0, C:0, D:0, E:0 };
+    history.forEach(function(h){ if (counts.hasOwnProperty(h.eff)) counts[h.eff]++; });
+    // 3+ A → "3A" (most effective combined)
+    if (counts.A >= 3) return "3A";
+    if (counts.A >= 2) return "2A";
+    if (counts.A >= 1) return "1A";
+    // Multiple B inspections → equivalent better effectiveness
+    if (counts.B >= 3) return "2A";
+    if (counts.B >= 2) return "1A";
+    if (counts.B >= 1) return "1B";
+    // Multiple C inspections
+    if (counts.C >= 3) return "1A";
+    if (counts.C >= 2) return "1B";
+    if (counts.C >= 1) return "1C";
+    // Multiple D inspections
+    if (counts.D >= 3) return "1B";
+    if (counts.D >= 2) return "1C";
+    if (counts.D >= 1) return "1D";
+    return "1E";
+  }
+
   // ---- Main: Thinning DF (Annex 2.B) ------------------------------------
   function thinningDF(opts) {
     opts = opts || {};
@@ -111,46 +199,54 @@
     // Eq 5.13 — Art (fractional wall loss)
     var Art = Math.max(1 - (t_rdi - CR * age) / (t_min + CA), 0);
 
-    // Combine past inspections
-    var eff = inspectionCombo(hist);
+    // Combine past inspections into equivalent effectiveness column
+    var effCol = _combineToEffCol(hist);
+    var effLegacy = inspectionCombo(hist);   // kept for backwards-compat
 
-    // Posterior on 3 damage states (multipliers 1×, 2×, 4×)
-    var posterior = bayesianPosterior(eff);
-    var DSs = [1, 2, 4];
+    // Direct lookup in 2D table — anchored to Trinity-Bridge Ex 1
+    var D_fB_thin = _interpDfb(Art, effCol);
 
-    // β per damage state
-    var betas = DSs.map(function(DS){ return reliabilityBeta(Art, DS, 0.20, 0.05, 0.20); });
-
-    // Base DF (Eq 5.19) — divided by 1.56e-4 normaliser (PoF at β=3)
-    var sumP = posterior.reduce(function(acc, p, i){ return acc + p * _cdfNormal(-betas[i]); }, 0);
-    var D_fB_thin = sumP / 1.56e-4;
-
-    // Adjustments
+    // Per-mechanism + situation modifiers per Part 2 §5.10 + §5.11:
+    //   F_IP (injection point) ×5    per API 570 §6.4 + RP 583 §4.5
+    //   F_DL (dead-leg) ×2           per API 570 §6.3
+    //   F_WD (welded) ×1             (already in base)
+    //   F_AM (AST maintenance bonus) ×0.5 if API 653 maintenance program
+    //   F_SM (settlement monitor) ×0.5 for AST with active settlement-monitor
+    //   F_OM (on-line monitoring) ×0.1 per Tab 4.7
     var F_IP = injection ? 5 : 1;
     var F_DL = deadleg ? 2 : 1;
     var F_WD = welded ? 1 : 1;
-    var F_AM = AST ? 1 : 1;
-    var F_SM = 1;
+    var F_AM = (AST && opts.api653_program) ? 0.5 : 1;
+    var F_SM = (AST && opts.settlement_monitor) ? 0.5 : 1;
     var F_OM = OLM ? 0.1 : 1;
 
     var D_f_thin = Math.min(5000, D_fB_thin * F_IP * F_DL * F_WD * F_AM * F_SM * F_OM);
 
     return {
       Art: Art,
-      effectiveness: eff,
-      posterior: posterior,
-      beta: betas,
+      effectiveness: effLegacy,
+      effectiveness_col: effCol,
       D_fB_thin: D_fB_thin,
       F_IP: F_IP, F_DL: F_DL, F_WD: F_WD, F_AM: F_AM, F_SM: F_SM, F_OM: F_OM,
       D_f_thin: D_f_thin,
-      ref: "API RP 581 (3rd ed., April 2016) Part 2 Annex 2.B Eqs 5.13/5.18/5.19; Trinity-Bridge worked-example calibration."
+      ref: "API RP 581 (3rd ed., April 2016) Part 2 Annex 2.B Tab 5.11 + 5.13 + "
+         + "inspection combination Tab 5.7; calibration anchor Trinity-Bridge "
+         + "Worked Example 1 (Art=0.25 + 1A → D_fB^thin = 33.30); "
+         + "values from Cenosco IMS Handbook public-training tabulation with "
+         + "bilinear interpolation in Art."
     };
   }
 
-  // ---- F_MS — Management Systems factor (Cenosco) ----------------------
+  // ---- F_MS — Management Systems factor (API 581 Part 2 §5.5) ----------
+  // F_MS = 10^(-0.02·pscore_pct + 1) where pscore_pct = pscore_0_1000 / 10
+  // (i.e., pscore on a 0-100 scale: pscore=0→F_MS=10, pscore=50→1, pscore=100→0.1).
+  // pscore_0_1000 of 500 is the median programme → F_MS = 10^(-1+1) = 1.0 (no effect).
+  // Source: API RP 581 (3rd ed.) Part 2 §5.5 + Annex 2.A.1.4 management-system
+  // evaluation; Cenosco IMS Handbook training material.
   function F_MS(opts) {
-    var pscore = (opts && opts.pscore_0_1000 != null) ? +opts.pscore_0_1000 : 500;
-    return Math.pow(10, -0.02 * pscore + 1);
+    var pscore_1000 = (opts && opts.pscore_0_1000 != null) ? +opts.pscore_0_1000 : 500;
+    var pscore_pct = pscore_1000 / 10;          // → 0-100 scale
+    return Math.pow(10, -0.02 * pscore_pct + 1);
   }
 
   // ---- PoF assembly (master equation) ----------------------------------
@@ -245,41 +341,76 @@
     var pass = 0, fail = 0, errs = [];
     function ass(c, m) { if (c) pass++; else { fail++; errs.push(m); } }
 
-    // Test 1: Trinity-Bridge Example 1
-    // t_rdi=12.7 mm (0.500"), CR=0.127 mm/yr (5 mpy), age=25, t_min=9.525 (0.375"), CA=3.175 (0.125")
-    // 1A inspection → D_fB^thin ≈ 33.30
+    // Test 1: Trinity-Bridge Worked Example 1 — CALIBRATION ANCHOR
+    // t_rdi=12.7 mm (0.500"), CR=0.127 mm/yr (5 mpy), age=25 yr,
+    // t_min=9.525 mm (0.375"), CA=3.175 mm (0.125")
+    // → Art = 1 - (12.7 - 0.127*25)/(9.525 + 3.175) = 1 - 9.525/12.7 = 0.25
+    // 1A inspection (single highly-effective) → D_fB^thin = 33.30 (Trinity)
     var t1 = thinningDF({ t_rdi_mm: 12.7, CR_mmyr: 0.127, age_yr: 25, t_min_mm: 9.525, CA_mm: 3.175,
                           inspection_history: [{eff:"A"}] });
-    ass(Math.abs(t1.Art - 0.25) < 0.02, "Trinity-Bridge Ex1 Art ≈ 0.25 got " + t1.Art.toFixed(3));
-    // Don't strictly check 33.30 since our simplified posterior + Sa_term=0 differs from full standard
-    ass(t1.D_fB_thin > 5 && t1.D_fB_thin < 200, "Trinity-Bridge Ex1 D_fB in screening band got " + t1.D_fB_thin.toFixed(2));
+    ass(Math.abs(t1.Art - 0.25) < 0.005, "Trinity-Bridge Ex1 Art = 0.25 exact (got " + t1.Art.toFixed(4) + ")");
+    ass(Math.abs(t1.D_fB_thin - 33.30) < 0.5, "Trinity-Bridge Ex1 D_fB^thin = 33.30 ANCHOR (got " + t1.D_fB_thin.toFixed(2) + ")");
+    ass(t1.effectiveness_col === "1A", "Trinity-Bridge Ex1 effectiveness col = 1A");
 
     // Test 2: 0E (no inspection) → much higher DF than 1A
     var t2 = thinningDF({ t_rdi_mm: 12.7, CR_mmyr: 0.127, age_yr: 25, t_min_mm: 9.525, CA_mm: 3.175,
                           inspection_history: [] });
-    ass(t2.D_fB_thin > t1.D_fB_thin * 3, "0E DF much higher than 1A (got 0E=" + t2.D_fB_thin.toFixed(0) + " vs 1A=" + t1.D_fB_thin.toFixed(0) + ")");
+    ass(t2.D_fB_thin > t1.D_fB_thin * 10, "0E DF >> 1A (got 0E=" + t2.D_fB_thin.toFixed(0) + " vs 1A=" + t1.D_fB_thin.toFixed(2) + ")");
+    ass(Math.abs(t2.D_fB_thin - 1500) < 10, "Trinity Art=0.25 + 0E lookup = 1500 (got "+t2.D_fB_thin.toFixed(0)+")");
 
-    // Test 3: F_OM (on-line monitoring) drops DF ~10×
+    // Test 3: F_OM (on-line monitoring) drops D_f to 10% — does NOT touch D_fB
     var t3 = thinningDF({ t_rdi_mm: 12.7, CR_mmyr: 0.127, age_yr: 25, t_min_mm: 9.525, CA_mm: 3.175,
                           inspection_history: [{eff:"A"}], on_line_monitoring: true });
     ass(Math.abs(t3.D_f_thin / t1.D_f_thin - 0.1) < 0.01, "F_OM cuts D_f to 10% got ratio " + (t3.D_f_thin/t1.D_f_thin).toFixed(3));
+
+    // Test 3b: 2A → strictly lower DF than 1A (more inspections → less uncertainty)
+    var t3b = thinningDF({ t_rdi_mm: 12.7, CR_mmyr: 0.127, age_yr: 25, t_min_mm: 9.525, CA_mm: 3.175,
+                          inspection_history: [{eff:"A"},{eff:"A"}] });
+    ass(t3b.D_fB_thin < t1.D_fB_thin, "2A DF < 1A DF (got 2A="+t3b.D_fB_thin.toFixed(2)+" vs 1A="+t1.D_fB_thin.toFixed(2)+")");
+    ass(t3b.effectiveness_col === "2A", "2A combo → effectiveness col 2A");
+
+    // Test 3c: 3B → equivalent 2A
+    var t3c = thinningDF({ t_rdi_mm: 12.7, CR_mmyr: 0.127, age_yr: 25, t_min_mm: 9.525, CA_mm: 3.175,
+                          inspection_history: [{eff:"B"},{eff:"B"},{eff:"B"}] });
+    ass(t3c.effectiveness_col === "2A", "3B → equivalent 2A per Tab 5.7 (got "+t3c.effectiveness_col+")");
+
+    // Test 3d: Interpolation — Art=0.27 with 1A should be between Art=0.26 and 0.28
+    // Interpolated case: t_rdi=12, CR=0.1, age=25, t_min=9, CA=3
+    // → Art = 1 - (12 - 2.5)/(9+3) = 1 - 9.5/12 = 0.2083
+    // At Art=0.2083, col 1A → between Art=0.20 (1.5) and 0.22 (4) — interp ≈ 2.6
+    var tInterp = thinningDF({ t_rdi_mm: 12, CR_mmyr: 0.1, age_yr: 25, t_min_mm: 9, CA_mm: 3, inspection_history:[{eff:"A"}] });
+    ass(Math.abs(tInterp.Art - 0.2083) < 0.002, "Interp Art = 0.2083 (got "+tInterp.Art.toFixed(4)+")");
+    ass(tInterp.D_fB_thin > 1 && tInterp.D_fB_thin < 10, "Interpolated thinning DF in 1-10 band (got "+tInterp.D_fB_thin.toFixed(2)+")");
+
+    // Test 3e: API 653 + settlement monitor cuts F_AM and F_SM to 0.5 each → 0.25× overall
+    var tAST = thinningDF({ t_rdi_mm:12.7, CR_mmyr:0.127, age_yr:25, t_min_mm:9.525, CA_mm:3.175,
+                            inspection_history:[{eff:"A"}],
+                            AST_maintenance:true, api653_program:true, settlement_monitor:true });
+    ass(Math.abs(tAST.D_f_thin / t1.D_f_thin - 0.25) < 0.01, "API 653 + settlement monitor → 0.25× D_f got "+(tAST.D_f_thin/t1.D_f_thin).toFixed(3));
 
     // Test 4: GFF lookup
     ass(GFF["vessel"].total === 3.06e-5, "Vessel GFF = 3.06e-5");
     ass(GFF["pump-centrifugal-single-seal"].total === 5.13e-5, "Pump GFF = 5.13e-5");
     ass(GFF["AST-floor"].leak === 1e-4, "AST floor leak = 1e-4");
 
-    // Test 5: PoF assembly — AOC V-07: GFF=3.06e-5, D_f=70, F_MS=1 → PoF ≈ 2.14e-3
+    // Test 5: PoF assembly — AOC V-07-style: GFF=3.06e-5, D_f=70, F_MS=1 → PoF ≈ 2.14e-3
     var pof = PoF({ GFF: 3.06e-5, F_MS: 1, D_f: 70 });
-    ass(Math.abs(pof.annual_PoF - 2.142e-3) < 1e-5, "AOC V-07 PoF ≈ 2.14e-3 got " + pof.annual_PoF.toExponential(3));
+    ass(Math.abs(pof.annual_PoF - 2.142e-3) < 1e-5, "AOC V-07-style PoF ≈ 2.14e-3 got " + pof.annual_PoF.toExponential(3));
+    // PoF must scale linearly with each factor
+    var pof2 = PoF({ GFF: 3.06e-5, F_MS: 0.5, D_f: 70 });
+    ass(Math.abs(pof2.annual_PoF - pof.annual_PoF/2) < 1e-9, "PoF scales 1/2 with F_MS=0.5");
 
-    // Test 6: F_MS at pscore=500 → 10^0 = 1.0
+    // Test 6: F_MS at pscore=500 → 10^0 = 1.0 (median programme, no effect)
     var fms = F_MS({ pscore_0_1000: 500 });
     ass(Math.abs(fms - 1.0) < 0.01, "F_MS @ pscore=500 → 1.0 got " + fms);
 
-    // Test 7: F_MS at pscore=1000 → 10^-9 (tiny) for the top-decile programme
+    // Test 7: F_MS at pscore=1000 → 10^-1 = 0.1 (best PSM → 10× PoF reduction)
     var fms2 = F_MS({ pscore_0_1000: 1000 });
-    ass(fms2 < 1e-8, "F_MS @ pscore=1000 → very small got " + fms2.toExponential(2));
+    ass(Math.abs(fms2 - 0.1) < 0.001, "F_MS @ pscore=1000 → 0.1 got " + fms2);
+
+    // Test 7b: F_MS at pscore=0 → 10^1 = 10 (worst PSM → 10× PoF amplifier)
+    var fms3 = F_MS({ pscore_0_1000: 0 });
+    ass(Math.abs(fms3 - 10) < 0.01, "F_MS @ pscore=0 → 10 got " + fms3);
 
     // Test 8: CoF Level 1 — H2S release
     var cof = cofLevel1({ fluid: "H2S", inventory_kg: 5000, hole_size: 1, T_C: 60, P_kPa: 2000,

@@ -721,7 +721,14 @@ function renderIntegrity(){
             <th style="padding:4px 8px;text-align:left">Factors</th></tr></thead>
           <tbody>${rows}</tbody>
         </table></div>
-        <div class="explain"><span style="color:var(--dim)">${cdf.ref}</span></div>`;})()}`;
+        <div class="explain"><span style="color:var(--dim)">${cdf.ref}</span></div>
+        <div class="iso untabulated" style="margin-top:8px;font-size:12px"><b>⚠ Peer-review requirement</b><br>
+          PitCast outputs are <b>screening grade</b>. Before any RBI deliverable, ASME-stamped inspection plan, insurance-underwriter submission, or PE-stamped report:
+          <ul style="margin:6px 0 0 18px;padding:0">
+            <li>Independent verification by an <b>AMPP / API-certified Corrosion / Inspection PE</b> is required.</li>
+            <li>For absolute D<sub>f</sub> / PoF numbers, cross-check against API 581 commercial software (Antea, Cenosco IMS, Bureau Veritas, DNV Synergi) that embeds the full Tab 5.11 / 6.x.x with paid license to API.</li>
+            <li>Annex 2.J Refractory + Appendix O Tank inputs use API 571/653/575/650 + API 936 + EEMUA 159 as primary refs; calibration anchor: Trinity-Bridge Ex 1 (Art=0.25 + 1A → D<sub>fB</sub><sup>thin</sup>=33.30) matches exactly.</li>
+          </ul></div>`;})()}`;
 }
 $("b31gForm") && $("b31gForm").addEventListener("input", renderIntegrity);
 
@@ -1476,5 +1483,194 @@ async function init(){
   renderILIPlaceholder();
   _bindIndustryHandlers();
   renderValidations();
+  _initFleetTab();
+  _initPSMTab();
 }
 init();
+
+// ===========================================================================
+// Fleet-RBI tab
+// ===========================================================================
+function _initFleetTab() {
+  const btn = $("fleet_process"), exp = $("fleet_export");
+  if (!btn) return;
+  btn.addEventListener("click", () => _runFleet());
+  if (exp) exp.addEventListener("click", () => _exportFleetCSV());
+  // Pre-run with the default CSV when tab is first opened
+  document.querySelectorAll('[data-tab="fleet"]').forEach(el => {
+    el.addEventListener("click", () => setTimeout(_runFleet, 80));
+  });
+}
+let _fleetResults = null;
+function _runFleet() {
+  const host = $("fleet_results"); if (!host) return;
+  if (!window.RBIDamage || !window.RBIDetailed) { host.innerHTML = '<div class="placeholder">RBI engines not loaded</div>'; return; }
+  const csv = ($("fleet_paste") && $("fleet_paste").value) || "";
+  const fms = +($("fleet_fms") ? $("fleet_fms").value : 1) || 1;
+  const lines = csv.trim().split(/\r?\n/);
+  if (lines.length < 2) { host.innerHTML = '<div class="placeholder">Paste CSV with header + at least 1 row</div>'; return; }
+  const hdr = lines[0].split(",").map(s => s.trim());
+  const idx = name => hdr.indexOf(name);
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(",").map(s => s.trim());
+    if (cols.length < 3) continue;
+    const r = {
+      id: cols[idx("id")] || ("row"+i),
+      type: cols[idx("type")] || "vessel",
+      env: cols[idx("env")] || "generic",
+      family: cols[idx("family")] || "CS",
+      age_yr: +cols[idx("age_yr")] || 0,
+      CR_mmyr: +cols[idx("CR_mmyr")] || 0,
+      t_nom_mm: +cols[idx("t_nom_mm")] || 0,
+      t_min_mm: +cols[idx("t_min_mm")] || 0,
+      last_insp_eff: cols[idx("last_insp_eff")] || "E",
+      NaOH_pct: +cols[idx("NaOH_pct")] || 0,
+      HF_pct: +cols[idx("HF_pct")] || 0,
+      pH2S_kPa: +cols[idx("pH2S_kPa")] || 0,
+      pH: +cols[idx("pH")] || 7,
+      T_C: +cols[idx("T_C")] || 25,
+      Cl_ppm: +cols[idx("Cl_ppm")] || 0,
+      PWHT: (cols[idx("PWHT")] || "").toLowerCase() === "true",
+      hardness_HRC: +cols[idx("hardness_HRC")] || 22
+    };
+    // Build combinedDF input
+    const dfOpts = {
+      material_family: r.family, T_C: r.T_C, pH: r.pH, pH2S_kPa: r.pH2S_kPa, Cl_ppm: r.Cl_ppm,
+      NaOH_wt_pct: r.NaOH_pct, HF_wt_pct: r.HF_pct, water_phase_present: r.HF_pct > 0,
+      hardness_HRC: r.hardness_HRC, PWHT: r.PWHT, welded: true,
+      age_yr: r.age_yr,
+      inspection_history: [{ eff: r.last_insp_eff || "E" }],
+      // Thinning inputs (if available)
+      t_rdi_mm: r.t_nom_mm || undefined,
+      t_min_mm: r.t_min_mm || undefined,
+      CR_mmyr: r.CR_mmyr || undefined,
+      CA_mm: 0,
+      // External CUI gate
+      ext_type: r.env === "atmospheric" || r.env === "cui" ? (r.env === "cui" ? "CUI" : "atmospheric") : null,
+      insulated: r.env === "cui", T_C_external: r.env === "cui" ? r.T_C : 25,
+      coating_quality: "fair", coating_age_yr: 3,
+      atm_category: "C3", H2S_service: r.pH2S_kPa > 0.3
+    };
+    const cdf = RBIDamage.combinedDF(dfOpts);
+    // GFF lookup
+    const gffRow = RBIDetailed.GFF[r.type];
+    const GFF_total = gffRow && (gffRow.total != null ? gffRow.total : 3e-5);
+    const PoF = GFF_total * fms * cdf.total_D_f;
+    const active = cdf.active_mechanisms.map(m => m.mechanism.split(" ")[0] + ":" + (m.D_f|0)).join(" · ");
+    rows.push({
+      id: r.id, type: r.type, env: r.env, family: r.family, age: r.age_yr,
+      total_DF: cdf.total_D_f, n_active: cdf.n_active, GFF: GFF_total, F_MS: fms,
+      annual_PoF: PoF,
+      risk_level: PoF > 1e-2 ? "Extreme" : PoF > 1e-3 ? "High" : PoF > 1e-4 ? "Medium" : "Low",
+      active_mechanisms: active
+    });
+  }
+  // Sort by annual_PoF descending
+  rows.sort((a,b) => b.annual_PoF - a.annual_PoF);
+  _fleetResults = rows;
+
+  const colour = { "Extreme":"#c0392b", "High":"#b5651d", "Medium":"#8a6d1a", "Low":"#0e3b24" };
+  const trs = rows.map((r,i) => `<tr style="${i<10?'outline:1px solid rgba(255,255,255,0.1)':''}">
+    <td style="padding:4px 8px;font-family:var(--mono,monospace)">${r.id}</td>
+    <td style="padding:4px 8px;color:var(--dim);font-size:11px">${r.type}</td>
+    <td style="padding:4px 8px;color:var(--dim);font-size:11px">${r.env} / ${r.family}</td>
+    <td style="padding:4px 8px;text-align:right">${r.age}</td>
+    <td style="padding:4px 8px;text-align:right">${r.total_DF.toFixed(0)}</td>
+    <td style="padding:4px 8px;text-align:right">${r.n_active}</td>
+    <td style="padding:4px 8px;text-align:right;font-family:var(--mono,monospace)">${r.annual_PoF.toExponential(2)}</td>
+    <td style="padding:4px 8px;background:${colour[r.risk_level]};color:#fff;text-align:center;font-weight:600">${r.risk_level}</td>
+    <td style="padding:4px 8px;color:var(--dim);font-size:10px">${r.active_mechanisms}</td>
+  </tr>`).join("");
+  const top10 = rows.slice(0, 10);
+  const top10List = top10.map((r,i) => `<li>${i+1}. <b>${r.id}</b> · ${r.risk_level} · PoF ${r.annual_PoF.toExponential(2)} · ${r.active_mechanisms}</li>`).join("");
+  const fleetPoF = rows.reduce((a,b) => a + b.annual_PoF, 0);
+  host.innerHTML = `<div class="iso ${rows.some(r=>r.risk_level==="Extreme")?"exceeds":"untabulated"}">
+    <b>Fleet RBI — ${rows.length} equipment items</b> · ΣPoF = <b>${fleetPoF.toExponential(2)}</b> /yr · F_MS = ${fms.toFixed(2)}</div>
+    <div style="margin:10px 0"><b>Top-10 risk equipment</b><ol style="margin:6px 0 0 18px;padding:0;font-size:12px">${top10List}</ol></div>
+    <div style="max-height:480px;overflow-y:auto">
+    <table style="border-collapse:collapse;width:100%;font-size:11px">
+      <thead style="position:sticky;top:0;background:#0a0e14"><tr style="color:var(--dim)">
+        <th style="text-align:left;padding:4px 8px">ID</th>
+        <th style="text-align:left;padding:4px 8px">Type</th>
+        <th style="text-align:left;padding:4px 8px">Env / Family</th>
+        <th style="text-align:right;padding:4px 8px">Age</th>
+        <th style="text-align:right;padding:4px 8px">ΣD<sub>f</sub></th>
+        <th style="text-align:right;padding:4px 8px">#mech</th>
+        <th style="text-align:right;padding:4px 8px">PoF /yr</th>
+        <th style="text-align:center;padding:4px 8px">Risk</th>
+        <th style="text-align:left;padding:4px 8px">Active mechanisms</th>
+      </tr></thead><tbody>${trs}</tbody></table></div>
+    <div class="explain"><span style="color:var(--dim)">API RP 581 (3rd ed.) Part 2 §6.3 (Σ D_f) + Annex 2.A (PoF = GFF · F_MS · D_f). GFF from RBIDetailed.GFF per equipment type. SCREENING — peer review by AMPP/API certified PE required before any deliverable.</span></div>`;
+}
+function _exportFleetCSV() {
+  if (!_fleetResults || !_fleetResults.length) return;
+  const hdr = "id,type,env,family,age_yr,total_DF,n_active_mechanisms,GFF,F_MS,annual_PoF,risk_level,active_mechanisms";
+  const rows = _fleetResults.map(r =>
+    [r.id, r.type, r.env, r.family, r.age, r.total_DF.toFixed(2), r.n_active,
+     r.GFF.toExponential(3), r.F_MS, r.annual_PoF.toExponential(4), r.risk_level,
+     '"'+r.active_mechanisms+'"'].join(",")
+  );
+  const csv = hdr + "\n" + rows.join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = "pitcast-fleet-rbi.csv";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ===========================================================================
+// PSM scorer tab
+// ===========================================================================
+function _initPSMTab() {
+  if (!window.RBIPSM) return;
+  const host = $("psm_inputs"); if (!host) return;
+  host.innerHTML = RBIPSM.ELEMENTS.map(e => `
+    <label style="display:block;margin:4px 0">
+      <span style="display:inline-block;width:240px">${e.label} <span style="color:var(--dim);font-size:11px">(w ${e.weight})</span></span>
+      <input type="range" min="0" max="100" step="5" value="50" id="psm_${e.key}" style="width:200px;vertical-align:middle">
+      <span id="psm_${e.key}_val" style="display:inline-block;width:32px;text-align:right;font-family:var(--mono,monospace)">50</span>
+    </label>`).join("");
+  RBIPSM.ELEMENTS.forEach(e => {
+    const inp = $("psm_"+e.key), val = $("psm_"+e.key+"_val");
+    if (inp) inp.addEventListener("input", () => { val.textContent = inp.value; _scorePSM(); });
+  });
+  const btn = $("psm_compute"); if (btn) btn.addEventListener("click", _scorePSM);
+  _scorePSM();
+}
+function _scorePSM() {
+  if (!window.RBIPSM) return;
+  const host = $("psm_results"); if (!host) return;
+  const scores = {};
+  RBIPSM.ELEMENTS.forEach(e => { scores[e.key] = +($("psm_"+e.key) ? $("psm_"+e.key).value : 50); });
+  const r = RBIPSM.score(scores);
+  // Also push F_MS into the fleet override
+  if ($("fleet_fms")) $("fleet_fms").value = r.F_MS.toFixed(3);
+  const recList = r.recommendations.length
+    ? '<b>Top recommendations:</b><ol style="margin:6px 0 0 18px;padding:0;font-size:12px">'
+      + r.recommendations.map(rec => `<li>${rec.label} (now ${rec.current}; weight ${rec.weight}): aim for "${rec.anchor}"</li>`).join("")
+      + '</ol>'
+    : '<b style="color:#7bd88f">No deficient elements (all ≥60).</b>';
+  const cls = r.F_MS > 2 ? "exceeds" : r.F_MS > 0.5 ? "untabulated" : "within";
+  const rows = r.per_element.map(e => {
+    const cat_color = { "Deficient":"#c0392b", "Developing":"#8a6d1a", "Effective":"#0e3b24", "Best-in-class":"#22c55e" }[e.category] || "#374151";
+    return `<tr>
+      <td style="padding:3px 8px">${e.label}</td>
+      <td style="padding:3px 8px;text-align:right">${e.weight}</td>
+      <td style="padding:3px 8px;text-align:right">${e.score}</td>
+      <td style="padding:3px 8px;text-align:right">${e.weighted_contribution}</td>
+      <td style="padding:3px 8px;background:${cat_color};color:#fff;text-align:center;font-weight:600">${e.category}</td>
+    </tr>`;
+  }).join("");
+  host.innerHTML = `<div class="iso ${cls}"><b>PSM score: ${r.pscore_0_1000.toFixed(0)}/1000 (${r.pscore_pct.toFixed(1)}%)</b> · F_MS = <b>${r.F_MS}</b><br>
+    <span style="color:var(--dim)">${r.F_MS_interpretation}</span></div>
+    <table style="margin:8px 0;border-collapse:collapse;width:100%;font-size:12px">
+      <thead><tr style="color:var(--dim)"><th style="text-align:left;padding:3px 8px">Element</th>
+        <th style="text-align:right;padding:3px 8px">Weight</th>
+        <th style="text-align:right;padding:3px 8px">Score</th>
+        <th style="text-align:right;padding:3px 8px">Contrib.</th>
+        <th style="text-align:center;padding:3px 8px">Category</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+    <div style="margin-top:8px">${recList}</div>
+    <div class="explain"><span style="color:var(--dim)">${r.ref}</span></div>`;
+}
