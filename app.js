@@ -222,7 +222,7 @@ function renderAssess(){
       At ${svc.T} °C${svc.Cl>0?` / ${svc.Cl.toLocaleString()} ppm Cl⁻`:""}${svc.pH2S>=0.3?` / ${svc.pH2S} kPa H₂S`:""},
       the dominant risk is <b>${dom}</b>.${agedNote}
       <span style="color:var(--dim)"> Screening estimate · CPT = ASTM G48 (6% FeCl₃) PREN<sub>N30</sub> fit, chloride-adjusted ≈24 °C/decade (Abd El Meguid, Corros. Sci. 2007) — see limits below.</span>
-    </div>`;
+    </div>${gbox("CPT = 2.038·PREN<sub>N30</sub> − 32.73 (ASTM G48 / 6% FeCl₃ basis); P(pit)=P(CPT&lt;T<sub>service</sub>) via Student-t, df=n−2. PREN<sub>N30</sub>=Cr+3.3Mo+30N.", "Nyby 2021 Sci. Data 8:58 (CC-BY) · ASTM G48 · ISO 15156-3", "T2 · reproducible LOO MAE 6.58 °C (n=51) — node benchmark/run.js · VR/cpt.md")}`;
 }
 $("assessForm").addEventListener("input", renderAssess);
 
@@ -279,6 +279,17 @@ function buildCO2Presets(){ const el=$("co2Presets"); if(!el) return;
     el.querySelectorAll(".preset").forEach(x=>x.classList.remove("active")); b.classList.add("active"); renderCO2(); }); }
 function decompStr(d){ return Object.entries(d).filter(([k])=>k!=="formula")
   .map(([k,v])=>`${k} ${typeof v==="number"?(Math.abs(v)>=100?v.toFixed(0):v.toFixed(2)):v}`).join(" · ") || (d.formula||""); }
+// Glass-box: expandable governing equation + citation + validation tier. The
+// transparency layer commercial tools structurally can't ship (PLAN-differentiation P1).
+function gbox(eq, cite, tier){
+  return '<details class="gb" style="margin:8px 0;border:1px solid var(--line,#243042);border-radius:6px;background:rgba(255,255,255,.02)">'
+    + '<summary style="cursor:pointer;padding:7px 10px;font-size:12px;color:var(--dim);user-select:none">▸ equation, citation &amp; validation</summary>'
+    + '<div style="padding:0 10px 9px;font-size:12px;color:var(--dim);line-height:1.6">'
+    + '<div style="font-family:var(--mono,monospace);color:var(--ink)">' + eq + '</div>'
+    + '<div style="margin-top:5px">Cite: ' + cite + '</div>'
+    + (tier ? '<div style="margin-top:3px">Validation: ' + tier + '</div>' : '')
+    + '</div></details>';
+}
 function renderCO2(){
   if(!$("co2_results")||!window.CO2||!window.Charts) return;
   const gv=id=>$(id)?$(id).value:"";
@@ -316,6 +327,7 @@ function renderCO2(){
     <div class="chartwrap">${crT}</div>
     <div class="chartwrap">${crP}</div>
     <table><thead><tr><th>Model</th><th>CR</th><th>Decomposition / multipliers</th><th>Reference</th></tr></thead><tbody>${rows}</tbody></table>
+    ${gbox("DWM-1975: log CR=5.8−1710/T+0.67·log pCO₂. DWM-1995: resistance-in-series × F_pH·F_scale·F_glycol. NORSOK M-506: K_T·f_CO₂^0.62·(S/19)^x·f(pH). +NESC, FreeCorp. Report the spread, not one number.", "de Waard 1975 / 1995 · NORSOK M-506:2017 · Nyborg 2010 · Nesic 2007", "T2 · per-model MAE + envelope-coverage on cited cases — node benchmark/run.js · VR/co2.md")}
     <div class="explain"><b>Corrosion allowance (NORSOK basis):</b> ${al.uninhibited_CR_mmpy.toFixed(2)} mm/y → ${al.consumed_mm.toFixed(1)} mm consumed over ${al.designLifeYr} yr vs ${al.caMm} mm CA → <b>${al.verdict}</b>${al.ca_sufficient?"":`; required inhibitor efficiency <b>${al.required_inhibitor_efficiency_pct.toFixed(1)}%</b>${al.achievable?"":" — above sustainable field availability (~95%); reconsider a CRA or thicker CA"}`}.
       <span style="color:var(--dim)"> Screening, carbon steel, sweet service. The five models span ${r.spread.toFixed(0)}× — design to the conservative/relevant one. Sources: Corrosion 31 (1975) 177; NACE 95-128; NORSOK M-506:2017; Nyborg 2010; Nesic 2007.</span></div>
     <div class="explain"><b>Flow velocity (API&nbsp;RP&nbsp;14E):</b> ${o.velocity} m/s vs erosional limit V<sub>e</sub> = ${ev.Ve_continuous_ms.toFixed(1)} m/s (C=100, continuous) / ${ev.Ve_controlled_ms.toFixed(1)} m/s (C=200, corrosion-controlled) → <b style="color:${evCol}">${ev.status}</b>.
@@ -641,7 +653,7 @@ function renderIntegrity(){
     </div>
     <div class="explain"><b>Remaining life (uniform CR):</b> CR ${rl.CR_mmyr.toFixed(2)} mm/y${rl.inhibitorEff>0?(` × (1−η ${(rl.inhibitorEff*100).toFixed(0)}%) = ${rl.effective_CR_mmyr.toFixed(2)} mm/y eff`):""} → <b>${isFinite(rl.yearsToMinWT)?rl.yearsToMinWT.toFixed(1)+" yr"+(rl.yearsToMinWT<rl.designLifeYr?" (< design life)":""):"∞ (no corrosion)"}</b> to t<sub>min</sub> ${rl.tMin_mm} mm.
       ${!rl.ca_sufficient?` Required inhibitor efficiency for ${rl.designLifeYr} yr: <b>${(rl.required_inhibitor_efficiency*100).toFixed(0)}%</b>.`:` CA ${rl.CA_mm.toFixed(1)} mm sufficient for ${rl.designLifeYr} yr at this CR.`}
-      <span style="color:var(--dim)"> ${ff.ref} · ${rl.ref}</span></div>
+      <span style="color:var(--dim)"> ${ff.ref} · ${rl.ref}</span></div>${gbox("P<sub>f</sub> = σ<sub>f</sub>·(2t/D)·(1−d/t)/(1−(d/t)/M); Folias M=√(1+0.6275λ−0.003375λ²), λ=L²/(Dt). Mod-B31G uses 0.85·d·L effective area.", "ASME B31G-2012 · Kiefner &amp; Vieth 1989 (RSTRENG) · Folias 1965", "T2 · ASME B31G Appx B Ex 1 reproduced (P_safe 54.3 bar) — VR/b31g.md")}
     ${(()=>{ if(!window.CUI) return ""; const u=window.CUI.risk({material:gv("u_mat"),T_C:+gv("u_T"),insulation:gv("u_ins"),jacket:gv("u_jkt"),coating:gv("u_coat"),ambient:gv("u_amb"),ageYr:+gv("u_age"),cyclic:!!($("u_cyc")&&$("u_cyc").checked)});
       const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[u.level]||"within";
       const p = u.properties || {};
@@ -1552,7 +1564,8 @@ function renderMR0175(){
       (v.failure_reasons.length ? '<div style="margin-top:6px;color:#f87171"><b>Failure reasons:</b><ul style="margin:4px 0 0 18px;padding:0">' + v.failure_reasons.map(function(f){ return '<li>' + f + '</li>'; }).join('') + '</ul></div>' : '') +
       (v.alternative_recommendations.length ? '<div style="margin-top:6px"><b>Alternatives:</b><ul style="margin:4px 0 0 18px;padding:0">' + v.alternative_recommendations.map(function(a){ return '<li>' + a + '</li>'; }).join('') + '</ul></div>' : '') +
     '</div>' +
-    '<div class="explain"><span style="color:var(--dim)">' + v.citations.join(' · ') + '</span></div>';
+    '<div class="explain"><span style="color:var(--dim)">' + v.citations.join(' · ') + '</span></div>'
+    + gbox("Decision tree (not a formula): family (UNS + Schaeffler/WRC) → Annex A use-without-testing envelope (T, pH₂S, Cl) for CRAs, OR ISO 15156-2 Fig.1 Region (pH₂S × pH) for C/low-alloy steel → manufacturing gates (HRC, cold-work, PREN).", "ANSI/NACE MR0175-2021 / ISO 15156:2020 Parts 1-3 + Technical Circulars", "T2 · decision-tree verified (node mr0175.js); 18/41 Annex envelopes flagged needs_review — VR/mr0175.md");
 }
 if ($("mr0175Form")) $("mr0175Form").addEventListener("input", renderMR0175);
 

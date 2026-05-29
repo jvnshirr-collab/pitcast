@@ -782,6 +782,20 @@ D-002,95,2.1
       <div class="stat"><div class="sv">n=51</div><div class="sk">leave-one-out CPT points<span class="sn">Nyby 2021 · fit R² 0.83 · RMSE 8.5 °C</span></div></div>
       <div class="stat"><div class="sv">250</div><div class="sk">cited material options<span class="sn">8 industry-grade dropdowns</span></div></div>
     </div>
+    <div style="margin:14px 0;padding:12px 14px;border:1px solid rgba(45,212,191,.3);border-radius:8px;background:rgba(45,212,191,.05)">
+      <b style="color:#2dd4bf">Reproducible open benchmark</b> — run <code>node benchmark/run.js</code> against cited in-repo
+      data; it regenerates <code>benchmark/REPORT.md</code>. A transparent alternative to the closed validation decks
+      of commercial corrosion tools.
+      <ul style="margin:8px 0 0 18px;padding:0;font-size:13px;line-height:1.65">
+        <li><b>CPT (pitting):</b> leave-one-out MAE <b>6.58 °C</b>, RMSE 8.49 °C (n=51, FeCl₃/G48); fit slope 2.0382,
+          R² 0.834 — at/below the G48 lab-to-lab scatter.</li>
+        <li><b>CO₂ corrosion:</b> 5-model ensemble vs cited cases — NORSOK MAE 2.16, de&nbsp;Waard-95 MAE 2.8 mm/y;
+          envelope-coverage reported honestly (protective films can push real rates below every model).</li>
+        <li><b>Corroded-pipe FFS:</b> ASME B31G-2012 Appendix B Ex&nbsp;1 reproduced exactly (P<sub>safe</sub> 54.3 bar).</li>
+      </ul>
+      <span class="muted" style="font-size:12px">CO₂ is a small cited spot-check (indicative, not definitive); the growth
+      path is more cited measured cases — see <code>benchmark/DATASET-SURVEY.md</code>.</span>
+    </div>
     <p class="muted">Each capability is validated against its standard's <b>worked example</b> where one
        exists: ASME B31G Appendix B Ex 1 (54.3 / 55.6 bar P<sub>safe</sub>); NACE SP0169 Appendix-A groundbed
        (13.72 Ω); DNV-RP-B401 1-km × 12-in offshore pipeline (4,754 kg Al-Zn-In); LaQue marine 316L bolt in
@@ -858,7 +872,7 @@ D-002,95,2.1
 <script src="storage.js?v=1"></script>
 <script src="projects-ui.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=46"></script>
+<script src="app.js?v=47"></script>
 <script>
   // Wait for mr0175 annexes to load (async fetch)
   if (typeof window !== "undefined") {
