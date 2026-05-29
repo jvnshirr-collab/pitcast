@@ -1,0 +1,45 @@
+{
+  "title": "PitCast: an open, reproducible, uncertainty-quantified corrosion screening tool",
+  "upload_type": "software",
+  "description": "<p>PitCast is an open-source (Apache-2.0), browser-based corrosion-engineering screening tool, distributed with a fully reproducible benchmark built only on cited, openly redistributable measured data. It is a screening-grade research and portfolio artifact &mdash; it is <strong>not</strong> validated for final design, an industrial platform, or a substitute for alloy- or heat-specific qualification testing.</p><p>Key features:</p><ul><li>A pitting critical-temperature (CPT) correlation (PREN_N30 = Cr + 3.3&middot;Mo + 30&middot;N) recalibrated on the open Nyby et al. (2021) dataset, with a leave-one-out MAE of 6.58 &deg;C (RMSE 8.49 &deg;C, n=51, ASTM G48 / FeCl&#8323; basis) and a Student-t prediction interval for pitting probability.</li><li>A five-model CO&#8322; corrosion ensemble (de Waard&ndash;Milliams 1975, de Waard 1995, NORSOK M-506:2017, NESC/Cassandra, Multicorp/FreeCorp) with an explicit model-disagreement (envelope) view that exposes where single-model point estimates are unsafe.</li><li>Glass-box outputs: every number surfaces its governing equation, primary citation, calibration provenance, and uncertainty.</li><li>A single-command reproducible benchmark (<code>node benchmark/run.js</code>) that regenerates all reported figures from cited in-repository data &mdash; no synthetic or fabricated points.</li><li>Per-engine verification &amp; validation records and a standards-edition currency register.</li></ul><p>The contribution is not greater raw accuracy than commercial tools, but a transparent, reproducible, uncertainty-quantified reference that closed tools structurally cannot provide.</p>",
+  "license": "Apache-2.0",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Hasanov, Javanshir",
+      "affiliation": "Middle East Technical University (METU), Department of Metallurgical & Materials Engineering [confirm affiliation]"
+    }
+  ],
+  "keywords": [
+    "corrosion",
+    "corrosion engineering",
+    "pitting corrosion",
+    "critical pitting temperature",
+    "CPT",
+    "PREN",
+    "CO2 corrosion",
+    "sweet corrosion",
+    "materials selection",
+    "corrosion-resistant alloys",
+    "stainless steel",
+    "open benchmark",
+    "reproducible research",
+    "uncertainty quantification",
+    "open-source software"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://pitcast.austenite.org",
+      "relation": "isIdenticalTo",
+      "scheme": "url",
+      "resource_type": "software"
+    },
+    {
+      "identifier": "10.6084/m9.figshare.13038257",
+      "relation": "references",
+      "scheme": "doi",
+      "resource_type": "dataset"
+    }
+  ],
+  "notes": "Calibration data: Nyby, C. et al., Electrochemical metrics for corrosion resistant alloys, Scientific Data 8, 58 (2021), CC-BY, dataset DOI 10.6084/m9.figshare.13038257. All benchmark cases carry a primary citation; no synthetic or fabricated data is used. Reproduce all reported figures with 'node benchmark/run.js'."
+}
