@@ -201,6 +201,7 @@ function renderAssess(){
       <div class="metric"><div class="k">CPT</div><div class="val">${r.cptCapped?"≥120":r.cpt.toFixed(0)}<span class="u"> °C</span></div><div class="u">${r.cptCapped?"immune (aqueous)":"±"+ci.toFixed(0)+" (90%)"}</div></div>
       <div class="metric"><div class="k">Rel. cost</div><div class="val">${r.cost.toFixed(2)}<span class="u">×</span></div><div class="u">304L=1</div></div>
     </div>
+    ${oos ? "" : `<div style="margin:8px 0;padding:7px 10px;font-size:12px;line-height:1.5;color:var(--dim);border-left:3px solid #22c55e;background:rgba(34,197,94,.06);border-radius:4px">✓ CPT model validated — leave-one-out MAE 6.58 °C on n=51 cited records (reproducible: <code>node benchmark/run.js</code>). The ±${ci.toFixed(0)} °C above is the 90% prediction band.</div>`}
     <div class="bars">
       ${bar("Pitting  P(CPT < service T)", r.pPit)}
       ${bar("Chloride-SCC", r.pScc)}
@@ -307,6 +308,10 @@ function renderCO2(){
   $("co2_results").innerHTML=`
     <div class="verdict ${vb}"><div class="gauge">${r.crMax.toFixed(1)}<span class="u"> mm/y</span></div>
       <div class="vtext"><b>${r.verdict}</b><div>${r.regime.regime.toUpperCase()} regime · in-situ pH ${r.pH_insitu.toFixed(2)} · FeCO₃ ${r.feco3_protective?"protective":"active"} (ST ${r.feco3_st.toExponential(1)}) · model spread ${r.spread.toFixed(0)}×</div></div></div>
+    <div style="margin:10px 0;padding:10px 12px;border:1px solid ${r.spread>=3?"rgba(245,158,11,.45)":"rgba(56,189,248,.35)"};border-radius:8px;background:${r.spread>=3?"rgba(245,158,11,.07)":"rgba(56,189,248,.05)"}">
+      <div style="font-size:12px;color:var(--dim)">5-model ensemble — <b style="color:var(--ink)">disagreement view</b></div>
+      <div style="font-size:22px;font-weight:700;margin:2px 0">${r.crMin.toFixed(r.crMin<1?3:2)} – ${r.crMax.toFixed(r.crMax<1?3:2)} <span style="font-size:12px;font-weight:400;color:var(--dim)">mm/y · spread ${r.spread.toFixed(0)}×</span></div>
+      <div style="font-size:12px;color:var(--dim);line-height:1.5">${r.spread>=3?"⚠ Models disagree strongly — read the band as your uncertainty, not a single number. Where a protective FeCO₃/FeS film dominates, even the lowest model can read high (see benchmark envelope-coverage, About).":"Models broadly agree — the band is your uncertainty range."}</div></div>
     <div class="blab2">Model verdicts (mm/y)</div>${bars}
     <div class="chartwrap">${crT}</div>
     <div class="chartwrap">${crP}</div>

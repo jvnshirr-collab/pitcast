@@ -721,12 +721,13 @@ D-002,95,2.1
   <h2>How it works</h2>
   <p class="muted" style="max-width:760px;margin:0 auto 18px;text-align:center">
     Thirteen cited engines across four engineering workflows — every output traceable to a primary standard
-    (ASME · NACE · DNV · ISO · API · ASTM · MIL-STD). 5,500+ in-Chrome assertions verify known-answer
-    worked examples, monotonicity invariants, and boundary gates against published values.</p>
+    (ASME · NACE · DNV · ISO · API · ASTM · MIL-STD). Credibility is reported by <b>specific reproducible
+    metrics</b> — e.g. CPT leave-one-out MAE 6.58&nbsp;°C, reproduced by <code>node&nbsp;benchmark/run.js</code> on
+    cited measured data — backed by per-engine worked-example tests, not an aggregate assertion count.</p>
   <div class="cols">
     <div>
       <b>① CRA selection &amp; pitting</b>
-      <p>Composition → PREN<sub>N16</sub> → CPT (Nyby 2021 LOO-calibrated, MAE 6.6 °C) → P(pit) with credible
+      <p>Composition → PREN<sub>N16</sub> → CPT (Nyby 2021 LOO-calibrated, MAE 6.58 °C) → P(pit) with credible
         interval. σ-phase and sensitization from thermal/weld history; effective-local-PREN coupling degrades
         CPT — the microstructure-aware link no off-the-shelf tool carries. Cl-SCC + sour SSC envelopes per
         ISO 15156-3. Multi-grade compare; cost-aware "cheapest grade that clears."
@@ -776,9 +777,9 @@ D-002,95,2.1
   <div class="valid">
     <h3 class="validh">Validation &amp; accuracy</h3>
     <div class="stats">
-      <div class="stat"><div class="sv">5,500+</div><div class="sk">in-Chrome assertions<span class="sn">across 13 capabilities</span></div></div>
+      <div class="stat"><div class="sv">6.58&nbsp;°C</div><div class="sk">CPT LOO error, <b>reproduced</b><span class="sn">node benchmark/run.js · cited data</span></div></div>
       <div class="stat"><div class="sv">100+</div><div class="sk">cited primary sources<span class="sn">ASME · NACE · DNV · ISO · API · ASTM</span></div></div>
-      <div class="stat"><div class="sv">6.6&nbsp;°C</div><div class="sk">CPT LOO mean abs. error<span class="sn">Nyby 2021, n=51, RMSE 8.5 °C</span></div></div>
+      <div class="stat"><div class="sv">n=51</div><div class="sk">leave-one-out CPT points<span class="sn">Nyby 2021 · fit R² 0.83 · RMSE 8.5 °C</span></div></div>
       <div class="stat"><div class="sv">250</div><div class="sk">cited material options<span class="sn">8 industry-grade dropdowns</span></div></div>
     </div>
     <p class="muted">Each capability is validated against its standard's <b>worked example</b> where one
@@ -823,7 +824,7 @@ D-002,95,2.1
   </div>
 
   <p class="warn">⚠ Screening / research-grade. The CRA-selection CPT correlation is statistically
-     calibrated (Nyby 2021 LOO MAE 6.6 °C — close to the intrinsic lab-to-lab scatter of CPT measurement).
+     calibrated (Nyby 2021 LOO MAE 6.58 °C, reproduced by benchmark/run.js — close to the intrinsic lab-to-lab scatter of CPT measurement).
      Other engines reproduce their cited standard's worked examples within ~2% but are flagged as screening
      where vendor-batch polarisation data, full-table damage factors (e.g. API 581 detailed DFM tables), or
      site-specific environmental measurements would normally be used in detailed design.
@@ -857,7 +858,7 @@ D-002,95,2.1
 <script src="storage.js?v=1"></script>
 <script src="projects-ui.js?v=1"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=45"></script>
+<script src="app.js?v=46"></script>
 <script>
   // Wait for mr0175 annexes to load (async fetch)
   if (typeof window !== "undefined") {
