@@ -1,5 +1,11 @@
 # PitCast — Tier-3 Industry-Readiness Plan
 
+> **⚠ SCOPE FREEZE (2026-05-29 → until P3 of `PLAN-differentiation.md` ships).**
+> **No new engines or capabilities.** Differentiation = **depth, transparency, and
+> validation** of what already exists, not breadth. The biggest competitor is the
+> urge to add a 14th engine. New-feature gaps below stay parked behind P0–P3 of the
+> differentiation plan. Corrosion-only scope still applies.
+
 **Audience**: working PE corrosion / mechanical-integrity engineers + the PitCast development team.
 **Purpose**: a primary-source-grounded engineering plan to close the ten gaps that separate today's PitCast (Tier-2 screening tool) from a defensible Tier-3 detailed-design-grade tool an engineer can cite in a stamped deliverable.
 **Method**: each gap was researched via parallel agents pulling from published standards, peer-reviewed papers, vendor data sheets, and recognized industry handbooks. Every algorithm, formula, and effort estimate carries a citation.
