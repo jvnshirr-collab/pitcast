@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use PitCast, please cite it as below."
+title: "PitCast — open, reproducible, uncertainty-quantified corrosion screening console"
+abstract: >-
+  Browser-based, open-source corrosion-engineering screening tool with a reproducible
+  benchmark on cited measured data. Pitting CPT correlation (Nyby 2021, leave-one-out
+  MAE 6.58 C), five-model CO2 ensemble with an explicit model-disagreement view, and
+  per-engine verification & validation records.
+type: software
+authors:
+  - family-names: Hasanov
+    given-names: Javanshir
+license: Apache-2.0
+url: "https://pitcast.austenite.org"
+# repository-code: "https://github.com/<owner>/<repo>"   # TODO: confirm public repo URL
+version: "v49"
+date-released: 2026-05-29
+keywords:
+  - corrosion
+  - pitting
+  - critical pitting temperature
+  - CO2 corrosion
+  - materials selection
+  - open benchmark
+  - uncertainty quantification
+# doi: "10.5281/zenodo.XXXXXXX"   # TODO: add after the Zenodo release is minted (P3-3b)
