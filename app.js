@@ -695,7 +695,7 @@ function renderIntegrity(){
       mtx+="</table>";
       return `<div class="iso ${cls}"><b>RBI screen — ${rs.riskLevel.toUpperCase()}</b> · cell ${rs.CoF}${rs.PoF}<br>
         PoF=<b>${rs.PoF}</b> · CoF=<b>${rs.CoF}</b> · driver ${rs.driver.toFixed(2)} (DF ${rs.damageFactor.toFixed(2)} / remaining margin ${(rs.remainingMargin*100).toFixed(0)}%).
-        Recommended inspection interval: <b>${rs.inspectionInterval}</b>.${mtx}</div>
+        Recommended inspection interval: <b>${rs.inspectionInterval}</b>.${mtx}<div style="margin-top:6px;font-size:11px;color:#fbbf24">⚠ Screening / research-grade · API RP 581 3rd-ed (2016) basis (see STANDARDS.md — 4th-ed 2025 delta). Corrosion-driven RBI screen, not a full RBI study.</div></div>
         <div class="explain"><span style="color:var(--dim)">${rs.ref}</span></div>`;})()}
     ${(()=>{ if(!window.RBIDamage) return "";
       const env = gv("rd_env") || "generic";
