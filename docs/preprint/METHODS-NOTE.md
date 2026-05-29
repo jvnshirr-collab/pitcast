@@ -195,11 +195,11 @@ gives, on the FeCl₃/G48 basis:
 | Full-sample fit (FeCl₃) | slope 2.0382, intercept −32.731, R² 0.834 |
 | CPT records in dataset / without composition | 117 / 0 |
 
-For context, the inter-laboratory reproducibility of the ASTM G48 test is itself on
-the order of ±10–15 °C `[AUTHOR TO ADD: primary citation for the G48 inter-lab
-reproducibility figure — stated in the engine V&V record but not yet sourced to a
-specific round-robin study]`, so a 6.58 °C leave-one-out error places the model at
-or below the scatter of the measurement it predicts. The near-zero bias (−0.01 °C)
+For context, the ASTM G48 CPT test is itself known to have poor inter-laboratory
+reproducibility — a round-robin by the Corrosion Committee of the Austrian Society of
+Metallurgy found CPT repeatability and reproducibility to be "unsatisfactory" [25] —
+so a 6.58 °C leave-one-out error places the model at or below the scatter of the
+measurement it predicts. The near-zero bias (−0.01 °C)
 indicates the correlation is well-centred. Mixing electrochemical (1 M NaCl) CPT
 data with the FeCl₃ basis inflates the all-method leave-one-out MAE to 13.33 °C
 (n = 117), which quantifies the importance of a consistent test basis and justifies
@@ -505,6 +505,7 @@ Verification and Validation.* IEEE, 2016. *(V&V framing; cited in `docs/vv/SVVP.
 [24] `[AUTHOR TO ADD: Journal of Open Source Software reference — Smith et al.,
 JOSS — if submitting there and a citation to the journal/process is desired.]`
 
-[25] `[AUTHOR TO ADD: primary citation for the ASTM G48 inter-laboratory
-reproducibility (±10–15 °C) figure cited in §3.1 — currently asserted in
-docs/vv/VR/cpt.md without a sourced round-robin reference.]`
+[25] Zitter, H. Evaluation of CPT values determined by ASTM G48 practice — report on
+round-robin tests of the Corrosion Committee of the Austrian Society of Metallurgy.
+*Materials and Corrosion* **53**(1), 37 (2002).
+DOI: 10.1002/1521-4176(200201)53:1<37::AID-MACO37>3.0.CO;2-B.
