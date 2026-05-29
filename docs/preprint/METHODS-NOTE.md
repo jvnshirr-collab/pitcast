@@ -497,9 +497,10 @@ in the repository.)*
 (HP/HT well case). NACE Corrosion Conference, Paper 07522 (2007). *(Source:
 `data/validations.json`; NACE conference paper, no DOI.)*
 
-[23] `[AUTHOR TO ADD: ASME V&V 10 (Guide for Verification and Validation in
-Computational Solid Mechanics) and/or IEEE Std 1012 — referenced as the V&V framing
-in PLAN-differentiation.md, but no full bibliographic citation exists in the repo.]`
+[23] ASME. *ASME V&V 10-2019: Standard for Verification and Validation in
+Computational Solid Mechanics.* American Society of Mechanical Engineers, 2019.
+IEEE. *IEEE Std 1012-2016: IEEE Standard for System, Software, and Hardware
+Verification and Validation.* IEEE, 2016. *(V&V framing; cited in `docs/vv/SVVP.md`.)*
 
 [24] `[AUTHOR TO ADD: Journal of Open Source Software reference — Smith et al.,
 JOSS — if submitting there and a citation to the journal/process is desired.]`
