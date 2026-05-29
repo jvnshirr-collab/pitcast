@@ -1,0 +1,649 @@
+{
+  "generated_utc": "2026-05-29T03:34:21.531Z",
+  "about": "PitCast reproducible open benchmark v0 — built only on cited in-repo data.",
+  "cpt_leave_one_out": {
+    "basis": "ASTM G48-type FeCl3 immersion (headline); all-method LOO shown for transparency",
+    "n_cpt_records": 117,
+    "n_no_composition": 0,
+    "n_points_fecl3": 51,
+    "n_points_all_methods": 117,
+    "full_sample_fit_fecl3": {
+      "slope": 2.0382,
+      "intercept": -32.731,
+      "r2": 0.834
+    },
+    "published_fit": {
+      "slope": 2.038176,
+      "intercept": -32.730883,
+      "note": "pitcast.js CPT constants (n=51)"
+    },
+    "loo_fecl3": {
+      "MAE_C": 6.58,
+      "RMSE_C": 8.49,
+      "bias_C": -0.01
+    },
+    "loo_all_methods": {
+      "n": 117,
+      "MAE_C": 13.33,
+      "RMSE_C": 16.16,
+      "bias_C": -0.01
+    },
+    "parity": [
+      {
+        "code": "S31726",
+        "pren_n30": 37.19,
+        "measured_C": 32.2,
+        "loo_resid_C": -11.1
+      },
+      {
+        "code": "S31803",
+        "pren_n30": 39.06,
+        "measured_C": 37.5,
+        "loo_resid_C": -9.6
+      },
+      {
+        "code": "S32550",
+        "pren_n30": 44.05,
+        "measured_C": 62.3,
+        "loo_resid_C": 5.5
+      },
+      {
+        "code": "N08926",
+        "pren_n30": 45.8,
+        "measured_C": 67.5,
+        "loo_resid_C": 7.2
+      },
+      {
+        "code": "S32050",
+        "pren_n30": 50.96,
+        "measured_C": 88.1,
+        "loo_resid_C": 18.4
+      },
+      {
+        "code": "S31266",
+        "pren_n30": 57.3,
+        "measured_C": 100.9,
+        "loo_resid_C": 19.5
+      },
+      {
+        "code": "N06625",
+        "pren_n30": 65.55,
+        "measured_C": 83.1,
+        "loo_resid_C": -23.6
+      },
+      {
+        "code": null,
+        "pren_n30": 33.93,
+        "measured_C": 27.6,
+        "loo_resid_C": -9
+      },
+      {
+        "code": null,
+        "pren_n30": 34.46,
+        "measured_C": 27.5,
+        "loo_resid_C": -10.2
+      },
+      {
+        "code": null,
+        "pren_n30": 36.24,
+        "measured_C": 27.5,
+        "loo_resid_C": -13.9
+      },
+      {
+        "code": null,
+        "pren_n30": 36.75,
+        "measured_C": 40.2,
+        "loo_resid_C": -2
+      },
+      {
+        "code": "304",
+        "pren_n30": 18.24,
+        "measured_C": 3.8,
+        "loo_resid_C": -0.7
+      },
+      {
+        "code": "304",
+        "pren_n30": 19,
+        "measured_C": 8.9,
+        "loo_resid_C": 3.2
+      },
+      {
+        "code": "321",
+        "pren_n30": 19.65,
+        "measured_C": 8.8,
+        "loo_resid_C": 1.6
+      },
+      {
+        "code": "316L",
+        "pren_n30": 25.15,
+        "measured_C": 23.8,
+        "loo_resid_C": 5.5
+      },
+      {
+        "code": "8427-1",
+        "pren_n30": 28.62,
+        "measured_C": 26.3,
+        "loo_resid_C": 0.7
+      },
+      {
+        "code": "8427-2",
+        "pren_n30": 30.32,
+        "measured_C": 26.3,
+        "loo_resid_C": -2.9
+      },
+      {
+        "code": "7579-1",
+        "pren_n30": 31.25,
+        "measured_C": 26.2,
+        "loo_resid_C": -4.9
+      },
+      {
+        "code": "317L",
+        "pren_n30": 29.26,
+        "measured_C": 28.9,
+        "loo_resid_C": 2.1
+      },
+      {
+        "code": "8427-3",
+        "pren_n30": 30.96,
+        "measured_C": 31.3,
+        "loo_resid_C": 1
+      },
+      {
+        "code": "8427-4",
+        "pren_n30": 32.43,
+        "measured_C": 33.8,
+        "loo_resid_C": 0.5
+      },
+      {
+        "code": "7579-2",
+        "pren_n30": 35.85,
+        "measured_C": 41.4,
+        "loo_resid_C": 1
+      },
+      {
+        "code": "G1111",
+        "pren_n30": 36.29,
+        "measured_C": 38.9,
+        "loo_resid_C": -2.4
+      },
+      {
+        "code": "7579-3",
+        "pren_n30": 40.19,
+        "measured_C": 49,
+        "loo_resid_C": -0.2
+      },
+      {
+        "code": "7579-4",
+        "pren_n30": 44.39,
+        "measured_C": 56.4,
+        "loo_resid_C": -1.4
+      },
+      {
+        "code": "8428-1",
+        "pren_n30": 33.39,
+        "measured_C": 26.2,
+        "loo_resid_C": -9.3
+      },
+      {
+        "code": "8428-2",
+        "pren_n30": 34.24,
+        "measured_C": 26.2,
+        "loo_resid_C": -11.1
+      },
+      {
+        "code": "7580-1",
+        "pren_n30": 34.9,
+        "measured_C": 31.3,
+        "loo_resid_C": -7.3
+      },
+      {
+        "code": "8428-3",
+        "pren_n30": 35.46,
+        "measured_C": 28.8,
+        "loo_resid_C": -11
+      },
+      {
+        "code": "8428-4",
+        "pren_n30": 36.38,
+        "measured_C": 31.3,
+        "loo_resid_C": -10.4
+      },
+      {
+        "code": "7580-2",
+        "pren_n30": 39.78,
+        "measured_C": 41.3,
+        "loo_resid_C": -7.2
+      },
+      {
+        "code": "7580-3",
+        "pren_n30": 42.48,
+        "measured_C": 51.4,
+        "loo_resid_C": -2.6
+      },
+      {
+        "code": "Alloy B",
+        "pren_n30": 35.8,
+        "measured_C": 51.4,
+        "loo_resid_C": 11.3
+      },
+      {
+        "code": "7580-4",
+        "pren_n30": 47.97,
+        "measured_C": 61.4,
+        "loo_resid_C": -3.9
+      },
+      {
+        "code": "7581-1",
+        "pren_n30": 30.27,
+        "measured_C": 28.8,
+        "loo_resid_C": -0.2
+      },
+      {
+        "code": "7581-2",
+        "pren_n30": 34.42,
+        "measured_C": 36.3,
+        "loo_resid_C": -1.2
+      },
+      {
+        "code": "Alloy C",
+        "pren_n30": 34.05,
+        "measured_C": 41.3,
+        "loo_resid_C": 4.7
+      },
+      {
+        "code": "Alloy A",
+        "pren_n30": 33.5,
+        "measured_C": 44,
+        "loo_resid_C": 8.6
+      },
+      {
+        "code": "7582-1",
+        "pren_n30": 30.5,
+        "measured_C": 38.8,
+        "loo_resid_C": 9.6
+      },
+      {
+        "code": "7582-2",
+        "pren_n30": 34.85,
+        "measured_C": 46.5,
+        "loo_resid_C": 8.4
+      },
+      {
+        "code": "8429-1",
+        "pren_n30": 28.3,
+        "measured_C": 33.6,
+        "loo_resid_C": 9
+      },
+      {
+        "code": "8429-2",
+        "pren_n30": 29.08,
+        "measured_C": 33.6,
+        "loo_resid_C": 7.3
+      },
+      {
+        "code": "8430-2",
+        "pren_n30": 34.04,
+        "measured_C": 36.2,
+        "loo_resid_C": -0.5
+      },
+      {
+        "code": "8430-3",
+        "pren_n30": 35.16,
+        "measured_C": 41.2,
+        "loo_resid_C": 2.3
+      },
+      {
+        "code": "8426",
+        "pren_n30": 45.31,
+        "measured_C": 74.1,
+        "loo_resid_C": 15.1
+      },
+      {
+        "code": "7995",
+        "pren_n30": 46.18,
+        "measured_C": 73.2,
+        "loo_resid_C": 12.4
+      },
+      {
+        "code": null,
+        "pren_n30": 34.9,
+        "measured_C": 31.3,
+        "loo_resid_C": -7.3
+      },
+      {
+        "code": null,
+        "pren_n30": 47.97,
+        "measured_C": 61.3,
+        "loo_resid_C": -4
+      },
+      {
+        "code": null,
+        "pren_n30": 28.46,
+        "measured_C": 28.8,
+        "loo_resid_C": 3.6
+      },
+      {
+        "code": null,
+        "pren_n30": 33.38,
+        "measured_C": 43.8,
+        "loo_resid_C": 8.6
+      },
+      {
+        "code": null,
+        "pren_n30": 40.97,
+        "measured_C": 51.3,
+        "loo_resid_C": 0.5
+      }
+    ]
+  },
+  "cpt_validation_spotcheck": {
+    "cases": [
+      {
+        "case": "304 stainless - CPT in ferric chloride",
+        "alloy": "304",
+        "basis": "G48/FeCl3 (on-basis)",
+        "measured_C": 3.8,
+        "predicted_G48_C": 8,
+        "delta_C": 4.2,
+        "source": "Brigham R.J., Tozer E.W., Corrosion 30 (1974) 161",
+        "on_basis": true
+      },
+      {
+        "case": "316L stainless - CPT in ferric chloride",
+        "alloy": "316",
+        "basis": "G48/FeCl3 (on-basis)",
+        "measured_C": 23.75,
+        "predicted_G48_C": 19.1,
+        "delta_C": -4.7,
+        "source": "Brigham R.J., Tozer E.W., Corrosion 30 (1974) 161",
+        "on_basis": true
+      },
+      {
+        "case": "317L stainless - CPT in ferric chloride",
+        "alloy": "317",
+        "basis": "G48/FeCl3 (on-basis)",
+        "measured_C": 28.9,
+        "predicted_G48_C": 30.6,
+        "delta_C": 1.7,
+        "source": "Brigham R.J., Tozer E.W., Corrosion 30 (1974) 161",
+        "on_basis": true
+      },
+      {
+        "case": "904L (N08904) - CPT in 1 M NaCl",
+        "alloy": "904L",
+        "basis": "electrochemical NaCl (off-basis)",
+        "measured_C": 54.5,
+        "predicted_G48_C": 40,
+        "delta_C": -14.5,
+        "source": "Sun Y.T., Wang J.M., Jiang Y.M., Li J., Materials and Corrosion 69 (2018) 44",
+        "on_basis": false
+      },
+      {
+        "case": "254 SMO (S31254, 6Mo) - CPT in 1 M NaCl",
+        "alloy": "254 SMO",
+        "basis": "electrochemical NaCl (off-basis)",
+        "measured_C": 86.49,
+        "predicted_G48_C": 61.3,
+        "delta_C": -25.2,
+        "source": "Sun Y.T., Wang J.M., Jiang Y.M., Li J., Materials and Corrosion 69 (2018) 44",
+        "on_basis": false
+      },
+      {
+        "case": "2205 (S31803/S32205) duplex - CPT in acidified ferric chloride",
+        "alloy": "2205",
+        "basis": "G48/FeCl3 (on-basis)",
+        "measured_C": 40,
+        "predicted_G48_C": 43.4,
+        "delta_C": 3.4,
+        "source": "Hoseinpoor M., Momeni M., Moayed M.H., Davoodi A., Corrosion Sci. 80 (2014) 197",
+        "on_basis": true
+      }
+    ],
+    "on_basis_MAE_C": 3.49
+  },
+  "co2_ensemble": {
+    "n_cases_total": 5,
+    "n_cases_in_scope_cs": 3,
+    "envelope_coverage_in_scope": 0.33,
+    "per_model_error_in_scope": [
+      {
+        "id": "DWM-1975",
+        "MAE_mmpy": 722.11,
+        "RMSE_mmpy": 1218.13,
+        "bias_mmpy": 722.11
+      },
+      {
+        "id": "DWM-1995",
+        "MAE_mmpy": 2.8,
+        "RMSE_mmpy": 3.35,
+        "bias_mmpy": 2.8
+      },
+      {
+        "id": "NORSOK",
+        "MAE_mmpy": 2.16,
+        "RMSE_mmpy": 2.71,
+        "bias_mmpy": 1.55
+      },
+      {
+        "id": "NESC",
+        "MAE_mmpy": 9.85,
+        "RMSE_mmpy": 11.94,
+        "bias_mmpy": 9.85
+      },
+      {
+        "id": "FreeCorp",
+        "MAE_mmpy": 153.86,
+        "RMSE_mmpy": 232.44,
+        "bias_mmpy": 153.86
+      }
+    ],
+    "cases": [
+      {
+        "case": "Nesic 2007 - 5% CO2 flow-loop at 60 C",
+        "scope": "cs_aqueous",
+        "note": null,
+        "measured_mmpy": 2,
+        "uncertainty_mmpy": 0.6,
+        "ensemble_min_mmpy": 1.09,
+        "ensemble_max_mmpy": 13.66,
+        "spread_x": 12.5,
+        "measured_in_envelope": true,
+        "best_model": "NORSOK",
+        "best_model_cr_mmpy": 1.09,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 13.66,
+            "err_mmpy": 11.66
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 4.38,
+            "err_mmpy": 2.38
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 1.09,
+            "err_mmpy": -0.91
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 3.47,
+            "err_mmpy": 1.47
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 12.3,
+            "err_mmpy": 10.3
+          }
+        ],
+        "source": "Nesic S., Corrosion Sci. 49 (2007) 4308; Ohio U flow-loop"
+      },
+      {
+        "case": "Tengiz (KZ) sour-sweet field - Kahyarian 2017",
+        "scope": "cs_aqueous",
+        "note": "sour-sweet; FeS co-film usually lowers the sweet-model rate",
+        "measured_mmpy": 0.55,
+        "uncertainty_mmpy": 0.25,
+        "ensemble_min_mmpy": 1.64,
+        "ensemble_max_mmpy": 52.76,
+        "spread_x": 32.1,
+        "measured_in_envelope": false,
+        "best_model": "NORSOK",
+        "best_model_cr_mmpy": 1.64,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 45.88,
+            "err_mmpy": 45.33
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 5.78,
+            "err_mmpy": 5.23
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 1.64,
+            "err_mmpy": 1.09
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 18.56,
+            "err_mmpy": 18.01
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 52.76,
+            "err_mmpy": 52.21
+          }
+        ],
+        "source": "Kahyarian A., Singer M., Nesic S., J. Nat. Gas Sci. Eng. 41 (2017) 14"
+      },
+      {
+        "case": "Top-of-line corrosion - Singer 2017",
+        "scope": "tlc",
+        "note": "top-of-line condensing water; bulk flowline models are not TLC models",
+        "measured_mmpy": 3.2,
+        "uncertainty_mmpy": 1,
+        "ensemble_min_mmpy": 1.13,
+        "ensemble_max_mmpy": 31.15,
+        "spread_x": 27.6,
+        "measured_in_envelope": true,
+        "best_model": "DWM-1995",
+        "best_model_cr_mmpy": 1.13,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 31.15,
+            "err_mmpy": 27.95
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 1.13,
+            "err_mmpy": -2.07
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 19.54,
+            "err_mmpy": 16.34
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 8.84,
+            "err_mmpy": 5.64
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 25.07,
+            "err_mmpy": 21.87
+          }
+        ],
+        "source": "Singer M., Camacho A., Brown B., Nesic S., Corrosion 73 (2017) 1030"
+      },
+      {
+        "case": "13Cr OCTG threshold - Mishina 2014",
+        "scope": "cra_out_of_scope",
+        "note": "13Cr CRA passivates above ~120 C; carbon-steel CO2 models do not apply",
+        "measured_mmpy": 0.12,
+        "uncertainty_mmpy": 0.05,
+        "ensemble_min_mmpy": 2.87,
+        "ensemble_max_mmpy": 353.24,
+        "spread_x": 123,
+        "measured_in_envelope": false,
+        "best_model": "DWM-1995",
+        "best_model_cr_mmpy": 2.87,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 353.24,
+            "err_mmpy": 353.12
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 2.87,
+            "err_mmpy": 2.75
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 4.76,
+            "err_mmpy": 4.64
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 82.63,
+            "err_mmpy": 82.51
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 321.51,
+            "err_mmpy": 321.39
+          }
+        ],
+        "source": "Mishina K. et al., NACE Paper 4226 (2014)"
+      },
+      {
+        "case": "HP/HT well @ 175 C, 100 bar CO2 - Nyborg 2007",
+        "scope": "cs_aqueous",
+        "note": "protective FeCO3 scale dominates at high T",
+        "measured_mmpy": 0.8,
+        "uncertainty_mmpy": 0.4,
+        "ensemble_min_mmpy": 1.59,
+        "ensemble_max_mmpy": 2110.15,
+        "spread_x": 1328.2,
+        "measured_in_envelope": false,
+        "best_model": "DWM-1995",
+        "best_model_cr_mmpy": 1.59,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 2110.15,
+            "err_mmpy": 2109.35
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 1.59,
+            "err_mmpy": 0.79
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 5.28,
+            "err_mmpy": 4.48
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 10.86,
+            "err_mmpy": 10.06
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 399.87,
+            "err_mmpy": 399.07
+          }
+        ],
+        "source": "Nyborg R., NACE Paper 07522 (2007)"
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "_README": "Machine-runnable structured inputs for the cited CO2 cases in ../data/validations.json. Values transcribed faithfully from each case's free-text 'conditions' string; the cited source/DOI/measured value live in validations.json (single source of truth). 'scope' tags model applicability: cs_aqueous = valid carbon-steel aqueous CO2 test; tlc = top-of-line / condensing regime the bulk models are NOT designed for; cra_out_of_scope = a corrosion-resistant alloy that passivates, so carbon-steel CO2 models do not apply. MAE/RMSE are computed only over cs_aqueous cases.",
+  "cases": {
+    "Nesic 2007 - 5% CO2 flow-loop at 60 C": {
+      "T_C": 60, "pCO2_bar": 5, "pH": 5.0, "u_m_s": 1.0, "d_pipe_m": 0.015,
+      "Fe2_ppm": 5, "scope": "cs_aqueous"
+    },
+    "Tengiz (KZ) sour-sweet field - Kahyarian 2017": {
+      "T_C": 92, "pCO2_bar": 6.5, "pH": 4.0, "u_m_s": 3.5, "d_pipe_m": 0.30,
+      "Fe2_ppm": 40, "water_cut": 0.45, "oil_type": "crude", "scope": "cs_aqueous",
+      "note": "sour-sweet; FeS co-film usually lowers the sweet-model rate"
+    },
+    "Top-of-line corrosion - Singer 2017": {
+      "T_C": 75, "pCO2_bar": 8, "pH": 3.8, "u_m_s": 0.05, "d_pipe_m": 0.10,
+      "Fe2_ppm": 2, "scope": "tlc",
+      "note": "top-of-line condensing water; bulk flowline models are not TLC models"
+    },
+    "13Cr OCTG threshold - Mishina 2014": {
+      "T_C": 130, "pCO2_bar": 30, "pH": 3.8, "u_m_s": 2.0, "d_pipe_m": 0.10,
+      "Fe2_ppm": 50, "scope": "cra_out_of_scope",
+      "note": "13Cr CRA passivates above ~120 C; carbon-steel CO2 models do not apply"
+    },
+    "HP/HT well @ 175 C, 100 bar CO2 - Nyborg 2007": {
+      "T_C": 175, "pCO2_bar": 100, "pH": 4.5, "u_m_s": 5.0, "d_pipe_m": 0.10,
+      "Fe2_ppm": 60, "scope": "cs_aqueous",
+      "note": "protective FeCO3 scale dominates at high T"
+    }
+  }
+}

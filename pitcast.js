@@ -376,8 +376,11 @@ function complianceDiff(c, svc){
   return { assess: a, rows, overall: a.overall, dominant: a.dominant };
 }
 
-window.PitCast = {
+var _PitCastAPI = {
   get GRADES(){ return GRADES; }, get MEASUREMENTS(){ return MEASUREMENTS; },
   setGrades, setMeasurements, measuredCPT,
   assess, selectAlloys, envelope, complianceDiff, pren, prenW, prenN30, ferritePct,
   inferFamily, relativeCost, cptMean, cptSE, cptConstants: CPT };
+// Browser: attach to window. Node (benchmark/V&V harness): export via module.
+if (typeof window !== 'undefined') window.PitCast = _PitCastAPI;
+if (typeof module !== 'undefined' && module.exports) module.exports = _PitCastAPI;
