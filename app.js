@@ -210,6 +210,7 @@ function renderAssess(){
       <div class="metric"><div class="k">CPT</div><div class="val">${r.cptCapped?"≥120":r.cpt.toFixed(0)}<span class="u"> °C</span></div><div class="u">${r.cptCapped?"immune (aqueous)":"±"+ci.toFixed(0)+" (90%)"}</div></div>
       <div class="metric"><div class="k">Rel. cost</div><div class="val">${r.cost.toFixed(2)}<span class="u">×</span></div><div class="u">304L=1</div></div>
     </div>
+    ${(!oos && (_pn30 < PitCast.cptConstants.prenMin || _pn30 > PitCast.cptConstants.prenMax)) ? `<div class="cdnote">⚠ EXTRAPOLATION — PREN<sub>N30</sub> ${_pn30.toFixed(0)} is outside the Nyby 2021 calibration range (${PitCast.cptConstants.prenMin}–${PitCast.cptConstants.prenMax}); the CPT value is extrapolated beyond the fitted data — indicative only.</div>` : ""}
     ${oos ? "" : `<div style="margin:8px 0;padding:7px 10px;font-size:12px;line-height:1.5;color:var(--dim);border-left:3px solid #22c55e;background:rgba(34,197,94,.06);border-radius:4px">✓ CPT model validated — leave-one-out MAE 6.58 °C on n=51 cited records (reproducible: <code>node benchmark/run.js</code>). The ±${ci.toFixed(0)} °C above is the 90% prediction band.</div>`}
     <div class="bars">
       ${bar("Pitting  P(CPT < service T)", r.pPit)}
@@ -353,6 +354,7 @@ function renderCO2(){
       <span style="color:var(--dim)"> Screening, carbon steel, sweet service. The five models span ${r.spread.toFixed(0)}× — design to the conservative/relevant one. Sources: Corrosion 31 (1975) 177; NACE 95-128; NORSOK M-506:2017; Nyborg 2010; Nesic 2007.</span></div>
     <div class="explain"><b>Flow velocity (API&nbsp;RP&nbsp;14E):</b> ${o.velocity} m/s vs erosional limit V<sub>e</sub> = ${ev.Ve_continuous_ms.toFixed(1)} m/s (C=100, continuous) / ${ev.Ve_controlled_ms.toFixed(1)} m/s (C=200, corrosion-controlled) → <b style="color:${evCol}">${ev.status}</b>.
       <span style="color:var(--dim)"> Liquid/brine basis (ρ≈${ev.rho_kg_m3} kg/m³). Above the limit, protective FeCO₃ films are stripped and erosion-corrosion adds to the rates above. API RP 14E.</span></div>
+    ${(o.T<20 || r.pH_insitu<3.5 || r.pH_insitu>6.5)?`<div class="cdnote">⚠ EXTRAPOLATION — NORSOK M-506 / de Waard are validated for T 20–150 °C and pH 3.5–6.5 (current ${o.T.toFixed(0)} °C, in-situ pH ${r.pH_insitu.toFixed(1)}); outside this window the sweet-CO₂ correlations are extrapolated — treat as indicative only.</div>`:""}
     ${o.T>150?`<div class="cdnote">⚠ ${o.T} °C is beyond the validated / tabulated range of the de Waard–Milliams and NORSOK&nbsp;M-506 correlations (≈150 °C). The scale-blind models (de Waard 1975, FreeCorp at low pH) become unbounded upper bounds here — read the scale-aware models (de Waard 95 / NESC) as the realistic estimate, and confirm with a CRA.</div>`:""}
     ${r.regime.regime!=="sweet"?`<div class="cdnote">⚠ ${r.regime.regime.toUpperCase()} service (pCO₂/pH₂S ≈ ${r.regime.ratio.toFixed(0)} · ${r.regime.product}). The de Waard &amp; NORSOK sweet-CO₂ models don't credit the protective FeS film that H₂S forms, so they read conservatively high here — weight FreeCorp (H₂S-aware) and run the sulfide-stress-cracking screen on the Assess / Selection-map tabs (ISO 15156-3).</div>`:""}`;
 }
@@ -674,6 +676,7 @@ function renderIntegrity(){
   host.innerHTML=`
     <div class="verdict ${vb}"><div class="gauge">${ff.throughWall?"—":ff.P_safe_bar.toFixed(0)}<span class="u"> bar</span></div>
       <div class="vtext"><b>${v.status} · safe operating pressure</b><div>${v.note} ${ff.throughWall?"":(`vs MAOP ${MAOP} bar — predicted failure ${ff.P_f_bar.toFixed(0)} bar (σ<sub>f</sub> ${ff.sigma_f_MPa.toFixed(0)} MPa, M ${isFinite(ff.M)?ff.M.toFixed(2):"n/a"}).`)}</div></div></div>
+    ${ff.depthRatio>0.80 ? `<div class="cdnote">⚠ LIMIT — d/t ${(ff.depthRatio*100).toFixed(0)}% exceeds the ASME B31G 80% wall-loss limit; the defect is beyond B31G applicability — repair/replace or escalate to a Level-2/3 FFS (API 579 Part 5).</div>` : ""}
     <div class="metrics">
       <div class="metric"><div class="k">P<sub>safe</sub></div><div class="val">${ff.P_safe_bar.toFixed(0)}<span class="u"> bar</span></div><div class="u">P<sub>f</sub> ${ff.P_f_bar.toFixed(0)} bar · SF ${ff.SF}</div></div>
       <div class="metric"><div class="k">Wall loss d/t</div><div class="val">${(ff.depthRatio*100).toFixed(0)}<span class="u"> %</span></div><div class="u">${ff.regime||"—"}</div></div>
