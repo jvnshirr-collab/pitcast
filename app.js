@@ -290,6 +290,9 @@ function gbox(eq, cite, tier){
     + (tier ? '<div style="margin-top:3px">Validation: ' + tier + '</div>' : '')
     + '</div></details>';
 }
+// Compact validation-tier chip for the supporting corrosion engines (P2 2a:
+// every primary output shows its validation tier + worked-example anchor).
+function tierTag(v){ return '<div style="margin:6px 0 0;font-size:11px;color:var(--dim)">✓ <b style="color:#2dd4bf">Validation tier T2</b> · ' + v + ' — docs/vv/SVVP.md</div>'; }
 function renderCO2(){
   if(!$("co2_results")||!window.CO2||!window.Charts) return;
   const gv=id=>$(id)?$(id).value:"";
@@ -375,7 +378,7 @@ function renderCPAC(){
     <div class="iso ${cpCls}"><b>Cathodic protection — ${cp.verdict}</b><br>
       polarized ${cp.polarized_mV!=null?cp.polarized_mV.toFixed(0)+" mV":"—"} · −850 mV ${cp.meets850?"✓ met":"✗ not met"} · 100 mV shift ${cp.polarizationShift_mV!=null?(cp.polarizationShift_mV.toFixed(0)+" mV "+(cp.meets100mV?"✓":"✗")):"(needs depol)"}${cp.irDrop_mV!=null?(" · IR drop "+cp.irDrop_mV.toFixed(0)+" mV"):""}</div>
     <div class="explain">${(cp.notes||[]).map(n=>"• "+n).join("<br>")||"AC corrosion concentrates at coating holidays; Jac from the disc spread-resistance model."}
-      <span style="color:var(--dim)"> AC: ${ac.ref} · CP: ${cp.ref}</span></div>
+      <span style="color:var(--dim)"> AC: ${ac.ref} · CP: ${cp.ref}</span></div>${tierTag("ISO 18086 Jac disc-resistance model + AMPP SP0169 −850 mV criterion reproduced")}
     ${(()=>{ if(!window.Anode) return ""; const an=window.Anode.size({area_m2:+gv("a_area"),lifeYr:+gv("a_life"),environment:gv("a_env"),coating:gv("a_coating"),anode:gv("a_anode")});
       if(an.error) return `<div class="cdnote">${an.error}</div>`;
       const ep=an.env_properties;
@@ -385,7 +388,7 @@ function renderCPAC(){
         Current demand: initial <b>${an.I_initial_A.toFixed(1)} A</b> · mean <b>${an.I_mean_A.toFixed(1)} A</b> · final <b>${an.I_final_A.toFixed(1)} A</b>.
         Coating breakdown f_c: mean ${(an.fc_mean*100).toFixed(0)}% · final ${(an.fc_final*100).toFixed(0)}%. Q = ${(an.Q_Ah/1e6).toFixed(2)} M·Ah.
         <br><span style="color:var(--dim);font-size:12px">Env physical: T ${ep.T_C}°C · depth ${ep.depth_range_m} m · salinity ${ep.salinity_ppt}‰ · O₂ ${ep.O2_mg_L} mg/L · ρ ${ep.rho_ohm_m} Ω·m${corrTxt}</span></div>
-        <div class="explain"><span style="color:var(--dim)">${an.ref}</span></div>`;})()}
+        <div class="explain"><span style="color:var(--dim)">${an.ref}</span></div>${tierTag("DNV-RP-B401 §6/§7/§10 worked example — 4,754 kg Al-Zn-In reproduced")}`;})()}
     ${(()=>{ if(!window.Galvanic) return "";
       const gcEnv = gv("g_env") || "SW";
       const gcT = +gv("g_T") || 25;
@@ -460,13 +463,13 @@ function renderCPAC(){
         <br><span style="color:var(--dim);font-size:12px">${gc.env} · ${gc.T_C}°C · Cl ${gc.Cl_ppm.toFixed(0)} ppm · Tafel: ba ${gc.ba_anode_mV_dec} / bc ${gc.bc_cathode_mV_dec} mV·dec⁻¹ · i₀ anode ${gc.i0_anode_Am2.toExponential(0)} A/m² · EW ${gc.EW_anode} g/eq · ρ ${gc.rho_anode_g_cm3} g/cm³ · flow ${gc.flow} (i_lim ${gc.i_lim_cathode_Am2} A/m²)${gc.anode_source?` · anode src ${gc.anode_source}`:""}${gc.cathode_source?` · cath src ${gc.cathode_source}`:""}</span>${mtcLine}
         <br>${gc.note}</div>
         ${evansSvg}
-        <div class="explain"><span style="color:var(--dim)">${gc.ref}</span></div>`;})()}
+        <div class="explain"><span style="color:var(--dim)">${gc.ref}</span></div>${tierTag("ASTM G102 mixed-potential + LaQue marine 316L/CS bolt ~1.16 mm/yr reproduced")}`;})()}
     ${(()=>{ if(!window.Groundbed) return ""; const sb=window.Groundbed.sundeMulti({rho_ohm_m:+gv("gb_rho"),L_m:+gv("gb_L"),d_m:(+gv("gb_d"))/1000,s_m:+gv("gb_s"),n:+gv("gb_n")});
       if(sb.error) return "";
       const cd=window.Groundbed.currentDemand({R_bed_ohm:sb.R_ohm,V_driving:+gv("gb_V")});
       return `<div class="iso within"><b>Groundbed — ${sb.n} vertical anodes</b><br>
         R<sub>self</sub> ${sb.R_self_ohm.toFixed(2)} Ω + R<sub>mutual</sub> ${sb.R_mutual_ohm.toFixed(2)} Ω = <b>R<sub>bed</sub> ${sb.R_ohm.toFixed(2)} Ω</b> · at ${gv("gb_V")} V driving → I<sub>bed</sub> <b>${cd.I_A.toFixed(2)} A</b>.</div>
-        <div class="explain"><span style="color:var(--dim)">${sb.ref}</span></div>`;})()}`;
+        <div class="explain"><span style="color:var(--dim)">${sb.ref}</span></div>${tierTag("NACE SP0169 Appx-A 13.72 Ω + Dwight 1936 / Sunde 1949 reproduced")}`;})()}`;
 }
 $("cpacForm")&&$("cpacForm").addEventListener("input", renderCPAC);
 
@@ -664,24 +667,24 @@ function renderIntegrity(){
         ${u.inWindow?`Drivers: T factor ${u.factors.temperature.toFixed(2)} · insulation ${u.factors.insulation.toFixed(2)} (${u.categories.insulation}) · jacket ${u.factors.jacket.toFixed(2)} (${u.categories.jacket}) · coating ${u.factors.coating.toFixed(2)} (${u.categories.coating}) · ambient ${u.factors.ambient.toFixed(2)} (${u.categories.ambient}) · age ${u.factors.age.toFixed(2)} ${u.cyclic?"· cyclic ×1.5":""}.`:""}
         ${propsLine}
         ${warnBlock}</div>
-        <div class="explain"><span style="color:var(--dim)">${u.ref}</span></div>`;})()}
+        <div class="explain"><span style="color:var(--dim)">${u.ref}</span></div>${tierTag("API 583 §4.3 + ASTM C871 leachable-Cl patterns reproduced")}`;})()}
     ${(()=>{ if(!window.MIC) return ""; const mr=window.MIC.risk({T_C:+gv("m_T"),oxygen:gv("m_o2"),nutrient:gv("m_n"),sulphate_mgL:+gv("m_so4"),flow:gv("m_flow"),biocide:gv("m_b")});
       const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[mr.level]||"within";
       const fam=mr.families?mr.families.map(f=>f.name+" "+f.score.toFixed(2)).join(" · "):"";
       return `<div class="iso ${cls}"><b>MIC risk — ${mr.level.toUpperCase()}</b> ${mr.inWindow?`(${mr.region})`:""}<br>
         Dominant: <b>${mr.dominant.split("—")[0].trim()}</b>. Total score ${mr.score.toFixed(2)}. ${mr.recommendation}
         ${mr.inWindow?`<br>Family scores: ${fam}.`:""}</div>
-        <div class="explain"><span style="color:var(--dim)">${mr.ref}</span></div>`;})()}
+        <div class="explain"><span style="color:var(--dim)">${mr.ref}</span></div>${tierTag("NACE SP0775 / TM0194 / TM0212 family classification reproduced")}`;})()}
     ${(()=>{ if(!window.HIC) return ""; const hr=window.HIC.risk({pH2S_kPa:+gv("h_pH2S"),pH:+gv("h_pH"),S_wt:+gv("h_S"),HV:+gv("h_HV"),waterCut:+gv("h_wc"),stress:+gv("h_stress")});
       if(!hr.active) return `<div class="iso within"><b>HIC / SOHIC — INACTIVE</b><br>${hr.mech}</div>
-        <div class="explain"><span style="color:var(--dim)">${hr.ref}</span></div>`;
+        <div class="explain"><span style="color:var(--dim)">${hr.ref}</span></div>${tierTag("NACE MR0103-2018 §4 + TM0284-2016 + ISO 15156-2 envelope reproduced")}`;
       const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[hr.level]||"within";
       return `<div class="iso ${cls}"><b>HIC / SOHIC — ${hr.level.toUpperCase()}</b> · ${hr.dominant} dominant<br>
         HIC index <b>${hr.HIC_index.toFixed(2)}</b> (${hr.HIC_level}) · SOHIC index <b>${hr.SOHIC_index.toFixed(2)}</b> (${hr.SOHIC_level}).
         Drivers: pH₂S ${hr.factors.pH2S.toFixed(2)} · pH ${hr.factors.pH.toFixed(2)} · S ${hr.factors.S.toFixed(2)} · HV ${hr.factors.HV.toFixed(2)} · water ${hr.factors.water.toFixed(2)}.
         <br><b>Mechanism:</b> ${hr.mechanism}
         <br><b>Mitigation:</b><ul style="margin:4px 0 0 18px;padding:0">${hr.mitigation.map(m=>"<li>"+m+"</li>").join("")}</ul></div>
-        <div class="explain"><span style="color:var(--dim)">${hr.ref}</span></div>`;})()}
+        <div class="explain"><span style="color:var(--dim)">${hr.ref}</span></div>${tierTag("NACE MR0103-2018 §4 + TM0284-2016 + ISO 15156-2 envelope reproduced")}`;})()}
     ${(()=>{ if(!window.RBI) return ""; const rs=window.RBI.score({CR_mmyr:+gv("r_CR"),ageSinceLastInsp_yr:+gv("r_age"),tNom_mm:+gv("b_t"),tCurrent_mm:+gv("r_tCur"),tMin_mm:+gv("b_tmin"),fluid:gv("r_fluid"),inventory_m3:+gv("r_inv")});
       const cls={low:"within",medium:"untabulated",high:"exceeds",extreme:"exceeds"}[rs.riskLevel]||"within";
       const cofIdx=["A","B","C","D","E"].indexOf(rs.CoF);
@@ -1035,7 +1038,7 @@ function renderCompare(){
     ${cheapestLine}<br>
     ${cleared} of ${rows.length} grade(s) clear the risk threshold. Service: T ${svc.T} °C · Cl ${svc.Cl} ppm · pH ${svc.pH} · pH₂S ${svc.pH2S} kPa · σ ${svc.stress}×YS · HV ${svc.HV}.
   </div>
-  <div class="explain"><span style="color:var(--dim)">PitCast.assess() per grade — PREN<sub>N16</sub>, leverage-aware CPT correlation (Nyby 2021 calibration n=51, 6.6 °C MAE), Cl-SCC + sour SSC envelopes (ISO 15156-3); cost relative to 304L. Best (green) / worst (red) per column.</span></div>`;
+  <div class="explain"><span style="color:var(--dim)">PitCast.assess() per grade — PREN<sub>N16</sub>, leverage-aware CPT correlation (Nyby 2021 calibration n=51, 6.58 °C MAE), Cl-SCC + sour SSC envelopes (ISO 15156-3); cost relative to 304L. Best (green) / worst (red) per column.</span></div>`;
   host.innerHTML = html;
 }
 
@@ -1542,7 +1545,7 @@ function renderFFS(){
       'Blister-affected area = <b>' + nv(p7L2.blister_area_fraction*100, 2) + '%</b> · t-loss under blister = <b>' + nv(p7L2.t_loss_fraction*100, 0) + '%</b> · K_blister = ' + (p7L2.K_blister || 2) + '<br>' +
       'RSF = <b>' + nv(p7L2.RSF, 3) + '</b> (RSFa = ' + p7L2.RSFa + ') · MAWP reduced: <b>' + nv(p7L2.MAWP_reduced_bar, 1) + ' bar</b><br>' +
       '<span style="color:var(--dim);font-size:12px">' + (p7L2.recommendation || '') + '</span></div>' +
-    '<div class="explain"><span style="color:var(--dim)">' + (p7L1.ref || '') + ' · ' + (p7L2.ref || '') + '</span></div>';
+    '<div class="explain"><span style="color:var(--dim)">' + (p7L1.ref || '') + ' · ' + (p7L2.ref || '') + '</span></div>' + tierTag("API 579 Part 5 LTA reproduces FFS.jl reference (RSF ≈ 0.93)");
 }
 if ($("ffsForm")) $("ffsForm").addEventListener("input", renderFFS);
 
@@ -1598,7 +1601,7 @@ function renderCIPS(){
     (inds.length ? '<div class="iso untabulated"><b>DCVG indications (' + inds.length + ')</b><br>' + inds.slice(0, 10).map(function(i){ return 'Station ' + i.station_m.toFixed(1) + ' m · %IR = ' + (i.percent_IR != null ? i.percent_IR.toFixed(1) : '?') + '% · <b style="color:' + i.color + '">' + i.severity + '</b> · ' + i.polarity; }).join('<br>') + '</div>' : '') +
     _cipsGrowthPanel(inds) +
     _cipsGPSMap(s.readings, inds) +
-    '<div class="explain"><span style="color:var(--dim)">' + (exc.ref || '') + ' · ' + (inds.length ? inds[0].ref : '') + ' · ' + (prio.ref || '') + '</span></div>';
+    '<div class="explain"><span style="color:var(--dim)">' + (exc.ref || '') + ' · ' + (inds.length ? inds[0].ref : '') + ' · ' + (prio.ref || '') + '</span></div>' + tierTag("NACE SP0502 ECDA prioritisation + McKinney 1986 DCVG bands reproduced");
   // After DOM injected, init the Leaflet map if any GPS readings present
   setTimeout(function(){ _cipsInitMap(s.readings, inds); }, 50);
 }
