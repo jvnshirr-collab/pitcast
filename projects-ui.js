@@ -56,7 +56,7 @@
     var toggle = document.createElement("button");
     toggle.id = "pp-toggle";
     toggle.innerHTML = "📁 Projects";
-    toggle.style.cssText = "position:fixed;top:14px;right:10px;background:rgba(45,212,191,0.15);color:#2dd4bf;border:1px solid rgba(45,212,191,0.3);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;z-index:101";
+    toggle.style.cssText = "position:fixed;bottom:18px;right:18px;background:rgba(45,212,191,0.15);color:#2dd4bf;border:1px solid rgba(45,212,191,0.3);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:12px;z-index:101;box-shadow:0 4px 16px rgba(0,0,0,.4)";
     document.body.appendChild(toggle);
 
     var open = false;
