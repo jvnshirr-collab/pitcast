@@ -63,14 +63,21 @@
   // ===========================================================================
   // Part 5 — Local Metal Loss (LTA) — the workhorse assessment
   // ===========================================================================
-  // Folias factor Mt(λ) — polynomial per Annex 5A or table 5.2
+  // Folias factor Mt(λ) — API 579-1/ASME FFS-1 Part 5 Eq 5.6 / Table 5.2 10th-order
+  // curve fit (published API 579 coefficients; Mt(2)=1.62, consistent with the B31G
+  // Folias ~1.58 at equal length). The fit turns over above λ≈8, so continue linearly
+  // (continuous + monotone) beyond. λ = 1.285·s/√(D·tc).
+  function _foliasPoly(l) {
+    return 1.0010 - 0.014195*l + 0.29090*l*l - 0.096420*Math.pow(l,3)
+      + 0.020890*Math.pow(l,4) - 0.0030540*Math.pow(l,5) + 2.9570e-4*Math.pow(l,6)
+      - 1.8462e-5*Math.pow(l,7) + 7.1553e-7*Math.pow(l,8) - 1.5631e-8*Math.pow(l,9)
+      + 1.4656e-10*Math.pow(l,10);
+  }
   function foliasMt(lambda) {
     if (!(lambda > 0)) return 1;
-    if (lambda >= 9) return 0.032 * lambda * lambda + 3.3;  // long-flaw approx
-    // 6th-order polynomial expansion (truncated form of Annex 5A Eq 5.12)
-    var l2 = lambda * lambda;
-    var l4 = l2 * l2;
-    return Math.sqrt(1 + 0.48 * l2 - 0.001408 * l4);
+    if (lambda <= 8) return Math.max(1, _foliasPoly(lambda));
+    var m8 = _foliasPoly(8), slope = (m8 - _foliasPoly(7.9)) / 0.1;  // continuous long-flaw
+    return m8 + slope * (lambda - 8);
   }
 
   // Part 5 Level 1 — single LTA on cylindrical shell, Type A, internal pressure
@@ -101,14 +108,19 @@
     };
     var gatesPass = Object.values(gates).every(function(v){ return v; });
 
-    // Eq 5.5 — Rt
+    // Eq 5.5 — Rt (remaining thickness ratio). Physically 0 < Rt ≤ 1 for an LTA; clamp
+    // out-of-range inputs (a local thin area can't be stronger than the corroded wall,
+    // nor have negative remaining metal) and warn, so RSF stays in (0,1].
     var Rt = (tmm - FCA) / tc;
+    var warning = null, RtUse = Rt;
+    if (Rt > 1) { warning = "tmm − FCA exceeds the corroded reference wall (t_nom − LOSS − FCA): no net local loss; RSF capped at 1. Verify tmm is the thinnest reading."; RtUse = 1; }
+    else if (Rt <= 0) { warning = "remaining thickness (tmm − FCA) ≤ 0 — at/below the FCA limit; component is at its retirement thickness."; RtUse = 1e-4; }
     // Eq 5.6 — λ
     var lambda = 1.285 * s / Math.sqrt(D * tc);
     // Folias
     var Mt = foliasMt(lambda);
-    // Eq 5.11 — RSF
-    var RSF = Rt / (1 - (1/Mt) * (1 - Rt));
+    // Eq 5.11 — RSF (∈ (0,1] for a valid LTA)
+    var RSF = RtUse / (1 - (1/Mt) * (1 - RtUse));
 
     var pass = RSF >= RSFa;
     var MAWPr_bar = pass ? MAWP_design_bar : MAWP_design_bar * RSF / RSFa;
@@ -116,7 +128,7 @@
     return {
       level: 1,
       Rt: Rt, lambda: lambda, Mt: Mt, RSF: RSF,
-      RSFa: RSFa,
+      RSFa: RSFa, warning: warning,
       gates: gates,
       gatesPass: gatesPass,
       passes: pass && gatesPass,
@@ -369,7 +381,7 @@
 
     // Part 5 worked-example from FFS.jl source:
     // SA 516 Gr 70, ID=96"=2438.4 mm, t=1.25"=31.75 mm, LOSS=0.10"=2.54, FCA=0.125"=3.175
-    // tmm=0.7"=17.78. Expected: tc≈26.04, Rt≈0.562, λ≈2.0, RSF≈0.93 (marginal L1 PASS)
+    // tmm=0.7"=17.78. Computed: tc≈26.04, Rt≈0.562, λ≈1.28, Mt≈1.30, RSF≈0.85 (< RSFa 0.90 → escalate to L2)
     var p5 = part5_LTA_L1({
       tmm_mm: 17.78, t_nom_mm: 31.75, LOSS_mm: 2.54, FCA_mm: 3.175,
       s_axial_mm: 250, D_inside_mm: 2438.4, MAWP_design_bar: 21
@@ -378,8 +390,8 @@
     ass(Math.abs(p5.Rt - 0.562) < 0.05, "Rt ≈ 0.562 got " + p5.Rt.toFixed(3));
     ass(p5.RSF > 0 && p5.RSF < 1.5, "RSF in physical range got " + p5.RSF.toFixed(3));
 
-    // Folias Mt sanity — λ=2 → ~1.32
-    ass(Math.abs(foliasMt(2.0) - 1.32) < 0.1, "Mt(λ=2.0) ≈ 1.32 got " + foliasMt(2.0).toFixed(3));
+    // Folias Mt sanity — λ=2 → ~1.62 (API 579 Part 5 polynomial; cf. B31G ~1.58)
+    ass(Math.abs(foliasMt(2.0) - 1.62) < 0.05, "Mt(λ=2.0) ≈ 1.62 got " + foliasMt(2.0).toFixed(3));
     // Long flaw — λ=10 → polynomial branches
     ass(foliasMt(10) > 4, "Mt(λ=10) large got " + foliasMt(10).toFixed(2));
 
