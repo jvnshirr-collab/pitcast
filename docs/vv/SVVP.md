@@ -15,7 +15,7 @@ This SVVP defines the V&V activities for the PitCast corrosion-engineering scree
 
 | Engine | Standard | Tier | Validation status |
 |---|---|---|---|
-| pitcast.js (CPT/PREN/SCC) | ASTM G48, ISO 15156-3, Nyby 2021 | T2 | LOO-calibrated n=51, MAE 6.6 °C |
+| pitcast.js (CPT/PREN/SCC) | ASTM G48, ISO 15156-3, Nyby 2021 | T2 | LOO MAE **6.58 °C** (n=51) reproduced by `benchmark/run.js` — see `VR/cpt.md` |
 | b31g.js | ASME B31G-2012, Kiefner & Vieth 1989, Folias 1965 | T2 | ASME B31G Appx B Ex 1 reproduced ±2 bar |
 | anode.js | DNV-RP-B401, NACE SP0387 | T2 | DNV worked example 4754 kg reproduced |
 | cui.js | API 583, NACE SP0198, ASTM C871 | T2 | API 583 case-study patterns reproduced |
@@ -25,7 +25,7 @@ This SVVP defines the V&V activities for the PitCast corrosion-engineering scree
 | mic.js | NACE TM0194/TM0212/SP0775 | T2 | NACE SP0775 family-classification reproduced |
 | rbi.js | API RP 581 (3rd ed., 2016) | T1/T2 | 5×5 matrix per API 581 typical layout |
 | cpac.js | AMPP SP0169, ISO 18086 | T2 | -850 mV criterion + Jac = 8·Vac/(ρ·π·d) reproduced |
-| co2.js | de Waard 1995, NORSOK M-506, Nesic Multicorp | T2 | 5-model comparator |
+| co2.js | de Waard 1995, NORSOK M-506, Nesic Multicorp | T2 | 5-model ensemble; NORSOK/DWM-95 MAE ≈2 mm/y on cited cases — see `VR/co2.md` |
 | interaction.js | DNV-RP-F101, POF-100, B31G-2012 | T2 | DNV §3.7 worked example reproduced |
 | mr0175.js | ANSI/NACE MR0175-2021 / ISO 15156:2020 | T2 | 41-Annex catalogue + 3 worked examples |
 | cips.js | NACE SP0207, SP0169, SP0502, ISO 15589-1 | T2 | DCVG %IR + ECDA prioritisation per McKinney 1986 |
@@ -84,7 +84,7 @@ PitCast outputs target **±10 % screening accuracy with documented conservative 
 
 ## 5. Regression Testing
 
-PitCast maintains 5,500+ in-Chrome assertions across all engines (see test battery results). Each oracle test is tagged with `{capability, source, citation, tolerance, validation-tier}` metadata (work in progress — `docs/vv/validation-test-registry.yaml`).
+Each engine carries an embedded `_runTests()` battery checked against published worked examples (run `node <engine>.js`), plus the reproducible `benchmark/run.js` validation on cited measured data. Credibility is reported by **specific, reproducible metrics** (e.g. CPT LOO MAE 6.58 °C, ASME B31G Appx B Ex 1 P_safe 54.3 bar) rather than an aggregate assertion count. Per-test `{capability, source, citation, tolerance, validation-tier}` tagging is work-in-progress (`docs/vv/validation-test-registry.yaml`).
 
 ## 6. Anomaly Reporting
 
