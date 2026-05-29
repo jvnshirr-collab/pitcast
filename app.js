@@ -1200,7 +1200,9 @@ function _renderILITable(){
       <th ${headerStyle}>Regime</th>
       <th ${headerStyle}>Verdict</th>
     </tr></thead><tbody>`;
-  res.forEach(r => {
+  const ILI_RENDER_CAP = 1000;  // #1: cap rendered DOM rows so huge ILI files don't freeze the UI; full set stays in cache + CSV export. res is sorted worst-first, so these are the most-severe.
+  const _renderRows = res.length > ILI_RENDER_CAP ? res.slice(0, ILI_RENDER_CAP) : res;
+  _renderRows.forEach(r => {
     const col = colours[r.status] || "#888";
     const clusterCell = showClusters ? `<td ${cellStyle}>${r.cluster_id ? `<span title="${(r.cluster_members||[]).length ? 'Clustered with: '+r.cluster_members.join(', ')+'. Combined L='+(r.cluster_L_combined_mm||0).toFixed(0)+' mm, d='+(r.cluster_d_combined_mm||0).toFixed(1)+' mm' : 'Singleton cluster'}" style="background:${clusterColours[r.cluster_id]};color:#000;padding:2px 6px;border-radius:4px;font-weight:600;font-size:11px;cursor:help">${r.cluster_id}${r.cluster_n>1?'·'+r.cluster_n:''}</span>` : "—"}</td>` : ``;
     table += `<tr>
@@ -1218,6 +1220,7 @@ function _renderILITable(){
     </tr>`;
   });
   table += `</tbody></table></div>`;
+  if (res.length > ILI_RENDER_CAP) table += `<div style="margin-top:6px;font-size:12px;color:#fbbf24">Showing the ${ILI_RENDER_CAP} most-severe of ${res.length.toLocaleString()} defects (table capped to stay responsive on large ILI runs) — use "Export processed results (CSV)" below for the complete set.</div>`;
   const exportBtn = `<button type="button" id="ili_export_csv" style="margin-top:10px;padding:8px 14px;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);color:#7dd3fc;border-radius:6px;cursor:pointer;font-weight:600">⤓ Export processed results (CSV)</button>`;
   // Cluster delta vs ungrouped baseline
   let clusterLine = "";
