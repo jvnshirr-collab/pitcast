@@ -185,6 +185,15 @@ function renderAssess(){
   const ci = 1.645 * r.cptSE;
   const b = band(r.overall);
   const dom = r.dominant === "none" ? "—" : r.dominant;
+  const _pn30 = PitCast.prenN30(g.comp);
+  const sw = [
+    'PREN<sub>N30</sub> = Cr + 3.3·Mo + 30·N = ' + (g.comp.Cr||0) + ' + 3.3·' + (g.comp.Mo||0) + ' + 30·' + (g.comp.N||0) + ' = ' + _pn30.toFixed(1),
+    'CPT(G48) = 2.038·PREN<sub>N30</sub> − 32.73 = 2.038·' + _pn30.toFixed(1) + ' − 32.73 = ' + r.cptG48.toFixed(0) + ' °C'
+  ];
+  if (r.clAdj && Math.abs(r.clAdj) >= 1) sw.push('Cl⁻ adj (' + (svc.Cl||0).toLocaleString() + ' ppm) = ' + (r.clAdj>0?'+':'−') + Math.abs(r.clAdj).toFixed(0) + ' °C → local CPT ' + r.cpt.toFixed(0) + ' °C');
+  if (r.aged && r.fsig > 0) sw.push('σ-phase ' + (r.fsig*100).toFixed(1) + ' vol% lowers the local CPT');
+  if (svc.Cl > 0) sw.push('P(pit) = P(CPT &lt; T<sub>service</sub> ' + svc.T + ' °C), Student-t df=' + (PitCast.cptConstants.n - 2) + ' = ' + (r.pPit*100).toFixed(0) + '%');
+  sw.push('90% band: CPT ± 1.645·SE = ' + r.cpt.toFixed(0) + ' ± ' + ci.toFixed(0) + ' °C');
   let agedNote = "";
   if (r.aged && r.fsig>0) agedNote = ` σ-phase ${(r.fsig*100).toFixed(1)} vol% from ageing lowers the local CPT.`;
   $("a_results").innerHTML = `
@@ -222,7 +231,7 @@ function renderAssess(){
       At ${svc.T} °C${svc.Cl>0?` / ${svc.Cl.toLocaleString()} ppm Cl⁻`:""}${svc.pH2S>=0.3?` / ${svc.pH2S} kPa H₂S`:""},
       the dominant risk is <b>${dom}</b>.${agedNote}
       <span style="color:var(--dim)"> Screening estimate · CPT = ASTM G48 (6% FeCl₃) PREN<sub>N30</sub> fit, chloride-adjusted ≈24 °C/decade (Abd El Meguid, Corros. Sci. 2007) — see limits below.</span>
-    </div>${gbox("CPT = 2.038·PREN<sub>N30</sub> − 32.73 (ASTM G48 / 6% FeCl₃ basis); P(pit)=P(CPT&lt;T<sub>service</sub>) via Student-t, df=n−2. PREN<sub>N30</sub>=Cr+3.3Mo+30N.", "Nyby 2021 Sci. Data 8:58 (CC-BY) · ASTM G48 · ISO 15156-3", "T2 · reproducible LOO MAE 6.58 °C (n=51) — node benchmark/run.js · VR/cpt.md")}`;
+    </div>${gbox("CPT = 2.038·PREN<sub>N30</sub> − 32.73 (ASTM G48 / 6% FeCl₃ basis); P(pit)=P(CPT&lt;T<sub>service</sub>) via Student-t, df=n−2. PREN<sub>N30</sub>=Cr+3.3Mo+30N.", "Nyby 2021 Sci. Data 8:58 (CC-BY) · ASTM G48 · ISO 15156-3", "T2 · reproducible LOO MAE 6.58 °C (n=51) — node benchmark/run.js · VR/cpt.md")}${oos?"":showWork("CPT → P(pit)", sw)}`;
 }
 $("assessForm").addEventListener("input", renderAssess);
 
@@ -293,6 +302,15 @@ function gbox(eq, cite, tier){
 // Compact validation-tier chip for the supporting corrosion engines (P2 2a:
 // every primary output shows its validation tier + worked-example anchor).
 function tierTag(v){ return '<div style="margin:6px 0 0;font-size:11px;color:var(--dim)">✓ <b style="color:#2dd4bf">Validation tier T2</b> · ' + v + ' — docs/vv/SVVP.md</div>'; }
+// Education "show your work": step-by-step worked arithmetic with the user's actual
+// inputs plugged in (PLAN-differentiation P3-3c). Distinct from gbox (symbolic equation).
+function showWork(title, steps){
+  return '<details class="sw" style="margin:8px 0;border:1px dashed var(--line,#243042);border-radius:6px;background:rgba(125,211,252,.04)">'
+    + '<summary style="cursor:pointer;padding:7px 10px;font-size:12px;color:#7dd3fc;user-select:none">▸ show your work — ' + title + '</summary>'
+    + '<ol style="margin:6px 0 9px 26px;padding:0;font-size:12px;color:var(--dim);line-height:1.7;font-family:var(--mono,monospace)">'
+    + steps.map(function(s){ return '<li>' + s + '</li>'; }).join('')
+    + '</ol></details>';
+}
 function renderCO2(){
   if(!$("co2_results")||!window.CO2||!window.Charts) return;
   const gv=id=>$(id)?$(id).value:"";
@@ -646,6 +664,13 @@ function renderIntegrity(){
   const vb={PASS:"low",MONITOR:"moderate",REPAIR:"high",IMMEDIATE:"high"}[v.status]||"low";
   const rl=B31G.remainingLife({tNom:t,tMin:+gv("b_tmin"),CR:+gv("b_CR"),designLifeYr:+gv("b_life"),inhEff:+gv("b_inh")});
   const ds={ ff:ff, dAllow:dAllow, v:v };
+  const swB = [
+    'd/t = ' + d + '/' + t + ' = ' + ff.depthRatio.toFixed(2),
+    'Folias M = √(1 + 0.6275λ − 0.003375λ²), λ = L²/(D·t) = ' + (isFinite(ff.M)?ff.M.toFixed(2):'n/a'),
+    'σ_f (flow stress) = ' + ff.sigma_f_MPa.toFixed(0) + ' MPa',
+    'P_f = σ_f·(2t/D)·(1−d/t)/(1−(d/t)/M) = ' + ff.P_f_bar.toFixed(0) + ' bar',
+    'P_safe = P_f / SF(' + ff.SF + ') = ' + ff.P_safe_bar.toFixed(0) + ' bar'
+  ];
   host.innerHTML=`
     <div class="verdict ${vb}"><div class="gauge">${ff.throughWall?"—":ff.P_safe_bar.toFixed(0)}<span class="u"> bar</span></div>
       <div class="vtext"><b>${v.status} · safe operating pressure</b><div>${v.note} ${ff.throughWall?"":(`vs MAOP ${MAOP} bar — predicted failure ${ff.P_f_bar.toFixed(0)} bar (σ<sub>f</sub> ${ff.sigma_f_MPa.toFixed(0)} MPa, M ${isFinite(ff.M)?ff.M.toFixed(2):"n/a"}).`)}</div></div></div>
@@ -656,7 +681,7 @@ function renderIntegrity(){
     </div>
     <div class="explain"><b>Remaining life (uniform CR):</b> CR ${rl.CR_mmyr.toFixed(2)} mm/y${rl.inhibitorEff>0?(` × (1−η ${(rl.inhibitorEff*100).toFixed(0)}%) = ${rl.effective_CR_mmyr.toFixed(2)} mm/y eff`):""} → <b>${isFinite(rl.yearsToMinWT)?rl.yearsToMinWT.toFixed(1)+" yr"+(rl.yearsToMinWT<rl.designLifeYr?" (< design life)":""):"∞ (no corrosion)"}</b> to t<sub>min</sub> ${rl.tMin_mm} mm.
       ${!rl.ca_sufficient?` Required inhibitor efficiency for ${rl.designLifeYr} yr: <b>${(rl.required_inhibitor_efficiency*100).toFixed(0)}%</b>.`:` CA ${rl.CA_mm.toFixed(1)} mm sufficient for ${rl.designLifeYr} yr at this CR.`}
-      <span style="color:var(--dim)"> ${ff.ref} · ${rl.ref}</span></div>${gbox("P<sub>f</sub> = σ<sub>f</sub>·(2t/D)·(1−d/t)/(1−(d/t)/M); Folias M=√(1+0.6275λ−0.003375λ²), λ=L²/(Dt). Mod-B31G uses 0.85·d·L effective area.", "ASME B31G-2012 · Kiefner &amp; Vieth 1989 (RSTRENG) · Folias 1965", "T2 · ASME B31G Appx B Ex 1 reproduced (P_safe 54.3 bar) — VR/b31g.md")}
+      <span style="color:var(--dim)"> ${ff.ref} · ${rl.ref}</span></div>${gbox("P<sub>f</sub> = σ<sub>f</sub>·(2t/D)·(1−d/t)/(1−(d/t)/M); Folias M=√(1+0.6275λ−0.003375λ²), λ=L²/(Dt). Mod-B31G uses 0.85·d·L effective area.", "ASME B31G-2012 · Kiefner &amp; Vieth 1989 (RSTRENG) · Folias 1965", "T2 · ASME B31G Appx B Ex 1 reproduced (P_safe 54.3 bar) — VR/b31g.md")}${ff.throughWall?"":showWork("B31G → P_safe", swB)}
     ${(()=>{ if(!window.CUI) return ""; const u=window.CUI.risk({material:gv("u_mat"),T_C:+gv("u_T"),insulation:gv("u_ins"),jacket:gv("u_jkt"),coating:gv("u_coat"),ambient:gv("u_amb"),ageYr:+gv("u_age"),cyclic:!!($("u_cyc")&&$("u_cyc").checked)});
       const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[u.level]||"within";
       const p = u.properties || {};
