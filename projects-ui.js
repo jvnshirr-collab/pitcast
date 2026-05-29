@@ -137,7 +137,9 @@
     }
   }
   function _doInit() {
-    showFirstRunModal();
+    // No blocking first-run modal — the app loads straight to the tool. Projects opens
+    // on demand (anonymous by default); identity is optional and never gates use, and
+    // there is no PE / audit-trail ceremony on entry.
     renderSidebar();
     // Drag-drop on body
     document.body.addEventListener("dragover", function (e) { e.preventDefault(); });
