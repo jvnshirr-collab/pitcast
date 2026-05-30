@@ -30,6 +30,16 @@ reproducibility, integrated breadth, and education.
 
 ---
 
+> **STATUS — Phase 1 substantively complete, all live on pitcast.austenite.org:**
+> `uq.js` framework (32 unit tests) ✓ · CO₂ T×pCO₂ disagreement map ✓ · validity-envelope +
+> ensemble cards on all **5 load-bearing engines** (CO₂, CPT, B31G method-spread, FFS, MR0175) ✓ ·
+> **Model Atlas** (12 domains, ~30 cited models + validity envelopes) ✓. Benchmark unchanged
+> (CPT LOO MAE 6.58 °C); FFS self-test 29/29.
+> **Honest residuals, by design:** the ~9 lighter *screening* engines (CP/AC, galvanic, CIPS, HIC,
+> MIC, CUI, RBI, anode, groundbed) are documented centrally in the Model Atlas rather than carrying
+> per-tab cards — forcing number-line cards onto design calculators would be theater. The full 2-D
+> disagreement map is on CO₂ (the genuinely multi-model engine); B31G carries a method-spread.
+
 # PHASE 1 — DEEPEN THE UNIQUE CORE  (highest priority)
 
 **Objective:** make the 5 unique tools real across *all* 13 domains, not just CO₂.
