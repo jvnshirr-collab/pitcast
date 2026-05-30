@@ -34,6 +34,11 @@
       "T_C": 80, "pCO2_bar": 6.2, "u_m_s": 0.1, "d_pipe_m": 0.089,
       "Fe2_ppm": 10, "scope": "cs_aqueous",
       "note": "stagnant 2-L autoclave; 187 h steady-state LPR; scale-forming at 80 C; pH computed in-situ"
+    },
+    "Peng 2024 - L360N blank, CO2-saturated 5% NaCl, 40 C": {
+      "T_C": 40, "pCO2_bar": 0.93, "u_m_s": 0.1, "d_pipe_m": 0.05,
+      "Fe2_ppm": 10, "scope": "cs_aqueous",
+      "note": "CO2-saturated at 1 atm (pCO2 ~ 1 - P_H2O(40C) ~ 0.93 bar); 5 wt% NaCl; 72 h weight-loss; quiescent cell; pH omitted -> computed in-situ"
     }
   }
 }

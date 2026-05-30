@@ -77,6 +77,17 @@
     "note": "Companion to the 4.1 bar point. Steady-state (187 h) LPR rate, text-stated as 'approximately 0.28 mm/y' at 0.62 MPa CO2, 80 C. Scale-forming; pH computed in-situ."
   },
   {
+    "domain": "CO2",
+    "case": "Peng 2024 - L360N blank, CO2-saturated 5% NaCl, 40 C",
+    "conditions": "T 40 C, CO2-saturated (~0.93 bar pCO2 at 1 atm), 5 wt% NaCl, 72 h weight-loss; L360N carbon steel; blank (no inhibitor)",
+    "measured": 0.323,
+    "units": "mm/y",
+    "uncertainty": 0.005,
+    "source": "Peng L. et al., Materials 17(5) (2024) 1094",
+    "doi": "10.3390/ma17051094",
+    "note": "In-envelope blank weight-loss CR (Table 1) from an open-access MDPI inhibitor study; 72 h average at 40 C, CO2-saturated 5% NaCl. Explicit uncertainty +/-0.005. pH not reported (computed in-situ). Independent of Elgaddafi; both show bulk active-corrosion models over-predict the multi-day weight-loss rate."
+  },
+  {
     "domain": "CRA",
     "case": "304 stainless - CPT in ferric chloride",
     "conditions": "10% FeCl3 (ASTM G48 ferric-chloride family); 18Cr-8.6Ni-0.05Mo heat",

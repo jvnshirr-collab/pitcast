@@ -113,9 +113,18 @@ electrochemical row.
 *over-predict* the deeply FeCO₃-scaled steady-state rate by ~4× (in-scope envelope
 coverage 33%→20%): a real, documented limitation, surfaced not hidden.
 
-Net: **3 verified cases added** (1 CPT G48 + 2 in-envelope CO₂) through the live library
-hunt. In-envelope CO₂ data IS reachable — just scarce and scale-dominated in the
-accessible literature — so the corpus grows opportunistically rather than being gated.
+**CO₂ (in-envelope, second independent source):** Peng et al. 2024 (*Materials* 17(5):1094;
+DOI 10.3390/ma17051094, MDPI open access) — Table 1 blank L360N carbon steel,
+**0.323 ± 0.005 mm/y**, 40 °C, CO₂-saturated (~0.93 bar), 5 wt% NaCl, 72 h weight-loss.
+Measured 0.323 vs ensemble 0.5–5.06 (best model de Waard 1995 ≈ 0.5, ~1.5× over — the
+closest fit of any case).
+
+Net: **4 verified cases added** (1 CPT G48 + **3 in-envelope CO₂ from 2 independent
+sources**) through the live library hunt. The CO₂ in-scope corpus doubled (3 → 6). All
+three in-envelope CO₂ points fall *below* the ensemble: the screening (active-corrosion)
+models **over-predict real multi-day weight-loss rates by 1.5–4×** — a known conservative
+behaviour, now quantified honestly (in-scope coverage 17%). In-envelope CO₂ data IS
+reachable — just scarce and figure-dominated — so the corpus grows opportunistically.
 
 ## The one rule under all the others
 
