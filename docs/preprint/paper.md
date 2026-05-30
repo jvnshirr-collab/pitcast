@@ -80,9 +80,11 @@ design and is not a substitute for alloy- or heat-specific qualification testing
 - **Corroded-pipe fitness-for-service.** ASME B31G and Modified B31G (RSTRENG)
   [@asmeB31G; @kiefner1989] remaining-strength estimates, including batch assessment
   of in-line-inspection (ILI) defect lists, **validated against 19 full-scale
-  corroded-pipe burst tests** [@efa2020; @qi2023]: Modified-B31G predicts a mean
-  0.689× the measured burst (100 % conservative across all 19), reproducing the
-  literature and confirming the method's safe-side bias.
+  corroded-pipe burst tests** [@benjamin2016; @efa2020; @qi2023]: Modified-B31G
+  predicts a mean 0.689× the measured burst (100 % conservative across all 19),
+  consistent with the originating MTI-JIP study's own finding that B31G is uniformly
+  conservative (predicted/measured 0.39–0.83) and confirming the method's safe-side
+  bias.
 - **Glass-box + education.** Every engine exposes its equation, citation, validity
   envelope, and uncertainty; an integrated "Learn" track provides live worked-example
   walkthroughs.

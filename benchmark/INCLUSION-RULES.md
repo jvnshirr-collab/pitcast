@@ -166,6 +166,24 @@ cases (Elgaddafi 80 °C, 187 h) even the lowest model over-predicts ~1.3–4×. 
 decision-relevant lesson stands: **never trust a single CO₂ model — the disagreement envelope
 is the honest output.**
 
+## ✓ Verified + upgraded (2026-05-30, cont.) — burst data traced to its primary source
+
+Via METU/Elsevier access the **primary** source of the IDTS burst series was opened —
+Benjamin, Freire, Vieira & Cunha, *Int. J. Press. Vessels Pip.* 145 (2016) 41–59
+(DOI 10.1016/j.ijpvp.2016.06.006), "MTI JIP database of corroded pipe tests" — and:
+- **Re-attributed** all 18 IDTS specimens in `b31g-burst.json` to Benjamin 2016 (primary);
+  Mousavi 2020 (EFA 108:104284) is retained as the secondary tabulation.
+- **Double-verified** every measured failure pressure: Benjamin Table 8 and Mousavi Table 4
+  agree exactly with the stored values (e.g. IDTS 13 = 26.6 MPa, IDTS 26 = 19.8 MPa);
+  geometry cross-checked against Benjamin Table 6.
+- **Cross-checked the engine** against the source's own published B31G results: Benjamin
+  reports B31G predicted/measured ratios of 0.39–0.83 (uniformly conservative; single-defect
+  mean error 15.4 %). PitCast's `b31g.js` gives mean ratio 0.689 across all 19 — same band,
+  100 % conservative. No contradiction.
+
+The burst data is now traced to, and verified against, its origin — the strongest provenance
+any point in the corpus has.
+
 ## The one rule under all the others
 
 **Never invent a datapoint, DOI, author, or condition.** A benchmark that lies

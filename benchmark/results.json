@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-05-30T16:44:39.244Z",
+  "generated_utc": "2026-05-30T17:01:09.315Z",
   "about": "PitCast reproducible open benchmark v0 — built only on cited in-repo data.",
   "cpt_leave_one_out": {
     "basis": "ASTM G48-type FeCl3 immersion (headline); all-method LOO shown for transparency",
@@ -963,13 +963,14 @@
       "MAPE_pct": 31.1
     },
     "sources": {
-      "EFA2020": "Failure pressure estimation error for corroded pipeline using various revisions of ASME B31G, Engineering Failure Analysis 108 (2020) 104284 (Table 4, IDTS burst-test series), DOI 10.1016/j.engfailanal.2019.104284",
+      "BENJAMIN2016": "Benjamin A.C., Freire J.L.F., Vieira R.D., Cunha D.J.S., Interaction of corrosion defects in pipelines - Part 2: MTI JIP database of corroded pipe tests, Int. J. Press. Vessels Pip. 145 (2016) 41-59, DOI 10.1016/j.ijpvp.2016.06.006. PRIMARY source of the IDTS 13-30 series: full-scale hydrotest-to-failure of API 5L X70 (OD 457.2 mm, t ~7.9 mm) with spark-eroded defect colonies. Measured failure pressures = Table 8; cluster geometry = Table 6; per-tube yields = Table 1.",
+      "EFA2020": "Mousavi S.S., Moghaddam A.S., Failure pressure estimation error for corroded pipeline using various revisions of ASME B31G, Engineering Failure Analysis 108 (2020) 104284, DOI 10.1016/j.engfailanal.2019.104284. Secondary tabulation of the same IDTS series (its Table 4); used to cross-verify every value.",
       "QI2023": "Qi C. et al., Experiments and evaluation on residual strength of X52 steel pipe with various internal defects, Front. Energy Res. 10 (2023) 1046900, DOI 10.3389/fenrg.2022.1046900"
     },
     "cases": [
       {
         "id": "IDTS 13",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 7.9,
         "yield_MPa": 639,
@@ -984,7 +985,7 @@
       },
       {
         "id": "IDTS 14",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 7.9,
         "yield_MPa": 639,
@@ -999,7 +1000,7 @@
       },
       {
         "id": "IDTS 15",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 7.9,
         "yield_MPa": 639,
@@ -1014,7 +1015,7 @@
       },
       {
         "id": "IDTS 16",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 7.91,
         "yield_MPa": 662,
@@ -1029,7 +1030,7 @@
       },
       {
         "id": "IDTS 17",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 7.91,
         "yield_MPa": 662,
@@ -1044,7 +1045,7 @@
       },
       {
         "id": "IDTS 18",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 7.91,
         "yield_MPa": 662,
@@ -1059,7 +1060,7 @@
       },
       {
         "id": "IDTS 19",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 7.91,
         "yield_MPa": 662,
@@ -1074,7 +1075,7 @@
       },
       {
         "id": "IDTS 20",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 7.94,
         "yield_MPa": 654,
@@ -1089,7 +1090,7 @@
       },
       {
         "id": "IDTS 21",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 7.94,
         "yield_MPa": 654,
@@ -1104,7 +1105,7 @@
       },
       {
         "id": "IDTS 22",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 7.94,
         "yield_MPa": 654,
@@ -1119,7 +1120,7 @@
       },
       {
         "id": "IDTS 23",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 7.94,
         "yield_MPa": 654,
@@ -1134,7 +1135,7 @@
       },
       {
         "id": "IDTS 24",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 8.01,
         "yield_MPa": 652,
@@ -1149,7 +1150,7 @@
       },
       {
         "id": "IDTS 25",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 8.01,
         "yield_MPa": 652,
@@ -1164,7 +1165,7 @@
       },
       {
         "id": "IDTS 26",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 8.01,
         "yield_MPa": 652,
@@ -1179,7 +1180,7 @@
       },
       {
         "id": "IDTS 27",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 8.01,
         "yield_MPa": 652,
@@ -1194,7 +1195,7 @@
       },
       {
         "id": "IDTS 28",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 7.92,
         "yield_MPa": 580,
@@ -1209,7 +1210,7 @@
       },
       {
         "id": "IDTS 29",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 7.92,
         "yield_MPa": 580,
@@ -1224,7 +1225,7 @@
       },
       {
         "id": "IDTS 30",
-        "src": "EFA2020",
+        "src": "BENJAMIN2016",
         "OD_mm": 457.3,
         "t_mm": 7.92,
         "yield_MPa": 580,

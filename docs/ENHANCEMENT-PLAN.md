@@ -62,6 +62,27 @@ reproducibility, integrated breadth, and education.
 > (environmental, like the screenshot timeouts) — the JSON schema is verified from a real
 > on-disk export. **Phase 2 complete.**
 
+---
+
+> **STATUS — Phase 3 (trust: benchmark, validation, citation) complete on the build side,
+> all live/pushed:**
+> **WS3.1 corpus** ✓ — 3 validation domains: pitting CPT (n=51 LOO, MAE 6.58 °C, G48 basis;
+> +254 SMO), CO₂ ensemble (10 in-scope cases over 20–80 °C from 5 independent cited sources;
+> envelope coverage 30 %, lower-bound model brackets mild-condition blank rates), and
+> **corroded-pipe burst** (19 full-scale tests; Mod-B31G mean 0.689× measured, 100 %
+> conservative, MAPE 31 %). Every point tabulated, in-envelope, DOI-cited, and (recent adds)
+> verified against the source PDF; the burst series is **double-verified against its primary
+> source** (Benjamin 2016 MTI JIP DB) + a secondary tabulation. **WS3.2 oracle tests** ✓ — 92
+> gated assertions (`test-uq/b31g/ffs/mr0175.js`) + burst domain, enforced as a pre-deploy gate
+> by `test-all.js`. **WS3.4 education** ✓ — 4 live Learn walkthroughs (CO₂/CPT/B31G/MR0175).
+> **WS3.3 paper** ✓ build-side — `paper.md` + `paper.bib` + `.zenodo.json` + `CITATION.cff`
+> finalized + accurate to the 3-domain benchmark.
+> **The one remaining P3 item is author-gated and cannot be done by the assistant:** minting the
+> Zenodo DOI + submitting to JOSS + making the repo public require the author's
+> ORCID/GitHub/Zenodo login (a hard safety boundary). Steps pre-staged in
+> `docs/preprint/SUBMISSION-CHECKLIST.md`. **Phase 3 complete to the limit reachable without the
+> author's accounts.**
+
 # PHASE 1 — DEEPEN THE UNIQUE CORE  (highest priority)
 
 **Objective:** make the 5 unique tools real across *all* 13 domains, not just CO₂.
