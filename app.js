@@ -312,6 +312,40 @@ function showWork(title, steps){
     + steps.map(function(s){ return '<li>' + s + '</li>'; }).join('')
     + '</ol></details>';
 }
+// Validity-envelope card — visualizes a standard r.uq.envelope (UQ.envelopeCheck)
+// as labelled number-lines: valid range shaded, current value marked with ▼, and
+// out-of-range flagged by icon + text (not colour alone — WCAG 1.4.1). Reusable
+// by every engine that emits a standard r.uq block.
+function envBars(env){
+  if(!env || !env.variables || !env.variables.length) return "";
+  const NAME={T_C:"Temperature",pH:"in-situ pH",pCO2:"pCO₂",velocity:"velocity",Cl:"chloride"};
+  const UNIT={T_C:"°C",pH:"",pCO2:"bar",velocity:"m/s",Cl:"ppm"};
+  const fn=x=> (x==null)?"–":(Math.abs(x)>=10?(+x).toFixed(0):(+x).toFixed(1));
+  const rng=(lo,hi)=> (lo==null?"≤ ":fn(lo)+"–")+(hi==null?"":fn(hi));
+  const rows=env.variables.filter(v=>v.value!=null).map(v=>{
+    const lo=v.lo, hi=v.hi, within=v.inEnvelope===true;
+    const span=(lo!=null&&hi!=null)?(hi-lo):(Math.abs(v.value)||1);
+    const amin=Math.min(lo!=null?lo:v.value, v.value)-0.18*span;
+    let amax=Math.max(hi!=null?hi:v.value, v.value)+0.18*span; if(amax<=amin) amax=amin+1;
+    const pct=x=>Math.max(0,Math.min(100,(x-amin)/(amax-amin)*100));
+    const loP=lo!=null?pct(lo):0, hiP=hi!=null?pct(hi):100, vP=pct(v.value);
+    const c=within?"#22c55e":"#f59e0b", icon=within?"✓":"⚠";
+    const stat=within?("within "+rng(lo,hi)):(v.status==="above"?("above "+fn(hi)+" — extrapolated"):v.status==="below"?("below "+fn(lo)+" — extrapolated"):"out of range");
+    return '<div style="margin:7px 0">'
+      +'<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:3px">'
+      +'<span>'+(NAME[v.name]||v.name)+': <b style="color:var(--ink)">'+fn(v.value)+' '+(UNIT[v.name]||"")+'</b></span>'
+      +'<span style="color:'+c+'">'+icon+' '+stat+'</span></div>'
+      +'<div style="position:relative;height:10px;background:rgba(148,163,184,.12);border-radius:5px">'
+      +'<div style="position:absolute;left:'+loP+'%;width:'+Math.max(0,hiP-loP)+'%;top:0;bottom:0;background:rgba(34,197,94,.22);border-left:1px solid rgba(34,197,94,.5);border-right:1px solid rgba(34,197,94,.5);border-radius:3px"></div>'
+      +'<div style="position:absolute;left:'+vP+'%;top:-3px;width:2px;height:16px;background:'+c+';transform:translateX(-1px)"></div>'
+      +'<div style="position:absolute;left:'+vP+'%;top:-10px;transform:translateX(-50%);font-size:9px;color:'+c+'">▼</div>'
+      +'</div></div>';
+  }).join("");
+  const allIn=env.allInEnvelope;
+  return '<div style="margin:10px 0;padding:10px 12px;border:1px solid '+(allIn?"rgba(34,197,94,.35)":"rgba(245,158,11,.45)")+';border-radius:8px;background:'+(allIn?"rgba(34,197,94,.05)":"rgba(245,158,11,.07)")+'">'
+    +'<div style="font-size:12px;color:var(--dim);margin-bottom:5px">Model validity envelope — <b style="color:'+(allIn?"#22c55e":"#f59e0b")+'">'+(allIn?"✓ inputs within validated range":"⚠ extrapolating outside validated range")+'</b></div>'
+    +rows+'</div>';
+}
 function renderCO2(){
   if(!$("co2_results")||!window.CO2||!window.Charts) return;
   const gv=id=>$(id)?$(id).value:"";
@@ -345,6 +379,7 @@ function renderCO2(){
       <div style="font-size:12px;color:var(--dim)">5-model ensemble — <b style="color:var(--ink)">disagreement view</b></div>
       <div style="font-size:22px;font-weight:700;margin:2px 0">${r.crMin.toFixed(r.crMin<1?3:2)} – ${r.crMax.toFixed(r.crMax<1?3:2)} <span style="font-size:12px;font-weight:400;color:var(--dim)">mm/y · spread ${r.spread.toFixed(0)}×</span></div>
       <div style="font-size:12px;color:var(--dim);line-height:1.5">${r.spread>=3?"⚠ Models disagree strongly — read the band as your uncertainty, not a single number. Where a protective FeCO₃/FeS film dominates, even the lowest model can read high (see benchmark envelope-coverage, About).":"Models broadly agree — the band is your uncertainty range."}</div></div>
+    ${envBars(r.uq&&r.uq.envelope)}
     <div class="blab2">Model verdicts (mm/y)</div>${bars}
     <div class="chartwrap">${crT}</div>
     <div class="chartwrap">${crP}</div>
