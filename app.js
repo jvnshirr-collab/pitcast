@@ -196,6 +196,9 @@ function renderAssess(){
   sw.push('90% band: CPT ± 1.645·SE = ' + r.cpt.toFixed(0) + ' ± ' + ci.toFixed(0) + ' °C');
   let agedNote = "";
   if (r.aged && r.fsig>0) agedNote = ` σ-phase ${(r.fsig*100).toFixed(1)} vol% from ageing lowers the local CPT.`;
+  // Validity-envelope card (universal r.uq layer): the CPT fit is calibrated on
+  // PREN_N30 ∈ [prenMin, prenMax] (Nyby 2021); outside that the value is extrapolated.
+  const aEnvCard = (!oos && window.UQ) ? envBars(UQ.envelopeCheck({PREN_N30:_pn30},{PREN_N30:[PitCast.cptConstants.prenMin,PitCast.cptConstants.prenMax]})) : "";
   $("a_results").innerHTML = `
     ${oos ? `<div class="oos">⚠ ${g.name} has only ${cr.toFixed(1)}% Cr — below the stainless range.
       PitCast's PREN / CPT / pitting model is calibrated for stainless, duplex and Ni-base CRAs,
@@ -210,6 +213,7 @@ function renderAssess(){
       <div class="metric"><div class="k">CPT</div><div class="val">${r.cptCapped?"≥120":r.cpt.toFixed(0)}<span class="u"> °C</span></div><div class="u">${r.cptCapped?"immune (aqueous)":"±"+ci.toFixed(0)+" (90%)"}</div></div>
       <div class="metric"><div class="k">Rel. cost</div><div class="val">${r.cost.toFixed(2)}<span class="u">×</span></div><div class="u">304L=1</div></div>
     </div>
+    ${aEnvCard}
     ${(!oos && (_pn30 < PitCast.cptConstants.prenMin || _pn30 > PitCast.cptConstants.prenMax)) ? `<div class="cdnote">⚠ EXTRAPOLATION — PREN<sub>N30</sub> ${_pn30.toFixed(0)} is outside the Nyby 2021 calibration range (${PitCast.cptConstants.prenMin}–${PitCast.cptConstants.prenMax}); the CPT value is extrapolated beyond the fitted data — indicative only.</div>` : ""}
     ${oos ? "" : `<div style="margin:8px 0;padding:7px 10px;font-size:12px;line-height:1.5;color:var(--dim);border-left:3px solid #22c55e;background:rgba(34,197,94,.06);border-radius:4px">✓ CPT model validated — leave-one-out MAE 6.58 °C on n=51 cited records (reproducible: <code>node benchmark/run.js</code>). The ±${ci.toFixed(0)} °C above is the 90% prediction band.</div>`}
     <div class="bars">
@@ -318,8 +322,8 @@ function showWork(title, steps){
 // by every engine that emits a standard r.uq block.
 function envBars(env){
   if(!env || !env.variables || !env.variables.length) return "";
-  const NAME={T_C:"Temperature",pH:"in-situ pH",pCO2:"pCO₂",velocity:"velocity",Cl:"chloride"};
-  const UNIT={T_C:"°C",pH:"",pCO2:"bar",velocity:"m/s",Cl:"ppm"};
+  const NAME={T_C:"Temperature",pH:"in-situ pH",pCO2:"pCO₂",velocity:"velocity",Cl:"chloride",PREN_N30:"PREN(N30)",dt:"defect depth d/t",pH2S:"pH₂S",MAOP_ratio:"hoop / flow-stress"};
+  const UNIT={T_C:"°C",pH:"",pCO2:"bar",velocity:"m/s",Cl:"ppm",PREN_N30:"",dt:"%",pH2S:"kPa",MAOP_ratio:""};
   const fn=x=> (x==null)?"–":(Math.abs(x)>=10?(+x).toFixed(0):(+x).toFixed(1));
   const rng=(lo,hi)=> (lo==null?"≤ ":fn(lo)+"–")+(hi==null?"":fn(hi));
   const rows=env.variables.filter(v=>v.value!=null).map(v=>{
