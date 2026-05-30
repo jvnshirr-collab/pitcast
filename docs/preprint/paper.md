@@ -13,7 +13,7 @@ authors:
     orcid: 0009-0004-3573-5709
     affiliation: 1
 affiliations:
-  - name: Department of Metallurgical and Materials Engineering, Middle East Technical University (METU), Ankara, Türkiye   # [confirm; list as independent / student contributor if preferred]
+  - name: Department of Metallurgical and Materials Engineering, Middle East Technical University (METU), Ankara, Türkiye
     index: 1
 date: 30 May 2026
 bibliography: paper.bib
