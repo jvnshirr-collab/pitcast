@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-05-30T14:59:28.354Z",
+  "generated_utc": "2026-05-30T15:24:35.609Z",
   "about": "PitCast reproducible open benchmark v0 — built only on cited in-repo data.",
   "cpt_leave_one_out": {
     "basis": "ASTM G48-type FeCl3 immersion (headline); all-method LOO shown for transparency",
@@ -413,39 +413,39 @@
     "on_basis_MAE_C": 3.53
   },
   "co2_ensemble": {
-    "n_cases_total": 5,
-    "n_cases_in_scope_cs": 3,
-    "envelope_coverage_in_scope": 0.33,
+    "n_cases_total": 7,
+    "n_cases_in_scope_cs": 5,
+    "envelope_coverage_in_scope": 0.2,
     "per_model_error_in_scope": [
       {
         "id": "DWM-1975",
-        "MAE_mmpy": 722.11,
-        "RMSE_mmpy": 1218.13,
-        "bias_mmpy": 722.11
+        "MAE_mmpy": 443.98,
+        "RMSE_mmpy": 943.72,
+        "bias_mmpy": 443.98
       },
       {
         "id": "DWM-1995",
-        "MAE_mmpy": 2.8,
-        "RMSE_mmpy": 3.35,
-        "bias_mmpy": 2.8
+        "MAE_mmpy": 2.1,
+        "RMSE_mmpy": 2.68,
+        "bias_mmpy": 2.1
       },
       {
         "id": "NORSOK",
-        "MAE_mmpy": 2.16,
-        "RMSE_mmpy": 2.71,
-        "bias_mmpy": 1.55
+        "MAE_mmpy": 1.72,
+        "RMSE_mmpy": 2.21,
+        "bias_mmpy": 1.35
       },
       {
         "id": "NESC",
-        "MAE_mmpy": 9.85,
-        "RMSE_mmpy": 11.94,
-        "bias_mmpy": 9.85
+        "MAE_mmpy": 8.93,
+        "RMSE_mmpy": 10.43,
+        "bias_mmpy": 8.93
       },
       {
         "id": "FreeCorp",
-        "MAE_mmpy": 153.86,
-        "RMSE_mmpy": 232.44,
-        "bias_mmpy": 153.86
+        "MAE_mmpy": 100.97,
+        "RMSE_mmpy": 180.58,
+        "bias_mmpy": 100.97
       }
     ],
     "cases": [
@@ -653,6 +653,88 @@
           }
         ],
         "source": "Nyborg R., NACE Paper 07522 (2007)"
+      },
+      {
+        "case": "Elgaddafi 2015 - autoclave 80 C, 4.1 bar CO2",
+        "scope": "cs_aqueous",
+        "note": "stagnant 2-L autoclave (8.9 cm dia); 187 h steady-state LPR; scale-forming at 80 C; pH omitted -> computed in-situ (Crolet-Bonis), no added bicarbonate",
+        "measured_mmpy": 0.32,
+        "uncertainty_mmpy": 0.1,
+        "ensemble_min_mmpy": 1.15,
+        "ensemble_max_mmpy": 23.36,
+        "spread_x": 20.3,
+        "measured_in_envelope": false,
+        "best_model": "NORSOK",
+        "best_model_cr_mmpy": 1.15,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 23.36,
+            "err_mmpy": 23.04
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 1.24,
+            "err_mmpy": 0.92
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 1.15,
+            "err_mmpy": 0.83
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 6.77,
+            "err_mmpy": 6.45
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 18.92,
+            "err_mmpy": 18.6
+          }
+        ],
+        "source": "Elgaddafi R. et al., J. Nat. Gas Sci. Eng. 27 (2015) 1620"
+      },
+      {
+        "case": "Elgaddafi 2015 - autoclave 80 C, 6.2 bar CO2",
+        "scope": "cs_aqueous",
+        "note": "stagnant 2-L autoclave; 187 h steady-state LPR; scale-forming at 80 C; pH computed in-situ",
+        "measured_mmpy": 0.28,
+        "uncertainty_mmpy": 0.1,
+        "ensemble_min_mmpy": 1.45,
+        "ensemble_max_mmpy": 30.82,
+        "spread_x": 21.3,
+        "measured_in_envelope": false,
+        "best_model": "DWM-1995",
+        "best_model_cr_mmpy": 1.45,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 30.82,
+            "err_mmpy": 30.54
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 1.45,
+            "err_mmpy": 1.17
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 1.55,
+            "err_mmpy": 1.27
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 8.93,
+            "err_mmpy": 8.65
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 24.96,
+            "err_mmpy": 24.68
+          }
+        ],
+        "source": "Elgaddafi R. et al., J. Nat. Gas Sci. Eng. 27 (2015) 1620"
       }
     ]
   }

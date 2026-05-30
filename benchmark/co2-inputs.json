@@ -24,6 +24,16 @@
       "T_C": 175, "pCO2_bar": 100, "pH": 4.5, "u_m_s": 5.0, "d_pipe_m": 0.10,
       "Fe2_ppm": 60, "scope": "cs_aqueous",
       "note": "protective FeCO3 scale dominates at high T"
+    },
+    "Elgaddafi 2015 - autoclave 80 C, 4.1 bar CO2": {
+      "T_C": 80, "pCO2_bar": 4.1, "u_m_s": 0.1, "d_pipe_m": 0.089,
+      "Fe2_ppm": 10, "scope": "cs_aqueous",
+      "note": "stagnant 2-L autoclave (8.9 cm dia); 187 h steady-state LPR; scale-forming at 80 C; pH omitted -> computed in-situ (Crolet-Bonis), no added bicarbonate"
+    },
+    "Elgaddafi 2015 - autoclave 80 C, 6.2 bar CO2": {
+      "T_C": 80, "pCO2_bar": 6.2, "u_m_s": 0.1, "d_pipe_m": 0.089,
+      "Fe2_ppm": 10, "scope": "cs_aqueous",
+      "note": "stagnant 2-L autoclave; 187 h steady-state LPR; scale-forming at 80 C; pH computed in-situ"
     }
   }
 }

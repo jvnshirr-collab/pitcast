@@ -55,6 +55,28 @@
     "note": "High-T FeCO3 scale dominates; without scale CR would be ~15 mm/y. Ported verbatim from austenite co2.ts CO2_VALIDATIONS (nyborg-2007-hpht). NACE conference paper; no DOI."
   },
   {
+    "domain": "CO2",
+    "case": "Elgaddafi 2015 - autoclave 80 C, 4.1 bar CO2",
+    "conditions": "T 80 C, pCO2 0.41 MPa (4.1 bar), 2% NaCl, stagnant, 187 h; steady-state LPR; scale-forming (FeCO3 >60 C); AISI C1045",
+    "measured": 0.32,
+    "units": "mm/y",
+    "uncertainty": 0.1,
+    "source": "Elgaddafi R. et al., J. Nat. Gas Sci. Eng. 27 (2015) 1620",
+    "doi": "10.1016/j.jngse.2015.10.034",
+    "note": "First in-envelope CO2 case sourced via the live library hunt. Steady-state (187 h) LPR rate, text-stated as 'approximately 0.32 mm/y' at 0.41 MPa CO2, 80 C. Scale-forming regime; pH not reported (computed in-situ, no added bicarbonate)."
+  },
+  {
+    "domain": "CO2",
+    "case": "Elgaddafi 2015 - autoclave 80 C, 6.2 bar CO2",
+    "conditions": "T 80 C, pCO2 0.62 MPa (6.2 bar), 2% NaCl, stagnant, 187 h; steady-state LPR; scale-forming; AISI C1045",
+    "measured": 0.28,
+    "units": "mm/y",
+    "uncertainty": 0.1,
+    "source": "Elgaddafi R. et al., J. Nat. Gas Sci. Eng. 27 (2015) 1620",
+    "doi": "10.1016/j.jngse.2015.10.034",
+    "note": "Companion to the 4.1 bar point. Steady-state (187 h) LPR rate, text-stated as 'approximately 0.28 mm/y' at 0.62 MPa CO2, 80 C. Scale-forming; pH computed in-situ."
+  },
+  {
     "domain": "CRA",
     "case": "304 stainless - CPT in ferric chloride",
     "conditions": "10% FeCl3 (ASTM G48 ferric-chloride family); 18Cr-8.6Ni-0.05Mo heat",

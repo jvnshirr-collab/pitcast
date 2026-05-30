@@ -151,7 +151,7 @@ validation + adoption + citation we must build.
 
 ### WS3.1 — Benchmark corpus growth (honest, slow)  ✅
 - [x] Inclusion rule doc: **clean tabulated, in-envelope, cited** — nothing else. → `benchmark/INCLUSION-RULES.md` (honest rejected-data log + the added-case record).
-- [x] Use library access opportunistically; add verified cases; record source; re-run `run.js`; update coverage honestly. → **1 verified case added via the live library hunt**: 254 SMO ASTM G48 Method E CPT 65 °C (Outokumpu; on-basis, engine predicts 61.3 °C, Δ −3.7 °C; on-basis spot-check MAE 3.53 °C). The five CO₂ sources examined were all out-of-envelope/figure-only (logged) — CO₂ in-envelope data stays gated; growth continues opportunistically.
+- [x] Use library access opportunistically; add verified cases; record source; re-run `run.js`; update coverage honestly. → **3 verified cases added via the live library hunt**: (1) 254 SMO ASTM G48 Method E CPT 65 °C (Outokumpu; on-basis, predicts 61.3 °C, Δ −3.7 °C); (2,3) **in-envelope CO₂** — Elgaddafi 2015 (DOI 10.1016/j.jngse.2015.10.034) autoclave 80 °C, pCO₂ 4.1 & 6.2 bar, steady-state 0.32 & 0.28 mm/y. The CO₂ points **break the "all out-of-envelope" wall** and honestly show bulk models over-predict the scale-suppressed rate ~4× (in-scope coverage 33%→20%). Six other CO₂ sources examined were out-of-envelope/figure-only (logged). Growth continues opportunistically.
 - [x] Keep the **"small but fully disclosed = transparency strength"** note in the methods/limitations. *(Present in `benchmark/run.js` §4 "Coverage & honesty notes".)*
 
 ### WS3.2 — Regression / oracle test expansion  ✅

@@ -104,9 +104,18 @@ originator. On-basis, in-envelope, text-stated numeric value, labelled + stable 
 It is the first high-PREN (6Mo) point on the G48 spot-check: the engine predicts
 61.3 °C vs the measured 65 °C (Δ −3.7 °C, within the 6.58 °C LOO MAE). The same source's
 electrochemical (ASTM G150) value of 85 °C corroborates the existing 86.49 °C
-electrochemical row. So the CO₂ conclusion above stands (still data-gated), but the CPT
-spot-check corpus grew by one verified, correctly-based case — the inclusion process,
-working as intended.
+electrochemical row.
+
+**CO₂ (in-envelope, library-sourced):** Elgaddafi et al. 2015 (*J. Nat. Gas Sci. Eng.*
+27:1620; DOI 10.1016/j.jngse.2015.10.034) — autoclave, 2% NaCl, 80 °C, **pCO₂ 4.1 &
+6.2 bar (in-envelope)**, text-stated steady-state LPR rates 0.32 & 0.28 mm/y. These
+**break the "all CO₂ out-of-envelope" wall** — and honestly show the bulk models
+*over-predict* the deeply FeCO₃-scaled steady-state rate by ~4× (in-scope envelope
+coverage 33%→20%): a real, documented limitation, surfaced not hidden.
+
+Net: **3 verified cases added** (1 CPT G48 + 2 in-envelope CO₂) through the live library
+hunt. In-envelope CO₂ data IS reachable — just scarce and scale-dominated in the
+accessible literature — so the corpus grows opportunistically rather than being gated.
 
 ## The one rule under all the others
 
