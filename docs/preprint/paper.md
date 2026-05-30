@@ -68,15 +68,19 @@ design and is not a substitute for alloy- or heat-specific qualification testing
   prediction interval, not a point estimate.
 - **CO\textsubscript{2} corrosion ensemble.** Five canonical models
   [@deWaard1975; @deWaard1995; @norsok2017; @nyborg2010; @nesic2007] run on one
-  operating point with an explicit **model-disagreement (envelope) view**; over the
-  in-scope carbon-steel cases the envelope brackets the measurement in only 33 % of
-  cases — an honest, decision-relevant warning that bulk-flowline models over-predict
-  where protective films dominate.
+  operating point with an explicit **model-disagreement (envelope) view**. Evaluated
+  against independent in-envelope carbon-steel studies spanning 40–80 °C
+  [@elgaddafi2015], the active-corrosion models **over-predict measured multi-day
+  weight-loss rates by ~1.3–4×** — an honest, decision-relevant signal of their
+  conservatism where protective FeCO\textsubscript{3} scale forms.
 - **Sour-service spec issuer.** An ISO 15156 / NACE MR0175 [@iso15156] decision tree
   returning citation-grounded acceptability verdicts.
 - **Corroded-pipe fitness-for-service.** ASME B31G and Modified B31G (RSTRENG)
   [@asmeB31G; @kiefner1989] remaining-strength estimates, including batch assessment
-  of in-line-inspection (ILI) defect lists.
+  of in-line-inspection (ILI) defect lists, **validated against 19 full-scale
+  corroded-pipe burst tests** [@efa2020; @qi2023]: Modified-B31G predicts a mean
+  0.689× the measured burst (100 % conservative across all 19), reproducing the
+  literature and confirming the method's safe-side bias.
 - **Glass-box + education.** Every engine exposes its equation, citation, validity
   envelope, and uncertainty; an integrated "Learn" track provides live worked-example
   walkthroughs.
@@ -84,8 +88,11 @@ design and is not a substitute for alloy- or heat-specific qualification testing
 # Quality control and reproducibility
 
 All headline numbers regenerate from `node benchmark/run.js` using only cited
-in-repository data. The four load-bearing engines carry literature-anchored
-regression / oracle suites — for example, the ASME B31G Appendix-B worked example
+in-repository data, now spanning **three validation domains** — pitting CPT (n=51
+leave-one-out, MAE 6.58 °C), the CO\textsubscript{2} ensemble (independent in-envelope
+cases), and **corroded-pipe burst tests** (19 measured bursts vs B31G). The
+load-bearing engines also carry literature-anchored regression / oracle suites — the
+ASME B31G Appendix-B worked example
 [@asmeB31G], the ISO 15156-2 Figure 1 region boundaries [@iso15156], and the NACE
 TM0284 HIC acceptance limits — aggregated by `benchmark/test-all.js` and enforced as
 a pre-deployment gate. A documented data-inclusion rule
