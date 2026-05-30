@@ -70,10 +70,20 @@ identifier is in hand. No point is added to inflate `n`.
 - Dong et al., *Materials* 17(16):4046 (2024), ML model — only summary statistics
   (Table 1), raw points "cannot be publicly disclosed", supercritical-CO₂ training
   sources. DOI 10.3390/ma17164046.
+- Yin et al., *Surf. Interface Anal.* 41(6):517 (2009), DOI 10.1002/sia.3057 — full text
+  obtained via library (Wiley); high-pressure autoclave at **pCO₂ 4 MPa (40 bar), T
+  50–180 °C** → out of envelope (rule 3); the study is corrosion-product-layer focused
+  (SEM/XRD/XPS), weight-loss rate not tabulated at in-envelope conditions.
 - CPT side: reachable duplex CPT values are either electrochemical-basis (ASTM G150 in
   NaCl — **not** the G48 / 6% FeCl₃ basis the PitCast correlation is calibrated on; a
   basis mismatch would corrupt the spot-check), or the open reviews tabulate only
   composition / PREN, not measured CPT.
+
+**Five CO₂ sources examined, all out of envelope or figure-only** (incl. the
+library-accessible ones). The in-envelope (≤10 bar) regime's measured data lives in
+older paywalled NACE/AMPP papers (e.g. Gray 1989 CORROSION/89 Paper 464; Dugstad 1994
+CORROSION/94) not reachable through the current subscriptions. A point is added the
+moment such a source is in hand — not before.
 
 Conclusion: no responsibly-addable point was found. The corpus is held at its
 fully-trustworthy state (CPT n=51 leave-one-out; CO₂ small cited spot-check) rather
