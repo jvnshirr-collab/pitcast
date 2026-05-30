@@ -1005,6 +1005,50 @@ $("btnLink")&&($("btnLink").onclick=function(){
 // already-open tab). replaceState (used by Copy link) does not fire this; idempotent.
 window.addEventListener("hashchange", pcRestore);
 
+// ---- Structured JSON export (WS2.3) — machine-readable result for downstream tools
+// (RBI / integrity). Always emits inputs + permalink; adds the structured engine
+// result (incl. the r.uq schema) for the load-bearing engines. Reuses _dl().
+function exportActiveJSON(){
+  const at=document.querySelector(".tab.active"); const tab=at?at.dataset.tab:"assess";
+  const gv=id=>$(id)?$(id).value:"";
+  const panel=$("tab-"+tab), inputs={};
+  if(panel) panel.querySelectorAll("input[id],select[id],textarea[id]").forEach(function(el){
+    if(el.type==="button"||el.type==="file") return;
+    inputs[el.id]=(el.type==="checkbox")?el.checked:el.value;
+  });
+  const out={ schema:"pitcast.export/1", tool:"PitCast", url:"pitcast.austenite.org",
+    permalink: location.origin+location.pathname+(typeof pcEncode==="function"?pcEncode():""),
+    tab:tab, generated_utc:new Date().toISOString(),
+    disclaimer:"Screening-grade estimate — not a substitute for qualified engineering / the calculation-of-record.",
+    inputs:inputs };
+  try{
+    if(tab==="co2" && window.CO2){
+      const o={T:+gv("c_T"),pCO2:+gv("c_pCO2"),velocity:+gv("c_u"),pipeID:+gv("c_d"),fe2:+gv("c_fe2"),pH2S:+gv("c_pH2S")/100,waterCut:+gv("c_wc"),glycol:+gv("c_meg"),oilType:gv("c_oil"),bicarbonate:+gv("c_bicarb"),ageH:+gv("c_age")};
+      const pHr=gv("c_pH"); if(pHr!==""&&isFinite(+pHr)) o.pH=+pHr;
+      const r=CO2.assess(o);
+      out.result={ unit:"mm/y", crMin:r.crMin, crMax:r.crMax, spread:r.spread, verdict:r.verdict, regime:r.regime.regime, pH_insitu:r.pH_insitu, models:r.models.map(m=>({id:m.id,name:m.name,cr:m.cr,ref:m.ref})), uq:r.uq };
+    } else if(tab==="assess" && window.PitCast){
+      const g=currentGrade(); const svc={T:+gv("a_T"),Cl:+gv("a_Cl"),pH:+gv("a_pH"),pH2S:+gv("a_pH2S"),stress:+gv("a_stress"),HV:+gv("a_HV"),ageT:+gv("a_ageT"),aget:+gv("a_aget")};
+      const r=PitCast.assess(g.comp,svc);
+      out.grade={name:g.name,uns:g.uns,composition:g.comp};
+      out.result={ cpt_C:r.cpt, cptG48_C:r.cptG48, cptSE_C:r.cptSE, pren:r.pren, prenN30:PitCast.prenN30(g.comp), pPit:r.pPit, pScc:r.pScc, pSourFail:r.pSourFail, overall:r.overall, dominant:r.dominant, iso:r.iso, citation:"Nyby 2021 Sci. Data 8:58; ASTM G48; ISO 15156-3" };
+    } else if(tab==="integrity" && window.B31G){
+      const grade=B31G.GRADES[gv("b_grade")]||B31G.GRADES.X52, D=+gv("b_D"),t=+gv("b_t"),L=+gv("b_L"),d=+gv("b_d");
+      const ff=B31G.failurePressure({D,t,SMYS:grade.SMYS,L,d,method:gv("b_method")||"modb31g"});
+      const ffB=B31G.failurePressure({D,t,SMYS:grade.SMYS,L,d,method:"b31g"}), ffM=B31G.failurePressure({D,t,SMYS:grade.SMYS,L,d,method:"modb31g"});
+      out.result={ unit:"bar", method:ff.method, P_safe_bar:ff.P_safe_bar, P_f_bar:ff.P_f_bar, depthRatio:ff.depthRatio, regime:ff.regime, method_spread:{b31g_P_safe_bar:ffB.P_safe_bar, modb31g_P_safe_bar:ffM.P_safe_bar}, ref:ff.ref };
+    } else if(tab==="ffs" && window.FFS){
+      const p5=FFS.part5_LTA_L1({tmm_mm:+gv("ffs5_tmm"),t_nom_mm:+gv("ffs5_tnom"),LOSS_mm:+gv("ffs5_loss"),FCA_mm:+gv("ffs5_fca"),s_axial_mm:+gv("ffs5_s"),D_inside_mm:+gv("ffs5_D"),MAWP_design_bar:+gv("ffs5_mawp"),RSFa:+gv("ffs5_rsfa")});
+      out.result={ part5_LTA:{ Rt:p5.Rt, lambda:p5.lambda, Mt:p5.Mt, RSF:p5.RSF, RSFa:p5.RSFa, passes:p5.passes, MAWP_reduced_bar:p5.MAWP_reduced_bar, ref:p5.ref } };
+    } else if(tab==="mr0175" && window.MR0175){
+      const v=MR0175.issue({uns:gv("mr_uns").trim().toUpperCase(),composition:{Cr:+gv("mr_Cr"),Mo:+gv("mr_Mo"),Ni:+gv("mr_Ni"),N:+gv("mr_N"),C:0.05},T_C:+gv("mr_T"),pH2S_kPa:+gv("mr_pH2S"),Cl_mg_L:+gv("mr_Cl"),pH_in_situ:+gv("mr_pH"),stress_pct_SMYS:+gv("mr_stress"),hardness_HRC:+gv("mr_hrc"),equipment_class:gv("mr_equip"),scope:gv("mr_scope")});
+      out.result={ IN_SCOPE:v.IN_SCOPE, route:v.route, envelope:v.envelope, failure_reasons:v.failure_reasons, citations:v.citations };
+    }
+  }catch(e){ out.result_error=String((e&&e.message)||e); }
+  _dl("pitcast-"+tab+".json", JSON.stringify(out,null,2));
+}
+$("btnJSON")&&($("btnJSON").onclick=exportActiveJSON);
+
 // ---- validation-cases table (cited measured anchors) ------------------------
 function renderValidations(){
   const host = $("validTable");
