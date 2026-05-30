@@ -155,7 +155,7 @@ validation + adoption + citation we must build.
 - [x] Keep the **"small but fully disclosed = transparency strength"** note in the methods/limitations. *(Present in `benchmark/run.js` §4 "Coverage & honesty notes".)*
 
 ### WS3.2 — Regression / oracle test expansion  ✅
-- [x] Per-engine oracle suites in the gated `benchmark/`: `test-b31g.js` (27 — ASME B31G-2012 App. B Ex. 1), `test-ffs.js` (18 + embedded 29 — API 579 Parts 4-7 / NACE TM0284), `test-mr0175.js` (15 + embedded 10 — ISO 15156 boundaries), `test-uq.js` (32 — UQ math + CO₂ envelope-guard), `run.js` (CPT LOO + CO₂ ensemble vs cited data). `test-all.js` runs all (**92 gated assertions**) and is wired into `deploy.sh` as a hard pre-deploy gate.
+- [x] Per-engine oracle suites in the gated `benchmark/`: `test-b31g.js` (27 — ASME B31G-2012 App. B Ex. 1), `test-ffs.js` (18 + embedded 29 — API 579 Parts 4-7 / NACE TM0284), `test-mr0175.js` (15 + embedded 10 — ISO 15156 boundaries), `test-uq.js` (32 — UQ math + CO₂ envelope-guard), `run.js` (CPT LOO + CO₂ ensemble vs cited data). `test-all.js` runs all (**92 gated assertions**) and is wired into `deploy.sh` as a hard pre-deploy gate. **Plus a new B31G burst-test validation domain** in `run.js` (`benchmark/b31g-burst.json`, 19 real corroded-pipe bursts): Mod-B31G mean predicted/measured ratio 0.689, **100% conservative**, MAPE 31% — the first measured-failure validation of the metal-loss engine.
 
 ### WS3.3 — Methods paper / citation  *(drafted — final submit is author-gated)*
 - [x] Preprint finalized: long-form `docs/preprint/METHODS-NOTE.md` + **JOSS `paper.md` + `paper.bib`** (10 references, no fabricated DOIs — unverified ones flagged for the author), with `.zenodo.json` + `CITATION.cff` ready.

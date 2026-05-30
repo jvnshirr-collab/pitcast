@@ -131,6 +131,16 @@ ensemble** — the active-corrosion screening models **over-predict real multi-d
 weight-loss rates by ~1.3–4× (up to ~20× for heavily-scaled / long-exposure cases)**: a
 robust, quantified, decision-relevant finding (in-scope coverage 13%), surfaced not hidden.
 
+**New domain — B31G burst validation (19 cases):** added `benchmark/b31g-burst.json` —
+19 full-scale / ring corroded-pipe burst tests with **measured burst pressure** (18 from
+*Eng. Failure Analysis* 108:104284 Table 4, IDTS series, DOI 10.1016/j.engfailanal.2019.104284;
+1 from Qi et al. 2023, X52). `run.js` now validates `b31g.js` against them using each
+specimen's actual yield: Modified-B31G mean predicted/measured ratio **0.689 (100%
+conservative, MAPE 31%)**, original B31G 0.659 — i.e. the engine is appropriately
+conservative (never over-predicts a burst), matching the literature (~0.72). This is the
+first **measured-failure** validation of the metal-loss engine, diversifying the benchmark
+beyond CPT and CO₂.
+
 **On "industry scale":** the large CO₂ databases that would give it (e.g. the ~2400-point
 NORSOK / IFE loop database, 20–160 °C) are **proprietary** — which is precisely why an open
 benchmark like this is needed. The open literature yields only scattered, mostly

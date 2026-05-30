@@ -1,0 +1,28 @@
+{
+  "_README": "Full-scale / ring corroded-pipe BURST tests: measured failure pressure vs B31G prediction. Validates the metal-loss engine (b31g.js failurePressure) against real bursts -- the engine's predicted P_f (SF=1) is compared to the measured burst pressure. yield_MPa is the ACTUAL measured yield of each specimen (used as SMYS so the comparison isolates method error, not material over-strength). Defect = single axial metal-loss patch / cluster envelope (length L, max depth d). All values transcribed from the cited source tables; nothing fabricated or read off a figure. Run via ../benchmark/run.js.",
+  "sources": {
+    "EFA2020": "Failure pressure estimation error for corroded pipeline using various revisions of ASME B31G, Engineering Failure Analysis 108 (2020) 104284 (Table 4, IDTS burst-test series), DOI 10.1016/j.engfailanal.2019.104284",
+    "QI2023": "Qi C. et al., Experiments and evaluation on residual strength of X52 steel pipe with various internal defects, Front. Energy Res. 10 (2023) 1046900, DOI 10.3389/fenrg.2022.1046900"
+  },
+  "specimens": [
+    {"id": "IDTS 13", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 7.9,  "yield_MPa": 639, "L_mm": 60,  "d_mm": 3.07, "burst_MPa": 26.6},
+    {"id": "IDTS 14", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 7.9,  "yield_MPa": 639, "L_mm": 30,  "d_mm": 4.8,  "burst_MPa": 26.7},
+    {"id": "IDTS 15", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 7.9,  "yield_MPa": 639, "L_mm": 130, "d_mm": 4.76, "burst_MPa": 24.0},
+    {"id": "IDTS 16", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 7.91, "yield_MPa": 662, "L_mm": 190, "d_mm": 4.79, "burst_MPa": 23.4},
+    {"id": "IDTS 17", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 7.91, "yield_MPa": 662, "L_mm": 320, "d_mm": 4.82, "burst_MPa": 21.2},
+    {"id": "IDTS 18", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 7.91, "yield_MPa": 662, "L_mm": 170, "d_mm": 4.83, "burst_MPa": 22.7},
+    {"id": "IDTS 19", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 7.91, "yield_MPa": 662, "L_mm": 210, "d_mm": 4.82, "burst_MPa": 23.3},
+    {"id": "IDTS 20", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 7.94, "yield_MPa": 654, "L_mm": 430, "d_mm": 4.64, "burst_MPa": 20.8},
+    {"id": "IDTS 21", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 7.94, "yield_MPa": 654, "L_mm": 240, "d_mm": 4.83, "burst_MPa": 22.6},
+    {"id": "IDTS 22", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 7.94, "yield_MPa": 654, "L_mm": 210, "d_mm": 4.86, "burst_MPa": 20.3},
+    {"id": "IDTS 23", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 7.94, "yield_MPa": 654, "L_mm": 270, "d_mm": 4.85, "burst_MPa": 21.5},
+    {"id": "IDTS 24", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 8.01, "yield_MPa": 652, "L_mm": 260, "d_mm": 4.9,  "burst_MPa": 20.5},
+    {"id": "IDTS 25", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 8.01, "yield_MPa": 652, "L_mm": 340, "d_mm": 4.9,  "burst_MPa": 19.9},
+    {"id": "IDTS 26", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 8.01, "yield_MPa": 652, "L_mm": 340, "d_mm": 4.9,  "burst_MPa": 19.8},
+    {"id": "IDTS 27", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 8.01, "yield_MPa": 652, "L_mm": 420, "d_mm": 4.92, "burst_MPa": 21.3},
+    {"id": "IDTS 28", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 7.92, "yield_MPa": 580, "L_mm": 110, "d_mm": 4.9,  "burst_MPa": 23.2},
+    {"id": "IDTS 29", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 7.92, "yield_MPa": 580, "L_mm": 130, "d_mm": 4.95, "burst_MPa": 23.4},
+    {"id": "IDTS 30", "src": "EFA2020", "OD_mm": 457.3, "t_mm": 7.92, "yield_MPa": 580, "L_mm": 320, "d_mm": 4.93, "burst_MPa": 21.1},
+    {"id": "Qi 2023 #2 (X52, single defect)", "src": "QI2023", "OD_mm": 406, "t_mm": 10, "yield_MPa": 402, "L_mm": 100, "d_mm": 5.0, "burst_MPa": 22.03, "note": "single corrosion defect; yield ~402 MPa (paper reports specimen range 392-413)"}
+  ]
+}
