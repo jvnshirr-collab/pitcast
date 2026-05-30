@@ -35,10 +35,12 @@ reproducibility, integrated breadth, and education.
 > ensemble cards on all **5 load-bearing engines** (CO₂, CPT, B31G method-spread, FFS, MR0175) ✓ ·
 > **Model Atlas** (12 domains, ~30 cited models + validity envelopes) ✓. Benchmark unchanged
 > (CPT LOO MAE 6.58 °C); FFS self-test 29/29.
-> **Honest residuals, by design:** the ~9 lighter *screening* engines (CP/AC, galvanic, CIPS, HIC,
-> MIC, CUI, RBI, anode, groundbed) are documented centrally in the Model Atlas rather than carrying
-> per-tab cards — forcing number-line cards onto design calculators would be theater. The full 2-D
-> disagreement map is on CO₂ (the genuinely multi-model engine); B31G carries a method-spread.
+> **Scope decisions (closed, not gaps):** the 2-D disagreement map is on **both** multi-method
+> engines — **CO₂** (5 models) and **B31G** (B31G vs Mod-B31G, diverges at long/deep defects);
+> single-model engines correctly have none. The ~9 lighter *screening* engines (CP/AC, galvanic,
+> CIPS, HIC, MIC, CUI, RBI, anode, groundbed) are documented centrally in the **Model Atlas** and
+> correctly do **not** carry per-tab validity cards — they are RISK screens (within a window = a
+> *hazard*), where the envelope-card "within = good" semantics would mislead. **Phase 1 complete.**
 
 # PHASE 1 — DEEPEN THE UNIQUE CORE  (highest priority)
 
