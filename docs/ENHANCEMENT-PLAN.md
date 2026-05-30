@@ -36,11 +36,12 @@ reproducibility, integrated breadth, and education.
 > **Model Atlas** (12 domains, ~30 cited models + validity envelopes) ✓. Benchmark unchanged
 > (CPT LOO MAE 6.58 °C); FFS self-test 29/29.
 > **Scope decisions (closed, not gaps):** the 2-D disagreement map is on **both** multi-method
-> engines — **CO₂** (5 models) and **B31G** (B31G vs Mod-B31G, diverges at long/deep defects);
-> single-model engines correctly have none. The ~9 lighter *screening* engines (CP/AC, galvanic,
-> CIPS, HIC, MIC, CUI, RBI, anode, groundbed) are documented centrally in the **Model Atlas** and
-> correctly do **not** carry per-tab validity cards — they are RISK screens (within a window = a
-> *hazard*), where the envelope-card "within = good" semantics would mislead. **Phase 1 complete.**
+> engines — **CO₂** (5 models) and **B31G** (diverges at long/deep defects); single-model engines
+> correctly have none. **CUI + HIC** carry correct-semantics **risk-window** bars (red band = inside
+> the active-damage window — the inverse of the validity card). The pure **design calculators**
+> (anode mass, groundbed R, galvanic ΔE) and **survey/categorical** screens (CIPS, MIC, RBI) carry
+> no per-output UQ band — correctly, there is no rate-uncertainty to band — and are documented in
+> the **Model Atlas**. **Phase 1 complete.**
 
 # PHASE 1 — DEEPEN THE UNIQUE CORE  (highest priority)
 
