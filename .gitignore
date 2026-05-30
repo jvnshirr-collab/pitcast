@@ -1,0 +1,8 @@
+# Secrets — never commit real deploy tokens (the .example template stays)
+.cf-tokens.env
+*.env
+
+# OS / editor / build cruft
+.DS_Store
+Thumbs.db
+node_modules/
