@@ -88,6 +88,28 @@
     "note": "In-envelope blank weight-loss CR (Table 1) from an open-access MDPI inhibitor study; 72 h average at 40 C, CO2-saturated 5% NaCl. Explicit uncertainty +/-0.005. pH not reported (computed in-situ). Independent of Elgaddafi; both show bulk active-corrosion models over-predict the multi-day weight-loss rate."
   },
   {
+    "domain": "CO2",
+    "case": "Aristia 2019 - St-37 geothermal brine, 70 C, CO2 purged",
+    "conditions": "T 70 C, CO2 continuous purge (~0.69 bar pCO2 at 1 atm), geothermal brine (1500 mg/L Cl-, 15 mg/L HCO3-), pH 4, 7 d; St-37 (S235JR) carbon steel",
+    "measured": 0.16,
+    "units": "mm/y",
+    "uncertainty": 0.03,
+    "source": "Aristia G., Hoa L.Q., Bassler R., Materials 12(22) (2019) 3801",
+    "doi": "10.3390/ma12223801",
+    "note": "In-envelope geothermal-brine CO2 rate, text-stated 0.16 mm/y at 70 C; low chloride (1500 mg/L) + 7 d exposure -> scaled/low. pH 4 measured. Open access (MDPI)."
+  },
+  {
+    "domain": "CO2",
+    "case": "Tang 2018 - Q235 blank, CO2-saturated 3.5% NaCl, 60 C",
+    "conditions": "T 60 C, CO2-saturated (~0.8 bar pCO2 at 1 atm), 3.5 wt% NaCl, 72 h weight-loss; Q235 carbon steel; blank (no inhibitor)",
+    "measured": 0.385,
+    "units": "mm/y",
+    "uncertainty": 0.02,
+    "source": "Tang J. et al., Molecules 23(12) (2018) 3270",
+    "doi": "10.3390/molecules23123270",
+    "note": "Blank weight-loss CR from Table 1, reported as 0.345 g/m2/h, converted to 0.385 mm/y (rho 7.85 g/cm3: 1 g/m2/h = 1.116 mm/y). 60 C, CO2-sat 3.5% NaCl, 72 h. pH computed in-situ. Open access."
+  },
+  {
     "domain": "CRA",
     "case": "304 stainless - CPT in ferric chloride",
     "conditions": "10% FeCl3 (ASTM G48 ferric-chloride family); 18Cr-8.6Ni-0.05Mo heat",

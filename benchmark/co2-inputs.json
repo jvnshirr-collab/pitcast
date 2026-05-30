@@ -39,6 +39,16 @@
       "T_C": 40, "pCO2_bar": 0.93, "u_m_s": 0.1, "d_pipe_m": 0.05,
       "Fe2_ppm": 10, "scope": "cs_aqueous",
       "note": "CO2-saturated at 1 atm (pCO2 ~ 1 - P_H2O(40C) ~ 0.93 bar); 5 wt% NaCl; 72 h weight-loss; quiescent cell; pH omitted -> computed in-situ"
+    },
+    "Aristia 2019 - St-37 geothermal brine, 70 C, CO2 purged": {
+      "T_C": 70, "pCO2_bar": 0.69, "pH": 4, "u_m_s": 0.1, "d_pipe_m": 0.05,
+      "bicarbonate_mg_l": 15, "Fe2_ppm": 5, "scope": "cs_aqueous",
+      "note": "CO2 purged at 1 atm (pCO2 ~ 1 - P_H2O(70C) ~ 0.69 bar); low-Cl geothermal brine; 7 d; pH 4 measured"
+    },
+    "Tang 2018 - Q235 blank, CO2-saturated 3.5% NaCl, 60 C": {
+      "T_C": 60, "pCO2_bar": 0.8, "u_m_s": 0.1, "d_pipe_m": 0.05,
+      "Fe2_ppm": 10, "scope": "cs_aqueous",
+      "note": "CO2-saturated at 1 atm (pCO2 ~ 0.8 bar at 60 C); 3.5% NaCl; 72 h; measured converted from 0.345 g/m2/h -> 0.385 mm/y; pH computed in-situ"
     }
   }
 }

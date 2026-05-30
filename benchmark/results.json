@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-05-30T15:52:39.863Z",
+  "generated_utc": "2026-05-30T16:03:03.759Z",
   "about": "PitCast reproducible open benchmark v0 — built only on cited in-repo data.",
   "cpt_leave_one_out": {
     "basis": "ASTM G48-type FeCl3 immersion (headline); all-method LOO shown for transparency",
@@ -413,39 +413,39 @@
     "on_basis_MAE_C": 3.53
   },
   "co2_ensemble": {
-    "n_cases_total": 8,
-    "n_cases_in_scope_cs": 6,
-    "envelope_coverage_in_scope": 0.17,
+    "n_cases_total": 10,
+    "n_cases_in_scope_cs": 8,
+    "envelope_coverage_in_scope": 0.13,
     "per_model_error_in_scope": [
       {
         "id": "DWM-1975",
-        "MAE_mmpy": 370.28,
-        "RMSE_mmpy": 861.49,
-        "bias_mmpy": 370.28
+        "MAE_mmpy": 278.78,
+        "RMSE_mmpy": 746.08,
+        "bias_mmpy": 278.78
       },
       {
         "id": "DWM-1995",
-        "MAE_mmpy": 1.78,
-        "RMSE_mmpy": 2.45,
-        "bias_mmpy": 1.78
+        "MAE_mmpy": 1.38,
+        "RMSE_mmpy": 2.12,
+        "bias_mmpy": 1.38
       },
       {
         "id": "NORSOK",
-        "MAE_mmpy": 2.22,
-        "RMSE_mmpy": 2.79,
-        "bias_mmpy": 1.92
+        "MAE_mmpy": 2.89,
+        "RMSE_mmpy": 3.45,
+        "bias_mmpy": 2.67
       },
       {
         "id": "NESC",
-        "MAE_mmpy": 7.49,
-        "RMSE_mmpy": 9.52,
-        "bias_mmpy": 7.49
+        "MAE_mmpy": 5.88,
+        "RMSE_mmpy": 8.27,
+        "bias_mmpy": 5.88
       },
       {
         "id": "FreeCorp",
-        "MAE_mmpy": 84.37,
-        "RMSE_mmpy": 164.85,
-        "bias_mmpy": 84.37
+        "MAE_mmpy": 64.13,
+        "RMSE_mmpy": 142.77,
+        "bias_mmpy": 64.13
       }
     ],
     "cases": [
@@ -776,6 +776,88 @@
           }
         ],
         "source": "Peng L. et al., Materials 17(5) (2024) 1094"
+      },
+      {
+        "case": "Aristia 2019 - St-37 geothermal brine, 70 C, CO2 purged",
+        "scope": "cs_aqueous",
+        "note": "CO2 purged at 1 atm (pCO2 ~ 1 - P_H2O(70C) ~ 0.69 bar); low-Cl geothermal brine; 7 d; pH 4 measured",
+        "measured_mmpy": 0.16,
+        "uncertainty_mmpy": 0.03,
+        "ensemble_min_mmpy": 0.45,
+        "ensemble_max_mmpy": 5.11,
+        "spread_x": 11.5,
+        "measured_in_envelope": false,
+        "best_model": "DWM-1995",
+        "best_model_cr_mmpy": 0.45,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 5.11,
+            "err_mmpy": 4.95
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 0.45,
+            "err_mmpy": 0.29
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 4.91,
+            "err_mmpy": 4.75
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 1.5,
+            "err_mmpy": 1.34
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 4.14,
+            "err_mmpy": 3.98
+          }
+        ],
+        "source": "Aristia G., Hoa L.Q., Bassler R., Materials 12(22) (2019) 3801"
+      },
+      {
+        "case": "Tang 2018 - Q235 blank, CO2-saturated 3.5% NaCl, 60 C",
+        "scope": "cs_aqueous",
+        "note": "CO2-saturated at 1 atm (pCO2 ~ 0.8 bar at 60 C); 3.5% NaCl; 72 h; measured converted from 0.345 g/m2/h -> 0.385 mm/y; pH computed in-situ",
+        "measured_mmpy": 0.385,
+        "uncertainty_mmpy": 0.02,
+        "ensemble_min_mmpy": 0.49,
+        "ensemble_max_mmpy": 5.47,
+        "spread_x": 11.1,
+        "measured_in_envelope": false,
+        "best_model": "DWM-1995",
+        "best_model_cr_mmpy": 0.49,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 4,
+            "err_mmpy": 3.62
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 0.49,
+            "err_mmpy": 0.11
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 5.47,
+            "err_mmpy": 5.08
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 1.17,
+            "err_mmpy": 0.78
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 3.24,
+            "err_mmpy": 2.86
+          }
+        ],
+        "source": "Tang J. et al., Molecules 23(12) (2018) 3270"
       }
     ]
   }

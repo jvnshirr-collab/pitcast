@@ -119,12 +119,23 @@ DOI 10.3390/ma17051094, MDPI open access) — Table 1 blank L360N carbon steel,
 Measured 0.323 vs ensemble 0.5–5.06 (best model de Waard 1995 ≈ 0.5, ~1.5× over — the
 closest fit of any case).
 
-Net: **4 verified cases added** (1 CPT G48 + **3 in-envelope CO₂ from 2 independent
-sources**) through the live library hunt. The CO₂ in-scope corpus doubled (3 → 6). All
-three in-envelope CO₂ points fall *below* the ensemble: the screening (active-corrosion)
-models **over-predict real multi-day weight-loss rates by 1.5–4×** — a known conservative
-behaviour, now quantified honestly (in-scope coverage 17%). In-envelope CO₂ data IS
-reachable — just scarce and figure-dominated — so the corpus grows opportunistically.
+**CO₂ (more in-envelope sources):** Aristia et al. 2019 (*Materials* 12(22):3801; DOI
+10.3390/ma12223801) — St-37, 0.16 mm/y at 70 °C, CO₂-purged geothermal brine, pH 4; and
+Tang et al. 2018 (*Molecules* 23(12):3270; DOI 10.3390/molecules23123270) — Q235 blank
+0.385 mm/y (converted from 0.345 g/m²·h, ρ 7.85) at 60 °C, CO₂-saturated 3.5% NaCl.
+
+Net: **6 verified cases added** this session (1 CPT G48 + **5 in-envelope CO₂ from 4
+independent sources** — Elgaddafi, Peng, Aristia, Tang). The CO₂ in-scope corpus went
+**3 → 8**, spanning 40–80 °C. **All five in-envelope CO₂ points fall below the model
+ensemble** — the active-corrosion screening models **over-predict real multi-day
+weight-loss rates by ~1.3–4× (up to ~20× for heavily-scaled / long-exposure cases)**: a
+robust, quantified, decision-relevant finding (in-scope coverage 13%), surfaced not hidden.
+
+**On "industry scale":** the large CO₂ databases that would give it (e.g. the ~2400-point
+NORSOK / IFE loop database, 20–160 °C) are **proprietary** — which is precisely why an open
+benchmark like this is needed. The open literature yields only scattered, mostly
+figure-locked points, added here one verified case at a time; no point is fabricated or
+figure-read to inflate scale.
 
 ## The one rule under all the others
 
