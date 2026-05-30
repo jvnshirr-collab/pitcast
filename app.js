@@ -1671,6 +1671,16 @@ function renderMR0175(){
     stress_pct_SMYS: +$("mr_stress").value, hardness_HRC: +$("mr_hrc").value,
     equipment_class: $("mr_equip").value, scope: $("mr_scope").value
   });
+  // Envelope-distance card (universal r.uq layer): service T / pH₂S / Cl vs the
+  // matched ISO 15156-3 Annex-A use-without-testing caps (T_max_C, pH2S_max_kPa, Cl_max_mg_L).
+  var mEnvCard = "";
+  if (window.UQ && v.envelope && (v.envelope.T_max_C != null || v.envelope.pH2S_max_kPa != null || v.envelope.Cl_max_mg_L != null)) {
+    var mIn = {}, mEnv = {};
+    if (v.envelope.T_max_C != null) { mIn.T_C = +$("mr_T").value; mEnv.T_C = [null, v.envelope.T_max_C]; }
+    if (v.envelope.pH2S_max_kPa != null) { mIn.pH2S = +$("mr_pH2S").value; mEnv.pH2S = [null, v.envelope.pH2S_max_kPa]; }
+    if (v.envelope.Cl_max_mg_L != null) { mIn.Cl = +$("mr_Cl").value; mEnv.Cl = [null, v.envelope.Cl_max_mg_L]; }
+    mEnvCard = envBars(UQ.envelopeCheck(mIn, mEnv));
+  }
   var cls = v.IN_SCOPE === true ? "within" : v.IN_SCOPE === false ? "exceeds" : "untabulated";
   host.innerHTML =
     '<div class="iso ' + cls + '"><b>MR0175 / ISO 15156 — ' + (v.IN_SCOPE === true ? 'IN-SCOPE' : 'OUT-OF-SCOPE') + '</b> · Route: <b>' + v.route + '</b><br>' +
@@ -1679,7 +1689,7 @@ function renderMR0175(){
       (v.warnings.length ? '<div style="margin-top:6px;color:#fbbf24"><b>Warnings:</b><ul style="margin:4px 0 0 18px;padding:0">' + v.warnings.map(function(w){ return '<li>' + w + '</li>'; }).join('') + '</ul></div>' : '') +
       (v.failure_reasons.length ? '<div style="margin-top:6px;color:#f87171"><b>Failure reasons:</b><ul style="margin:4px 0 0 18px;padding:0">' + v.failure_reasons.map(function(f){ return '<li>' + f + '</li>'; }).join('') + '</ul></div>' : '') +
       (v.alternative_recommendations.length ? '<div style="margin-top:6px"><b>Alternatives:</b><ul style="margin:4px 0 0 18px;padding:0">' + v.alternative_recommendations.map(function(a){ return '<li>' + a + '</li>'; }).join('') + '</ul></div>' : '') +
-    '</div>' +
+    '</div>' + mEnvCard +
     '<div class="explain"><span style="color:var(--dim)">' + v.citations.join(' · ') + '</span></div>'
     + gbox("Decision tree (not a formula): family (UNS + Schaeffler/WRC) → Annex A use-without-testing envelope (T, pH₂S, Cl) for CRAs, OR ISO 15156-2 Fig.1 Region (pH₂S × pH) for C/low-alloy steel → manufacturing gates (HRC, cold-work, PREN).", "ANSI/NACE MR0175-2021 / ISO 15156:2020 Parts 1-3 + Technical Circulars", "T2 · decision-tree verified (node mr0175.js); 18/41 Annex envelopes flagged needs_review — VR/mr0175.md");
 }
