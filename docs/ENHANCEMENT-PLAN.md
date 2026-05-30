@@ -157,9 +157,9 @@ validation + adoption + citation we must build.
 ### WS3.2 — Regression / oracle test expansion  ✅
 - [x] Per-engine oracle suites in the gated `benchmark/`: `test-b31g.js` (27 — ASME B31G-2012 App. B Ex. 1), `test-ffs.js` (18 + embedded 29 — API 579 Parts 4-7 / NACE TM0284), `test-mr0175.js` (15 + embedded 10 — ISO 15156 boundaries), `test-uq.js` (32 — UQ math + CO₂ envelope-guard), `run.js` (CPT LOO + CO₂ ensemble vs cited data). `test-all.js` runs all (**92 gated assertions**) and is wired into `deploy.sh` as a hard pre-deploy gate.
 
-### WS3.3 — Methods paper / citation
-- [ ] Finalize the preprint (qualitative citations: Jiang 2025; Nor/Nešić 2011 + validation-scope note).
-- [ ] Pick venue (JOSS), mint Zenodo DOI, submit. *(Author action: affiliation, email, repo URL.)*
+### WS3.3 — Methods paper / citation  *(drafted — final submit is author-gated)*
+- [x] Preprint finalized: long-form `docs/preprint/METHODS-NOTE.md` + **JOSS `paper.md` + `paper.bib`** (10 references, no fabricated DOIs — unverified ones flagged for the author), with `.zenodo.json` + `CITATION.cff` ready.
+- [ ] Pick venue (JOSS ✓) + mint Zenodo DOI + submit. → prepared to one-click via `docs/preprint/SUBMISSION-CHECKLIST.md`; **the final mint/submit needs the author's ORCID/GitHub/Zenodo login** (account creation + authentication is a safety boundary the assistant won't cross). *Author action: ORCID, email, affiliation, public repo URL, confirm 4 journal DOIs.*
 
 ### WS3.4 — Education (the Thermo-Calc adoption flywheel)  ✅
 - [x] Worked-example walkthroughs per core domain (extend "show your work" mode into tutorials), **integrated into the console**. → **4 live walkthroughs** in the Learn tab (`learn.js`, domain selector): CO₂ ensemble (5-model spread → DIVERGE), CPT pitting (PRENₙ₃₀ → Student-t P(pit)), B31G metal-loss (Folias → Barlow; original vs Modified, P_safe 54.3/55.7 bar matching the oracle), MR0175 sour-spec (ISO 15156 decision tree). Every number computed live by the real engine.
