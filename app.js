@@ -322,8 +322,8 @@ function showWork(title, steps){
 // by every engine that emits a standard r.uq block.
 function envBars(env){
   if(!env || !env.variables || !env.variables.length) return "";
-  const NAME={T_C:"Temperature",pH:"in-situ pH",pCO2:"pCO₂",velocity:"velocity",Cl:"chloride",PREN_N30:"PREN(N30)",dt:"defect depth d/t",pH2S:"pH₂S",MAOP_ratio:"hoop / flow-stress"};
-  const UNIT={T_C:"°C",pH:"",pCO2:"bar",velocity:"m/s",Cl:"ppm",PREN_N30:"",dt:"%",pH2S:"kPa",MAOP_ratio:""};
+  const NAME={T_C:"Temperature",pH:"in-situ pH",pCO2:"pCO₂",velocity:"velocity",Cl:"chloride",PREN_N30:"PREN(N30)",dt:"defect depth d/t",pH2S:"pH₂S",MAOP_ratio:"hoop / flow-stress",Rt:"remaining-thickness Rt",Vac:"AC touch voltage"};
+  const UNIT={T_C:"°C",pH:"",pCO2:"bar",velocity:"m/s",Cl:"ppm",PREN_N30:"",dt:"%",pH2S:"kPa",MAOP_ratio:"",Rt:"",Vac:"V"};
   const fn=x=> (x==null)?"–":(Math.abs(x)>=10?(+x).toFixed(0):(+x).toFixed(1));
   const rng=(lo,hi)=> (lo==null?"≤ ":fn(lo)+"–")+(hi==null?"":fn(hi));
   const rows=env.variables.filter(v=>v.value!=null).map(v=>{
@@ -1628,12 +1628,15 @@ function renderFFS(){
   });
   function cls(passes) { return passes === true ? "within" : passes === false ? "exceeds" : "untabulated"; }
   function nv(v, d) { return v != null && isFinite(v) ? v.toFixed(d) : "—"; }
+  // Part 5 LTA applicability envelope (universal r.uq layer): Level-1 requires the
+  // remaining-thickness ratio Rt ≥ 0.20 (Part 5 §5.4.2.2); below that → escalate to L2.
+  var fEnvCard = (window.UQ && p5 && !p5.error && p5.Rt != null) ? envBars(UQ.envelopeCheck({Rt: p5.Rt}, {Rt:[0.20, 1.0]})) : "";
   host.innerHTML =
     '<div class="iso ' + cls(p5.passes) + '"><b>Part 5 LTA Level 1 — ' + (p5.passes === true ? 'PASS' : p5.passes === false ? 'FAIL' : 'GATES FAIL') + '</b><br>' +
       'Rt = <b>' + nv(p5.Rt, 3) + '</b> · λ = <b>' + nv(p5.lambda, 3) + '</b> · Mt = <b>' + nv(p5.Mt, 3) + '</b> · RSF = <b>' + nv(p5.RSF, 3) + '</b> (RSFa = ' + p5.RSFa + ')<br>' +
       'MAWP reduced: <b>' + nv(p5.MAWP_reduced_bar, 1) + ' bar</b><br>' +
       '<span style="color:var(--dim);font-size:12px">' + (p5.recommendation || '') + '</span></div>' +
-    '<div class="explain"><span style="color:var(--dim)">' + (p5.ref || '') + '</span></div>' +
+    '<div class="explain"><span style="color:var(--dim)">' + (p5.ref || '') + '</span></div>' + fEnvCard +
     '<div class="iso ' + cls(p6L1.passes) + '"><b>Part 6 Pitting Level 1 — ' + (p6L1.passes ? 'PASS' : 'FAIL') + '</b><br>' +
       'Classification: <b>' + (p6L1.type || '—') + '</b><br>' +
       'Depth ratio = <b>' + nv(p6L1.depth_ratio*100, 0) + '%</b> · density = <b>' + nv(p6L1.pit_density_per_m2, 0) + ' /m²</b> · RSF = <b>' + (p6L1.RSF != null ? p6L1.RSF.toFixed(2) : 'N/A') + '</b> (RSFa = ' + p6L1.RSFa + ')<br>' +
