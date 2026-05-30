@@ -68,11 +68,13 @@ design and is not a substitute for alloy- or heat-specific qualification testing
   prediction interval, not a point estimate.
 - **CO\textsubscript{2} corrosion ensemble.** Five canonical models
   [@deWaard1975; @deWaard1995; @norsok2017; @nyborg2010; @nesic2007] run on one
-  operating point with an explicit **model-disagreement (envelope) view**. Evaluated
-  against independent in-envelope carbon-steel studies spanning 40–80 °C
-  [@elgaddafi2015], the active-corrosion models **over-predict measured multi-day
-  weight-loss rates by ~1.3–4×** — an honest, decision-relevant signal of their
-  conservatism where protective FeCO\textsubscript{3} scale forms.
+  operating point with an explicit **model-disagreement (envelope) view**. Across ten
+  independent in-envelope carbon-steel cases (20–80 °C) [@elgaddafi2015], the models
+  disagree by ~10× and the envelope brackets the measurement in ~30 % of cases: the
+  lower-bound model (de Waard 1995) tracks mild-condition blank weight-loss rates,
+  while single high-rate point estimates over-predict by up to ~10× — an honest,
+  decision-relevant warning against trusting any one model where protective
+  FeCO\textsubscript{3} scale forms.
 - **Sour-service spec issuer.** An ISO 15156 / NACE MR0175 [@iso15156] decision tree
   returning citation-grounded acceptability verdicts.
 - **Corroded-pipe fitness-for-service.** ASME B31G and Modified B31G (RSTRENG)

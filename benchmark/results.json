@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-05-30T16:18:00.534Z",
+  "generated_utc": "2026-05-30T16:44:39.244Z",
   "about": "PitCast reproducible open benchmark v0 — built only on cited in-repo data.",
   "cpt_leave_one_out": {
     "basis": "ASTM G48-type FeCl3 immersion (headline); all-method LOO shown for transparency",
@@ -413,39 +413,39 @@
     "on_basis_MAE_C": 3.53
   },
   "co2_ensemble": {
-    "n_cases_total": 10,
-    "n_cases_in_scope_cs": 8,
-    "envelope_coverage_in_scope": 0.13,
+    "n_cases_total": 12,
+    "n_cases_in_scope_cs": 10,
+    "envelope_coverage_in_scope": 0.3,
     "per_model_error_in_scope": [
       {
         "id": "DWM-1975",
-        "MAE_mmpy": 278.78,
-        "RMSE_mmpy": 746.08,
-        "bias_mmpy": 278.78
+        "MAE_mmpy": 223.43,
+        "RMSE_mmpy": 667.31,
+        "bias_mmpy": 223.43
       },
       {
         "id": "DWM-1995",
-        "MAE_mmpy": 1.38,
-        "RMSE_mmpy": 2.12,
-        "bias_mmpy": 1.38
+        "MAE_mmpy": 1.12,
+        "RMSE_mmpy": 1.9,
+        "bias_mmpy": 1.1
       },
       {
         "id": "NORSOK",
-        "MAE_mmpy": 2.89,
-        "RMSE_mmpy": 3.45,
-        "bias_mmpy": 2.67
+        "MAE_mmpy": 3.03,
+        "RMSE_mmpy": 3.52,
+        "bias_mmpy": 2.85
       },
       {
         "id": "NESC",
-        "MAE_mmpy": 5.88,
-        "RMSE_mmpy": 8.27,
-        "bias_mmpy": 5.88
+        "MAE_mmpy": 4.77,
+        "RMSE_mmpy": 7.4,
+        "bias_mmpy": 4.76
       },
       {
         "id": "FreeCorp",
-        "MAE_mmpy": 64.13,
-        "RMSE_mmpy": 142.77,
-        "bias_mmpy": 64.13
+        "MAE_mmpy": 51.61,
+        "RMSE_mmpy": 127.7,
+        "bias_mmpy": 51.61
       }
     ],
     "cases": [
@@ -858,6 +858,88 @@
           }
         ],
         "source": "Tang J. et al., Molecules 23(12) (2018) 3270"
+      },
+      {
+        "case": "Imidazoline RSC 2019 - Q235 blank, CO2-saturated 2% NaCl, 20 C",
+        "scope": "cs_aqueous",
+        "note": "CO2-saturated at 1 atm (pCO2 ~ 1 - P_H2O(20C) ~ 0.99 bar); 2 wt% NaCl; pH 4.11 measured; 72 h weight-loss; quiescent 500 mL cell; Q235",
+        "measured_mmpy": 0.3289,
+        "uncertainty_mmpy": 0.02,
+        "ensemble_min_mmpy": 0.27,
+        "ensemble_max_mmpy": 2.7,
+        "spread_x": 10,
+        "measured_in_envelope": true,
+        "best_model": "DWM-1995",
+        "best_model_cr_mmpy": 0.38,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 0.92,
+            "err_mmpy": 0.59
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 0.38,
+            "err_mmpy": 0.05
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 2.7,
+            "err_mmpy": 2.38
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 0.27,
+            "err_mmpy": -0.06
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 0.75,
+            "err_mmpy": 0.42
+          }
+        ],
+        "source": "Corrosion inhibition of mild steel by an imidazoline hydrolysate in CO2-saturated solution, RSC Adv. 9 (2019), Table 1"
+      },
+      {
+        "case": "Imidazoline RSC 2019 - Q235 blank, CO2-saturated 2% NaCl, 60 C",
+        "scope": "cs_aqueous",
+        "note": "CO2-saturated at 1 atm (pCO2 ~ 1 - P_H2O(60C) ~ 0.81 bar); 2 wt% NaCl; pH 4.11 measured; 72 h weight-loss; quiescent cell; Q235",
+        "measured_mmpy": 0.6153,
+        "uncertainty_mmpy": 0.03,
+        "ensemble_min_mmpy": 0.5,
+        "ensemble_max_mmpy": 5.43,
+        "spread_x": 10.9,
+        "measured_in_envelope": true,
+        "best_model": "DWM-1995",
+        "best_model_cr_mmpy": 0.5,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 4.04,
+            "err_mmpy": 3.42
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 0.5,
+            "err_mmpy": -0.12
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 5.43,
+            "err_mmpy": 4.82
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 1.18,
+            "err_mmpy": 0.56
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 3.27,
+            "err_mmpy": 2.65
+          }
+        ],
+        "source": "Corrosion inhibition of mild steel by an imidazoline hydrolysate in CO2-saturated solution, RSC Adv. 9 (2019), Table 1"
       }
     ]
   },

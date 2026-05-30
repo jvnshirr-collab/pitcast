@@ -49,6 +49,16 @@
       "T_C": 60, "pCO2_bar": 0.8, "u_m_s": 0.1, "d_pipe_m": 0.05,
       "Fe2_ppm": 10, "scope": "cs_aqueous",
       "note": "CO2-saturated at 1 atm (pCO2 ~ 0.8 bar at 60 C); 3.5% NaCl; 72 h; measured converted from 0.345 g/m2/h -> 0.385 mm/y; pH computed in-situ"
+    },
+    "Imidazoline RSC 2019 - Q235 blank, CO2-saturated 2% NaCl, 20 C": {
+      "T_C": 20, "pCO2_bar": 0.99, "pH": 4.11, "u_m_s": 0.1, "d_pipe_m": 0.05,
+      "Fe2_ppm": 10, "scope": "cs_aqueous",
+      "note": "CO2-saturated at 1 atm (pCO2 ~ 1 - P_H2O(20C) ~ 0.99 bar); 2 wt% NaCl; pH 4.11 measured; 72 h weight-loss; quiescent 500 mL cell; Q235"
+    },
+    "Imidazoline RSC 2019 - Q235 blank, CO2-saturated 2% NaCl, 60 C": {
+      "T_C": 60, "pCO2_bar": 0.81, "pH": 4.11, "u_m_s": 0.1, "d_pipe_m": 0.05,
+      "Fe2_ppm": 10, "scope": "cs_aqueous",
+      "note": "CO2-saturated at 1 atm (pCO2 ~ 1 - P_H2O(60C) ~ 0.81 bar); 2 wt% NaCl; pH 4.11 measured; 72 h weight-loss; quiescent cell; Q235"
     }
   }
 }

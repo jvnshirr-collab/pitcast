@@ -110,6 +110,28 @@
     "note": "Blank weight-loss CR from Table 1, reported as 0.345 g/m2/h, converted to 0.385 mm/y (rho 7.85 g/cm3: 1 g/m2/h = 1.116 mm/y). 60 C, CO2-sat 3.5% NaCl, 72 h. pH computed in-situ. Open access."
   },
   {
+    "domain": "CO2",
+    "case": "Imidazoline RSC 2019 - Q235 blank, CO2-saturated 2% NaCl, 20 C",
+    "conditions": "T 20 C (293 K), CO2-saturated (~0.99 bar pCO2 at 1 atm), 2 wt% NaCl, pH 4.11, 72 h weight-loss; Q235 carbon steel; blank (no inhibitor)",
+    "measured": 0.3289,
+    "units": "mm/y",
+    "uncertainty": 0.02,
+    "source": "Corrosion inhibition of mild steel by an imidazoline hydrolysate in CO2-saturated solution, RSC Adv. 9 (2019), Table 1",
+    "doi": "10.1039/C9RA05322K",
+    "note": "Blank (uninhibited) weight-loss CR from Table 1, reported directly in mm/y at 293 K (20 C). pH 4.11 measured. Lowest-temperature anchor of the open CO2 corpus. Open access (RSC Advances); value verified against the source PDF Table 1."
+  },
+  {
+    "domain": "CO2",
+    "case": "Imidazoline RSC 2019 - Q235 blank, CO2-saturated 2% NaCl, 60 C",
+    "conditions": "T 60 C (333 K), CO2-saturated (~0.81 bar pCO2 at 1 atm), 2 wt% NaCl, pH 4.11, 72 h weight-loss; Q235 carbon steel; blank (no inhibitor)",
+    "measured": 0.6153,
+    "units": "mm/y",
+    "uncertainty": 0.03,
+    "source": "Corrosion inhibition of mild steel by an imidazoline hydrolysate in CO2-saturated solution, RSC Adv. 9 (2019), Table 1",
+    "doi": "10.1039/C9RA05322K",
+    "note": "Blank weight-loss CR from Table 1, reported directly in mm/y at 333 K (60 C). pH 4.11 measured. Second independent 60 C point (cf. Tang 2018, different steel/study). Open access (RSC Advances); value verified against the source PDF Table 1."
+  },
+  {
     "domain": "CRA",
     "case": "304 stainless - CPT in ferric chloride",
     "conditions": "10% FeCl3 (ASTM G48 ferric-chloride family); 18Cr-8.6Ni-0.05Mo heat",

@@ -147,6 +147,25 @@ benchmark like this is needed. The open literature yields only scattered, mostly
 figure-locked points, added here one verified case at a time; no point is fabricated or
 figure-read to inflate scale.
 
+## ✓ Added (2026-05-30, cont.) — imidazoline RSC 2019, two low-T points
+
+**Imidazoline-hydrolysate CO₂-inhibition study, RSC Adv. 9 (2019), DOI 10.1039/C9RA05322K**
+(open access; values verified against the source PDF Table 1): Q235 blank **0.3289 mm/y at
+20 °C (293 K)** and **0.6153 mm/y at 60 °C (333 K)**, CO₂-saturated 2 wt% NaCl, pH 4.11, 72 h
+weight-loss, reported directly in mm/y (no unit conversion). The **20 °C point is the corpus's
+lowest-temperature anchor.**
+
+This grows the in-scope CO₂ corpus **8 → 10** (now **20–80 °C**); total verified cases added
+this session **8** (1 CPT G48 + 7 CO₂ from 5 independent sources: Elgaddafi, Peng, Aristia,
+Tang, imidazoline RSC). **Refined finding (more honest than the earlier "always
+over-predicts"):** the five CO₂ models **disagree by ~10×**, and the envelope now **brackets
+the measurement in ~30 % of cases (3/10)** — at mild conditions (≲1 bar, 20–60 °C, 72 h) the
+**lower-bound model (de Waard 1995) tracks the measured blank rate**, while single high-rate
+point estimates over-predict by up to ~10×, and for heavily-scaled / high-pCO₂ / long-exposure
+cases (Elgaddafi 80 °C, 187 h) even the lowest model over-predicts ~1.3–4×. The
+decision-relevant lesson stands: **never trust a single CO₂ model — the disagreement envelope
+is the honest output.**
+
 ## The one rule under all the others
 
 **Never invent a datapoint, DOI, author, or condition.** A benchmark that lies
