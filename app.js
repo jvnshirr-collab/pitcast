@@ -745,6 +745,25 @@ function renderIntegrity(){
       +'<div style="font-size:15px;font-weight:600;margin:2px 0">'+loP.toFixed(0)+' – '+hiP.toFixed(0)+' bar P<sub>safe</sub> <span style="font-size:12px;font-weight:400;color:var(--dim)">· '+iEns.spread.ratio.toFixed(2)+'× ('+dv+')</span></div>'
       +'<div style="font-size:11px;color:var(--dim);line-height:1.5">Original B31G (⅔·dL parabolic) '+ffB.P_safe_bar.toFixed(0)+' bar · Modified B31G / RSTRENG (0.85·dL) '+ffM.P_safe_bar.toFixed(0)+' bar. '+(dv==="agree"?"Methods agree — robust estimate.":"Modified-B31G (RSTRENG) is the less-conservative, more-accurate basis — design to the relevant one.")+'</div></div>';
   }
+  // Method-disagreement MAP — B31G vs Mod-B31G P_safe ratio across defect geometry
+  // (d/t × length). The two methods genuinely diverge at long/deep defects (B31G
+  // goes rectangular), so this is real disagreement, not theater.
+  let iMapBlock="";
+  if(window.DIS && window.Charts && !ff.throughWall && D>0 && t>0){
+    const mLs=DIS.linspace(10,800,18), mDs=DIS.linspace(5,85,16);
+    const mg=DIS.grid({xs:mLs,ys:mDs,evalCell:function(Lx,dPct){
+      const dd=dPct/100*t;
+      const a=B31G.failurePressure({D,t,SMYS:grade.SMYS,L:Lx,d:dd,method:"b31g"}).P_safe_bar;
+      const b=B31G.failurePressure({D,t,SMYS:grade.SMYS,L:Lx,d:dd,method:"modb31g"}).P_safe_bar;
+      return {values:[a,b], ooe:(dPct>80)};
+    }});
+    const mMap=Charts.heatmap({w:540,h:280,title:"method-disagreement map — B31G vs Mod-B31G",xlabel:"defect length L (mm)",ylabel:"wall loss d/t (%)",
+      xs:mLs,ys:mDs,grid:mg.ratio,hatch:mg.ooe,colors:DIS.SPREAD_COLORS,
+      xfmt:v=>v.toFixed(0),yfmt:v=>v.toFixed(0),point:{x:L,y:ff.depthRatio*100}});
+    const sw=c=>`<span style="display:inline-block;width:12px;height:10px;background:${c};vertical-align:middle;border-radius:2px"></span>`;
+    const mLegend=`<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:11px;color:var(--dim);margin-top:6px"><span><b style="color:var(--ink)">P<sub>safe</sub> spread</b> (max/min):</span><span>${sw('#0f3d24')} agree ≤1.5×</span><span>${sw('#7a7416')} caution ~3–5×</span><span>${sw('#b4471a')} diverge &gt;10×</span><span><span style="display:inline-block;width:12px;height:10px;vertical-align:middle;border-radius:2px;background:repeating-linear-gradient(45deg,#334155,#334155 1px,transparent 1px,transparent 4px)"></span> d/t&gt;80% (beyond B31G)</span><span>◯ your defect</span></div>`;
+    iMapBlock=`<div class="chartwrap" style="margin:10px 0"><div style="font-size:12px;color:var(--dim);margin-bottom:2px">Where the two B31G methods <b style="color:var(--ink)">agree vs diverge</b> across defect geometry — long, deep defects (B31G goes rectangular) are where the method choice bites.</div>${mMap}${mLegend}</div>`;
+  }
   const swB = [
     'd/t = ' + d + '/' + t + ' = ' + ff.depthRatio.toFixed(2),
     'Folias M = √(1 + 0.6275λ − 0.003375λ²), λ = L²/(D·t) = ' + (isFinite(ff.M)?ff.M.toFixed(2):'n/a'),
@@ -763,6 +782,7 @@ function renderIntegrity(){
     </div>
     ${iDisag}
     ${iEnvCard}
+    ${iMapBlock}
     <div class="explain"><b>Remaining life (uniform CR):</b> CR ${rl.CR_mmyr.toFixed(2)} mm/y${rl.inhibitorEff>0?(` × (1−η ${(rl.inhibitorEff*100).toFixed(0)}%) = ${rl.effective_CR_mmyr.toFixed(2)} mm/y eff`):""} → <b>${isFinite(rl.yearsToMinWT)?rl.yearsToMinWT.toFixed(1)+" yr"+(rl.yearsToMinWT<rl.designLifeYr?" (< design life)":""):"∞ (no corrosion)"}</b> to t<sub>min</sub> ${rl.tMin_mm} mm.
       ${!rl.ca_sufficient?` Required inhibitor efficiency for ${rl.designLifeYr} yr: <b>${(rl.required_inhibitor_efficiency*100).toFixed(0)}%</b>.`:` CA ${rl.CA_mm.toFixed(1)} mm sufficient for ${rl.designLifeYr} yr at this CR.`}
       <span style="color:var(--dim)"> ${ff.ref} · ${rl.ref}</span></div>${gbox("P<sub>f</sub> = σ<sub>f</sub>·(2t/D)·(1−d/t)/(1−(d/t)/M); Folias M=√(1+0.6275λ−0.003375λ²), λ=L²/(Dt). Mod-B31G uses 0.85·d·L effective area.", "ASME B31G-2012 · Kiefner &amp; Vieth 1989 (RSTRENG) · Folias 1965", "T2 · ASME B31G Appx B Ex 1 reproduced (P_safe 54.3 bar) — VR/b31g.md")}${ff.throughWall?"":showWork("B31G → P_safe", swB)}
