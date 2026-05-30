@@ -24,8 +24,10 @@ document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
   if (t.dataset.tab === "mr0175") renderMR0175();
   if (t.dataset.tab === "cips") renderCIPSPlaceholder();
   if (t.dataset.tab === "atlas") renderAtlas();
+  if (t.dataset.tab === "learn") renderLearn();
 });
 function renderAtlas(){ if (window.Atlas && $("atlas_results")) Atlas.render($("atlas_results")); }
+function renderLearn(){ if (window.Learn && $("learn_results")) Learn.renderCO2($("learn_results")); }
 
 // ---- grade picker (searchable: curated grades + in-scope measured alloys) ---
 const gInput = $("a_grade_search");
@@ -963,7 +965,7 @@ $("btnCSV")&&($("btnCSV").onclick=exportActiveCSV);
 
 // ---- Reproducible permalinks (WS2.2) — share the EXACT calculation -----------
 // Hash form: #<tabId>?id=val&id2=val2  (values URL-encoded). #app / bare hashes ignored.
-const PC_TABS = ["assess","select","compare","envelope","data","co2","cpac","integrity","ili","ffs","mr0175","cips","products","atlas"];
+const PC_TABS = ["assess","select","compare","envelope","data","co2","cpac","integrity","ili","ffs","mr0175","cips","products","atlas","learn"];
 function pcEncode(){
   const a = document.querySelector(".tab.active");
   const at = a && a.dataset.tab ? a.dataset.tab : "assess";

@@ -161,9 +161,9 @@ validation + adoption + citation we must build.
 - [ ] Finalize the preprint (qualitative citations: Jiang 2025; Nor/Nešić 2011 + validation-scope note).
 - [ ] Pick venue (JOSS), mint Zenodo DOI, submit. *(Author action: affiliation, email, repo URL.)*
 
-### WS3.4 — Education (the Thermo-Calc adoption flywheel)
-- [ ] Worked-example walkthroughs per core domain (extend "show your work" mode into tutorials), **integrated into the console** (not marketing/landing pages).
-- [ ] A "learn corrosion screening" track linked from the Atlas. Goal: get it used in teaching.
+### WS3.4 — Education (the Thermo-Calc adoption flywheel)  *(started — CO₂ walkthrough live)*
+- [ ] Worked-example walkthroughs per core domain (extend "show your work" mode into tutorials), **integrated into the console** (not marketing/landing pages). → **CO₂ ensemble walkthrough live** (Learn tab, `learn.js`, 6 steps, every number computed live by `CO2.assess()` — the teaching point is an 11× model spread → DIVERGE). CPT / B31G / MR0175 to follow on the same template.
+- [x] A "learn corrosion screening" track linked from the Atlas. → "Learn" console tab, deep-linkable (`#learn`), with a CTA in the Model Atlas intro.
 
 ---
 

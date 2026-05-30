@@ -102,7 +102,8 @@
   function render(host) {
     if (!host) return;
     var L = '<div class="datastat" style="margin-bottom:12px">Every model PitCast runs — governing equation, primary-standard citation, and validity envelope — in one browsable place. ' +
-            'The open reference no closed corrosion tool publishes. Each card links to its console tab.</div>';
+            'The open reference no closed corrosion tool publishes. Each card links to its console tab. ' +
+            '<button class="atlas-link" data-tab="learn" style="margin-left:6px;padding:3px 10px;background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.35);color:#c4b5fd;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600">New to this? Start with the CO₂ walkthrough →</button></div>';
     DOMAINS.forEach(function (d) {
       L += '<div style="margin:0 0 14px;border:1px solid var(--line,#1e293b);border-radius:10px;overflow:hidden">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;background:rgba(45,212,191,.06)">' +
