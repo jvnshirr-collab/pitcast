@@ -1350,14 +1350,15 @@ function _parseILICSV(text){
     out.push(cur.trim());
     return out;
   }
-  const headers = tok(lines[0]).map(h => h.toLowerCase().replace(/\s+/g, "_"));
+  const headers = tok(lines[0]).map(h => h.toLowerCase().trim().replace(/%/g, " pct ").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, ""));
   // Alias map — accept common synonyms
   const aliases = {
     id: ["id", "feature_id", "defect_id", "name", "tag"],
     chainage_m: ["chainage_m", "chainage", "km", "position_m", "log_distance_m", "abs_distance_m"],
     clock_pos: ["clock_pos", "clock", "orientation", "clock_position"],
     length_mm: ["length_mm", "length", "axial_length_mm", "l_mm", "l"],
-    depth_mm: ["depth_mm", "depth", "max_depth_mm", "d_mm", "depth_max"],
+    depth_mm: ["depth_mm", "depth", "max_depth_mm", "d_mm", "depth_max", "max_depth", "peak_depth_mm"],
+    depth_pct: ["depth_pct", "depth_pct_wt", "max_depth_pct", "max_depth_pct_wt", "peak_depth_pct", "peak_depth_pct_wt", "d_pct", "wt_pct", "pct_wt", "depth_loss_pct"],
     width_mm: ["width_mm", "width", "circ_width_mm", "w_mm"],
     defect_type: ["defect_type", "type", "feature_type", "class", "anomaly"]
   };
@@ -1366,9 +1367,11 @@ function _parseILICSV(text){
     for (const a of alts) { const i = headers.indexOf(a); if (i >= 0) { colIdx[key] = i; break; } }
   });
   const errs = [];
-  ["id", "length_mm", "depth_mm"].forEach(req => {
+  ["id", "length_mm"].forEach(req => {
     if (colIdx[req] == null) errs.push(`Missing required column: ${req} (or synonym)`);
   });
+  if (colIdx.depth_mm == null && colIdx.depth_pct == null)
+    errs.push('Missing depth column: need depth_mm (absolute) or depth_pct / "Depth %" (% of wall) — or a synonym');
   if (errs.length) return { defects: [], errors: errs, headers: headers };
   const defects = [];
   for (let r = 1; r < lines.length; r++) {
@@ -1376,9 +1379,20 @@ function _parseILICSV(text){
     const get = key => colIdx[key] != null ? row[colIdx[key]] : "";
     const id = get("id") || ("R-" + r);
     const L = +get("length_mm");
-    const d = +get("depth_mm");
-    if (!isFinite(L) || L <= 0 || !isFinite(d) || d <= 0) {
-      errs.push(`Row ${r+1} (id=${id}): non-numeric or non-positive length/depth — skipped`);
+    if (!isFinite(L) || L <= 0) {
+      errs.push(`Row ${r+1} (id=${id}): non-numeric or non-positive length — skipped`);
+      continue;
+    }
+    const dmm = colIdx.depth_mm != null ? +get("depth_mm") : NaN;
+    const dpct = colIdx.depth_pct != null ? +get("depth_pct") : NaN;
+    const hasMM = isFinite(dmm) && dmm > 0;
+    const hasPct = isFinite(dpct) && dpct > 0;
+    if (!hasMM && !hasPct) {
+      errs.push(`Row ${r+1} (id=${id}): no usable depth (need depth_mm or depth_pct > 0) — skipped`);
+      continue;
+    }
+    if (hasPct && dpct > 100) {
+      errs.push(`Row ${r+1} (id=${id}): depth_pct ${dpct}% exceeds 100% wall — skipped`);
       continue;
     }
     defects.push({
@@ -1386,7 +1400,8 @@ function _parseILICSV(text){
       chainage_m: +get("chainage_m") || null,
       clock_pos: get("clock_pos") || null,
       length_mm: L,
-      depth_mm: d,
+      depth_mm: hasMM ? dmm : null,
+      depth_pct: hasPct ? dpct : null,
       width_mm: +get("width_mm") || null,
       defect_type: get("defect_type") || "corrosion"
     });
@@ -1397,9 +1412,12 @@ function _runILIBatch(opts){
   // opts: { D, t, grade, MAOP_bar, method, defects: [] }
   const SMYS = (B31G.GRADES[opts.grade] || B31G.GRADES["X65"]).SMYS;
   return opts.defects.map(df => {
-    const fp = B31G.failurePressure({ D: opts.D, t: opts.t, SMYS: SMYS, L: df.length_mm, d: df.depth_mm, method: opts.method });
+    // depth from %WT when only depth_pct was supplied (real ILI tools report % of wall)
+    const d_mm = (df.depth_mm != null) ? df.depth_mm : (df.depth_pct / 100 * opts.t);
+    const fp = B31G.failurePressure({ D: opts.D, t: opts.t, SMYS: SMYS, L: df.length_mm, d: d_mm, method: opts.method });
     const cls = B31G.classify(fp.P_safe_bar, opts.MAOP_bar, fp.depthRatio, fp.throughWall);
     return Object.assign({}, df, {
+      depth_mm: d_mm, depth_from_pct: (df.depth_mm == null),
       P_f_bar: fp.P_f_bar, P_safe_bar: fp.P_safe_bar,
       depthRatio: fp.depthRatio, SF: opts.MAOP_bar > 0 ? fp.P_safe_bar / opts.MAOP_bar : null,
       regime: fp.regime, throughWall: fp.throughWall,
@@ -1411,7 +1429,7 @@ let _iliCache = { defects: [], processed: [], opts: null, errors: [] };
 function renderILIPlaceholder(){
   const host = $("ili_results"); if (!host) return;
   if (_iliCache.processed && _iliCache.processed.length) { _renderILITable(); return; }
-  host.innerHTML = '<div class="placeholder">Upload or paste an ILI defect CSV →<br><br><span style="font-size:13px;color:var(--dim)">Sample CSVs follow the columns <code>id, length_mm, depth_mm</code> at minimum. Typical ILI tools (ROSEN, Baker Hughes, NDT Global) emit these as part of the defect list. Pipeline geometry (OD, WT, grade, MAOP) is set once in the form on the left.</span></div>';
+  host.innerHTML = '<div class="placeholder">Upload or paste an ILI defect CSV →<br><br><span style="font-size:13px;color:var(--dim)">Minimum columns: <code>id, length_mm</code>, and a depth — either <code>depth_mm</code> (absolute) or <code>depth_%</code> / <code>Depth (%WT)</code> (% of wall, as most ILI tools report). Headers auto-map from common synonyms (ROSEN / Baker Hughes / NDT Global) — e.g. "Log Distance", "Max Depth (%WT)", "Axial Length (mm)" are recognised. Pipeline geometry (OD, WT, grade, MAOP) is set once in the form on the left.</span></div>';
 }
 function _renderILITable(){
   const host = $("ili_results"); if (!host) return;
@@ -1562,6 +1580,10 @@ function processILICSVText(text){
     $("ili_results").innerHTML = `<div class="iso exceeds">Pipeline OD, WT, and MAOP must all be > 0.</div>`;
     return;
   }
+  // Resolve %WT depths to absolute mm now that pipeline WT is known (real ILI tools
+  // report depth as % of wall). Populates depth_mm for BOTH the unclustered and the
+  // clustered paths, which each read df.depth_mm downstream.
+  opts.defects.forEach(df => { if (df.depth_mm == null && df.depth_pct != null) df.depth_mm = df.depth_pct / 100 * opts.t; });
   // Run BOTH unclustered (baseline) + clustered (if rule != none) for delta comparison
   const ungrouped = _runILIBatch(Object.assign({}, opts, { cluster_rule: "none" }));
   const processed = (opts.cluster_rule && opts.cluster_rule !== "none" && window.Interaction)
