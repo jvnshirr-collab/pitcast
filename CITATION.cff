@@ -14,8 +14,8 @@ authors:
 license: Apache-2.0
 url: "https://pitcast.austenite.org"
 # repository-code: "https://github.com/<owner>/<repo>"   # TODO: confirm public repo URL
-version: "v49"
-date-released: 2026-05-29
+version: "1.0.0"
+date-released: 2026-05-30
 keywords:
   - corrosion
   - pitting

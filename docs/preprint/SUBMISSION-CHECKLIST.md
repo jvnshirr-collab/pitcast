@@ -4,8 +4,11 @@ Everything preparable **without your accounts is done**: `paper.md`, `paper.bib`
 `METHODS-NOTE.md` (long-form), `.zenodo.json`, `CITATION.cff`. The remaining steps
 need **your** ORCID / GitHub / Zenodo login and cannot be automated. Do them in order.
 
-## 0. Fill in your details (the placeholders)
-Before anything else, replace these — they are deliberately left blank, not guessed:
+## 0. Author details — ✓ DONE (filled + committed 2026-05-30)
+All filled in: ORCID `0009-0004-3573-5709`, affiliation (METU MetE), correspondence
+`jvnshirr@gmail.com`, `version: 1.0.0`, all four reference DOIs confirmed via Crossref,
+and `README.md` written. **Only the account-gated steps below (1–5) remain — each needs
+you logged in.** Original placeholder list, for reference:
 - `docs/preprint/paper.md` — `orcid:` (real ORCID), affiliation line, date.
 - `docs/preprint/METHODS-NOTE.md` — affiliation, correspondence email.
 - `.zenodo.json` — confirm the affiliation string.
