@@ -352,6 +352,34 @@ function envBars(env){
     +'<div style="font-size:12px;color:var(--dim);margin-bottom:5px">Model validity envelope — <b style="color:'+(allIn?"#22c55e":"#f59e0b")+'">'+(allIn?"✓ inputs within validated range":"⚠ extrapolating outside validated range")+'</b></div>'
     +rows+'</div>';
 }
+// Risk-window indicator — the INVERSE of envBars: shades the active-damage window
+// RED (inside = hazard, not "valid"). For risk screens (CUI temperature window, HIC
+// sour-onset) where being inside the window means you are AT RISK. dangerLo/dangerHi
+// bound the hazard region (null = unbounded that side). WCAG: icon (⚠/✓) + text + colour.
+function riskBar(items){
+  if(!items||!items.length) return "";
+  const fn=x=>(x==null)?"–":(Math.abs(x)>=10?(+x).toFixed(0):(+x).toFixed(1));
+  let anyDanger=false;
+  const rows=items.filter(it=>it.value!=null&&isFinite(it.value)).map(it=>{
+    const lo=it.dangerLo, hi=it.dangerHi;
+    const inDanger=(lo==null||it.value>=lo)&&(hi==null||it.value<=hi);
+    if(inDanger) anyDanger=true;
+    let amin=it.axisMin, amax=it.axisMax;
+    if(amin==null||amax==null){ const refs=[it.value,lo,hi].filter(v=>v!=null&&isFinite(v)); const mn=Math.min.apply(null,refs), mx=Math.max.apply(null,refs); const sp=(mx-mn)||Math.abs(it.value)||1; if(amin==null)amin=mn-0.25*sp; if(amax==null)amax=mx+0.25*sp; }
+    if(amax<=amin)amax=amin+1;
+    const pct=x=>Math.max(0,Math.min(100,(x-amin)/(amax-amin)*100));
+    const dLo=lo!=null?pct(lo):0, dHi=hi!=null?pct(hi):100, vP=pct(it.value);
+    const c=inDanger?"#ef4444":"#22c55e", icon=inDanger?"⚠":"✓";
+    const rng=(lo==null?"≤ "+fn(hi):(hi==null?"≥ "+fn(lo):fn(lo)+"–"+fn(hi)));
+    const stat=inDanger?("in "+(it.dangerLabel||"hazard")+" window ("+rng+")"):("outside — low risk");
+    return '<div style="margin:7px 0"><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-bottom:3px"><span>'+it.name+': <b style="color:var(--ink)">'+fn(it.value)+' '+(it.unit||"")+'</b></span><span style="color:'+c+'">'+icon+' '+stat+'</span></div>'
+      +'<div style="position:relative;height:10px;background:rgba(148,163,184,.12);border-radius:5px">'
+      +'<div style="position:absolute;left:'+dLo+'%;width:'+Math.max(0,dHi-dLo)+'%;top:0;bottom:0;background:rgba(239,68,68,.22);border-left:1px solid rgba(239,68,68,.5);border-right:1px solid rgba(239,68,68,.5);border-radius:3px"></div>'
+      +'<div style="position:absolute;left:'+vP+'%;top:-3px;width:2px;height:16px;background:'+c+';transform:translateX(-1px)"></div>'
+      +'<div style="position:absolute;left:'+vP+'%;top:-10px;transform:translateX(-50%);font-size:9px;color:'+c+'">▼</div></div></div>';
+  }).join("");
+  return '<div style="margin:10px 0;padding:10px 12px;border:1px solid '+(anyDanger?"rgba(239,68,68,.45)":"rgba(34,197,94,.35)")+';border-radius:8px;background:'+(anyDanger?"rgba(239,68,68,.06)":"rgba(34,197,94,.05)")+'"><div style="font-size:12px;color:var(--dim);margin-bottom:5px">Risk window — <b style="color:'+(anyDanger?"#ef4444":"#22c55e")+'">'+(anyDanger?"⚠ conditions inside an active-damage window":"✓ outside the active-damage window")+'</b> <span style="color:var(--dim)">· red band = hazard zone</span></div>'+rows+'</div>';
+}
 function renderCO2(){
   if(!$("co2_results")||!window.CO2||!window.Charts) return;
   const gv=id=>$(id)?$(id).value:"";
@@ -791,11 +819,12 @@ function renderIntegrity(){
       const p = u.properties || {};
       const warnBlock = (u.warnings && u.warnings.length) ? `<div style="margin-top:6px;color:#f87171"><b>⚠ Service-T / chemistry warnings:</b><ul style="margin:4px 0 0 18px;padding:0">${u.warnings.map(w=>"<li>"+w+"</li>").join("")}</ul></div>` : "";
       const propsLine = u.inWindow ? `<br><span style="color:var(--dim);font-size:12px">Properties: insulation T-window ${p.insulation_T_min_C} → ${p.insulation_T_max_C} °C · ASTM C871 leachable Cl <b>${p.insulation_Cl_ppm_C871} ppm</b> · water absorption ${p.insulation_water_pct}% · coating T_max ${p.coating_T_max_C} °C · ambient ISO 9223 ${p.ambient_ISO9223}${u.factors.leachable_Cl && Math.abs(u.factors.leachable_Cl-1)>0.05 ? " · Cl-amplifier ×"+u.factors.leachable_Cl.toFixed(2) : ""}</span>` : "";
+      const cuiRisk = riskBar([{name:"Service T", value:+gv("u_T"), dangerLo:(gv("u_mat")==="SS"?50:-12), dangerHi:175, unit:"°C", dangerLabel:(gv("u_mat")==="SS"?"ext-CSCC":"CUI"), axisMin:-40, axisMax:200}]);
       return `<div class="iso ${cls}"><b>CUI risk — ${u.level.toUpperCase()}</b> ${u.inWindow?`(${u.region})`:""}<br>
         Score <b>${u.score.toFixed(2)}</b> · recommended inspection: <b>${u.inspectionInterval}</b>.
         ${u.inWindow?`Drivers: T factor ${u.factors.temperature.toFixed(2)} · insulation ${u.factors.insulation.toFixed(2)} (${u.categories.insulation}) · jacket ${u.factors.jacket.toFixed(2)} (${u.categories.jacket}) · coating ${u.factors.coating.toFixed(2)} (${u.categories.coating}) · ambient ${u.factors.ambient.toFixed(2)} (${u.categories.ambient}) · age ${u.factors.age.toFixed(2)} ${u.cyclic?"· cyclic ×1.5":""}.`:""}
         ${propsLine}
-        ${warnBlock}</div>
+        ${warnBlock}</div>${cuiRisk}
         <div class="explain"><span style="color:var(--dim)">${u.ref}</span></div>${tierTag("API 583 §4.3 + ASTM C871 leachable-Cl patterns reproduced")}`;})()}
     ${(()=>{ if(!window.MIC) return ""; const mr=window.MIC.risk({T_C:+gv("m_T"),oxygen:gv("m_o2"),nutrient:gv("m_n"),sulphate_mgL:+gv("m_so4"),flow:gv("m_flow"),biocide:gv("m_b")});
       const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[mr.level]||"within";
@@ -808,11 +837,12 @@ function renderIntegrity(){
       if(!hr.active) return `<div class="iso within"><b>HIC / SOHIC — INACTIVE</b><br>${hr.mech}</div>
         <div class="explain"><span style="color:var(--dim)">${hr.ref}</span></div>${tierTag("NACE MR0103-2018 §4 + TM0284-2016 + ISO 15156-2 envelope reproduced")}`;
       const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[hr.level]||"within";
+      const hicRisk = riskBar([{name:"pH₂S", value:hr.pH2S_kPa, dangerLo:0.34, dangerHi:null, unit:"kPa", dangerLabel:"sour / HIC-susceptible", axisMin:0, axisMax:Math.max(2,hr.pH2S_kPa*1.3)},{name:"in-situ pH", value:hr.pH, dangerLo:null, dangerHi:5, unit:"", dangerLabel:"low-pH HIC severity", axisMin:3, axisMax:8}]);
       return `<div class="iso ${cls}"><b>HIC / SOHIC — ${hr.level.toUpperCase()}</b> · ${hr.dominant} dominant<br>
         HIC index <b>${hr.HIC_index.toFixed(2)}</b> (${hr.HIC_level}) · SOHIC index <b>${hr.SOHIC_index.toFixed(2)}</b> (${hr.SOHIC_level}).
         Drivers: pH₂S ${hr.factors.pH2S.toFixed(2)} · pH ${hr.factors.pH.toFixed(2)} · S ${hr.factors.S.toFixed(2)} · HV ${hr.factors.HV.toFixed(2)} · water ${hr.factors.water.toFixed(2)}.
         <br><b>Mechanism:</b> ${hr.mechanism}
-        <br><b>Mitigation:</b><ul style="margin:4px 0 0 18px;padding:0">${hr.mitigation.map(m=>"<li>"+m+"</li>").join("")}</ul></div>
+        <br><b>Mitigation:</b><ul style="margin:4px 0 0 18px;padding:0">${hr.mitigation.map(m=>"<li>"+m+"</li>").join("")}</ul></div>${hicRisk}
         <div class="explain"><span style="color:var(--dim)">${hr.ref}</span></div>${tierTag("NACE MR0103-2018 §4 + TM0284-2016 + ISO 15156-2 envelope reproduced")}`;})()}
     ${(()=>{ if(!window.RBI) return ""; const rs=window.RBI.score({CR_mmyr:+gv("r_CR"),ageSinceLastInsp_yr:+gv("r_age"),tNom_mm:+gv("b_t"),tCurrent_mm:+gv("r_tCur"),tMin_mm:+gv("b_tmin"),fluid:gv("r_fluid"),inventory_m3:+gv("r_inv")});
       const cls={low:"within",medium:"untabulated",high:"exceeds",extreme:"exceeds"}[rs.riskLevel]||"within";
