@@ -231,6 +231,11 @@
       <form class="card inputs" id="co2Form">
         <h3>Environment preset</h3>
         <div class="presets" id="co2Presets"></div>
+        <details class="gb" style="margin:2px 0 8px"><summary style="cursor:pointer;font-size:12px;color:#7dd3fc;padding:4px 0;user-select:none">📋 Import lab water analysis</summary>
+          <textarea id="c_water_paste" rows="5" placeholder="one key, value per line:&#10;temperature_C, 60&#10;total_pressure_bar, 50&#10;co2_mol_pct, 5&#10;bicarbonate_mg_L, 500&#10;pH, 4.5" style="width:100%;box-sizing:border-box;font-family:var(--mono,monospace);font-size:11px;background:#0e141d;border:1px solid var(--line,#243042);color:var(--ink);border-radius:6px;padding:6px;margin-top:4px"></textarea>
+          <button type="button" id="c_water_import" style="margin-top:6px;padding:6px 12px;background:rgba(56,189,248,.15);border:1px solid rgba(56,189,248,.3);color:#7dd3fc;border-radius:6px;cursor:pointer;font-size:12px">Import → prefill</button>
+          <div id="c_water_note" style="margin-top:6px;font-size:11px;color:var(--dim);line-height:1.5"></div>
+        </details>
         <h3>Operating point</h3>
         <div class="row">
           <label>Temperature (°C)<input type="number" id="c_T" value="60" step="5"></label>
@@ -909,7 +914,7 @@ D-002,95,2.1
 <script src="projects-ui.js?v=3"></script>
 <script src="pitcast.js?v=13"></script>
 <script src="atlas.js?v=1"></script>
-<script src="app.js?v=64"></script>
+<script src="app.js?v=65"></script>
 <script>
   // Wait for mr0175 annexes to load (async fetch)
   if (typeof window !== "undefined") {

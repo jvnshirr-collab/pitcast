@@ -968,7 +968,7 @@ function pcEncode(){
   const a = document.querySelector(".tab.active");
   const at = a && a.dataset.tab ? a.dataset.tab : "assess";
   const panel = $("tab-"+at), parts = [];
-  if (panel) panel.querySelectorAll("input[id], select[id], textarea[id]").forEach(function(el){
+  if (panel) panel.querySelectorAll("input[id], select[id]").forEach(function(el){
     if (el.type==="button" || el.type==="file") return;
     var v = (el.type==="checkbox") ? (el.checked?"1":"0") : el.value;
     if (v==null || v==="") return;
@@ -1012,7 +1012,7 @@ function exportActiveJSON(){
   const at=document.querySelector(".tab.active"); const tab=at?at.dataset.tab:"assess";
   const gv=id=>$(id)?$(id).value:"";
   const panel=$("tab-"+tab), inputs={};
-  if(panel) panel.querySelectorAll("input[id],select[id],textarea[id]").forEach(function(el){
+  if(panel) panel.querySelectorAll("input[id],select[id]").forEach(function(el){
     if(el.type==="button"||el.type==="file") return;
     inputs[el.id]=(el.type==="checkbox")?el.checked:el.value;
   });
@@ -1048,6 +1048,40 @@ function exportActiveJSON(){
   _dl("pitcast-"+tab+".json", JSON.stringify(out,null,2));
 }
 $("btnJSON")&&($("btnJSON").onclick=exportActiveJSON);
+
+// ---- Lab water-analysis import (WS2.1) — prefill the CO2 tab from a water analysis.
+// Parses "key, value" lines; computes pCO2 from total P × mol% CO2 when not given
+// directly; flags every assumption + any field the CO2 rate models don't use.
+function importWaterAnalysis(){
+  const ta=$("c_water_paste"), note=$("c_water_note");
+  if(!ta) return;
+  if(!ta.value.trim()){ if(note) note.innerHTML='<span style="color:#fbbf24">Paste a water analysis first (one key, value per line).</span>'; return; }
+  const kv={};
+  ta.value.split(/[\r\n]+/).forEach(function(line){
+    line=line.replace(/#.*/,"").trim(); if(!line) return;
+    var parts=line.split(/[,=:\t]/); if(parts.length<2) return;
+    var k=parts[0].toLowerCase().replace(/[^a-z0-9_%]/g,"");
+    var v=parseFloat(parts.slice(1).join(" ").replace(/[^0-9.eE+\-]/g," "));
+    if(isFinite(v)) kv[k]=v;
+  });
+  const pick=function(){ for(var i=0;i<arguments.length;i++) if(kv[arguments[i]]!=null) return kv[arguments[i]]; return null; };
+  var set=[], assume=[], ignored=[];
+  var T=pick("temperature_c","temperature","temp","t"); if(T!=null){ $("c_T").value=T; set.push("T "+T+" °C"); }
+  var pco2=pick("pco2_bar","pco2","co2_partial_pressure_bar","co2_partial_pressure");
+  if(pco2==null){ var totP=pick("total_pressure_bar","total_pressure","pressure_bar","pressure"); var mol=pick("co2_mol_pct","co2_mole_pct","co2_pct","co2_mol","co2");
+    if(totP!=null&&mol!=null){ pco2=totP*mol/100; assume.push("pCO₂ = "+totP+" bar × "+mol+"% = "+pco2.toFixed(2)+" bar"); } }
+  if(pco2!=null){ $("c_pCO2").value=(+pco2).toFixed(2); set.push("pCO₂ "+(+pco2).toFixed(2)+" bar"); }
+  var hco3=pick("bicarbonate_mg_l","bicarbonate","hco3","hco3_mg_l","alkalinity_mg_l"); if(hco3!=null){ $("c_bicarb").value=hco3; set.push("HCO₃⁻ "+hco3+" mg/L"); }
+  var ph=pick("ph","ph_insitu","ph_measured"); if(ph!=null){ $("c_pH").value=ph; set.push("measured pH "+ph); } else assume.push("in-situ pH left blank → computed (Crolet–Bonis)");
+  var ph2s=pick("ph2s_kpa","ph2s","h2s_kpa","h2s"); if(ph2s!=null){ $("c_pH2S").value=ph2s; set.push("pH₂S "+ph2s+" kPa"); }
+  var vel=pick("velocity_m_s","velocity","flow_velocity","u"); if(vel!=null){ $("c_u").value=vel; set.push("velocity "+vel+" m/s"); }
+  if(pick("chloride_mg_l","chloride","cl")!=null) ignored.push("chloride — not a direct input to the CO₂ rate models (drives pitting/CRA; use the Assess tab)");
+  if(note) note.innerHTML=(set.length?'<b style="color:#22c55e">✓ Imported:</b> '+set.join(" · "):'<span style="color:#fbbf24">No recognised fields found — check the key names.</span>')
+    +(assume.length?'<br><b style="color:#fbbf24">Assumptions:</b> '+assume.join(" · "):'')
+    +(ignored.length?'<br><span style="color:var(--dim)">Not used: '+ignored.join("; ")+'</span>':'');
+  if(typeof renderCO2==="function") renderCO2();
+}
+$("c_water_import")&&($("c_water_import").onclick=importWaterAnalysis);
 
 // ---- validation-cases table (cited measured anchors) ------------------------
 function renderValidations(){
