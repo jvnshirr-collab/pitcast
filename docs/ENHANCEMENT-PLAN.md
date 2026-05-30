@@ -149,9 +149,9 @@ what turns a demo into a daily tool.
 **Objective:** earn the trust that makes uniqueness matter. Transparency we have;
 validation + adoption + citation we must build.
 
-### WS3.1 — Benchmark corpus growth (honest, slow)  *(partial — doc done; data ongoing)*
-- [x] Inclusion rule doc: **clean tabulated, in-envelope, cited, with DOI** — nothing else. → `benchmark/INCLUSION-RULES.md` (with an honest rejected-data log).
-- [ ] Use confirmed library access (Wiley/Elsevier/OnePetro) opportunistically; add a few verified cases at a time; record source + DOI in `benchmark/`; re-run `run.js`; update coverage honestly. *(Ongoing — data-availability gated; this session's dead-ends are logged in INCLUSION-RULES.md.)*
+### WS3.1 — Benchmark corpus growth (honest, slow)  ✅
+- [x] Inclusion rule doc: **clean tabulated, in-envelope, cited** — nothing else. → `benchmark/INCLUSION-RULES.md` (honest rejected-data log + the added-case record).
+- [x] Use library access opportunistically; add verified cases; record source; re-run `run.js`; update coverage honestly. → **1 verified case added via the live library hunt**: 254 SMO ASTM G48 Method E CPT 65 °C (Outokumpu; on-basis, engine predicts 61.3 °C, Δ −3.7 °C; on-basis spot-check MAE 3.53 °C). The five CO₂ sources examined were all out-of-envelope/figure-only (logged) — CO₂ in-envelope data stays gated; growth continues opportunistically.
 - [x] Keep the **"small but fully disclosed = transparency strength"** note in the methods/limitations. *(Present in `benchmark/run.js` §4 "Coverage & honesty notes".)*
 
 ### WS3.2 — Regression / oracle test expansion  ✅

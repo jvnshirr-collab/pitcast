@@ -95,6 +95,19 @@ methods/limitations stands: **the corpus is small but every point is disclosed
 and reproducible** — which is more than the closed validation decks of
 commercial corrosion tools offer.
 
+## ✓ Added to the corpus (2026-05-30)
+
+After the hunt above, one source cleared every rule and **was added**:
+**254 SMO (UNS S31254) — CPT 65 °C by ASTM G48 Method E** (6% FeCl₃ immersion — the
+same basis the PitCast CPT correlation is calibrated on), from Outokumpu, the alloy's
+originator. On-basis, in-envelope, text-stated numeric value, labelled + stable source.
+It is the first high-PREN (6Mo) point on the G48 spot-check: the engine predicts
+61.3 °C vs the measured 65 °C (Δ −3.7 °C, within the 6.58 °C LOO MAE). The same source's
+electrochemical (ASTM G150) value of 85 °C corroborates the existing 86.49 °C
+electrochemical row. So the CO₂ conclusion above stands (still data-gated), but the CPT
+spot-check corpus grew by one verified, correctly-based case — the inclusion process,
+working as intended.
+
 ## The one rule under all the others
 
 **Never invent a datapoint, DOI, author, or condition.** A benchmark that lies

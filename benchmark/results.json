@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-05-29T03:34:21.531Z",
+  "generated_utc": "2026-05-30T14:59:28.354Z",
   "about": "PitCast reproducible open benchmark v0 — built only on cited in-repo data.",
   "cpt_leave_one_out": {
     "basis": "ASTM G48-type FeCl3 immersion (headline); all-method LOO shown for transparency",
@@ -398,9 +398,19 @@
         "delta_C": 3.4,
         "source": "Hoseinpoor M., Momeni M., Moayed M.H., Davoodi A., Corrosion Sci. 80 (2014) 197",
         "on_basis": true
+      },
+      {
+        "case": "254 SMO (S31254, 6Mo) - CPT by ASTM G48 Method E",
+        "alloy": "254 SMO",
+        "basis": "G48/FeCl3 (on-basis)",
+        "measured_C": 65,
+        "predicted_G48_C": 61.3,
+        "delta_C": -3.7,
+        "source": "Outokumpu, 'Testing stainless steel for resistance to pitting corrosion' (2023)",
+        "on_basis": true
       }
     ],
-    "on_basis_MAE_C": 3.49
+    "on_basis_MAE_C": 3.53
   },
   "co2_ensemble": {
     "n_cases_total": 5,
