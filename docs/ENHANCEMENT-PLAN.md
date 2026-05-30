@@ -149,13 +149,13 @@ what turns a demo into a daily tool.
 **Objective:** earn the trust that makes uniqueness matter. Transparency we have;
 validation + adoption + citation we must build.
 
-### WS3.1 — Benchmark corpus growth (honest, slow)
-- [ ] Inclusion rule doc: **clean tabulated, in-envelope, cited, with DOI** — nothing else.
-- [ ] Use confirmed library access (Wiley/Elsevier/OnePetro) opportunistically; add a few verified cases at a time; record source + DOI in `benchmark/`; re-run `run.js`; update coverage honestly.
-- [ ] Keep the **"small but fully disclosed = transparency strength"** note in the methods/limitations.
+### WS3.1 — Benchmark corpus growth (honest, slow)  *(partial — doc done; data ongoing)*
+- [x] Inclusion rule doc: **clean tabulated, in-envelope, cited, with DOI** — nothing else. → `benchmark/INCLUSION-RULES.md` (with an honest rejected-data log).
+- [ ] Use confirmed library access (Wiley/Elsevier/OnePetro) opportunistically; add a few verified cases at a time; record source + DOI in `benchmark/`; re-run `run.js`; update coverage honestly. *(Ongoing — data-availability gated; this session's dead-ends are logged in INCLUSION-RULES.md.)*
+- [x] Keep the **"small but fully disclosed = transparency strength"** note in the methods/limitations. *(Present in `benchmark/run.js` §4 "Coverage & honesty notes".)*
 
-### WS3.2 — Regression / oracle test expansion
-- [ ] Grow `benchmark/run.js`: per-engine oracle cases vs cited literature; envelope-guard tests; `uq.js` math tests.
+### WS3.2 — Regression / oracle test expansion  ✅
+- [x] Per-engine oracle suites in the gated `benchmark/`: `test-b31g.js` (27 — ASME B31G-2012 App. B Ex. 1), `test-ffs.js` (18 + embedded 29 — API 579 Parts 4-7 / NACE TM0284), `test-mr0175.js` (15 + embedded 10 — ISO 15156 boundaries), `test-uq.js` (32 — UQ math + CO₂ envelope-guard), `run.js` (CPT LOO + CO₂ ensemble vs cited data). `test-all.js` runs all (**92 gated assertions**) and is wired into `deploy.sh` as a hard pre-deploy gate.
 
 ### WS3.3 — Methods paper / citation
 - [ ] Finalize the preprint (qualitative citations: Jiang 2025; Nor/Nešić 2011 + validation-scope note).
