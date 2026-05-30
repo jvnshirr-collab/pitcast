@@ -371,6 +371,28 @@ function renderCO2(){
   const crP=Charts.lines({w:540,h:230,xlog:true,title:"CR vs CO₂ partial pressure",xlabel:"pCO₂ (bar, log)",ylabel:"CR (mm/y)",
     series:[{name:"de Waard 95",color:"#38bdf8",pts:sp.map(p=>({x:p.pCO2,y:p.dw95}))},{name:"NORSOK M-506",color:"#2dd4bf",pts:sp.map(p=>({x:p.pCO2,y:p.norsok}))},{name:"NESC",color:"#a78bfa",pts:sp.map(p=>({x:p.pCO2,y:p.nesc}))}],
     vmarkers:[{x:o.pCO2,label:"op"}]});
+  // Model-disagreement map — spread of the 5 models across T × pCO₂ (the headline
+  // unique tool: shows WHERE to trust the number). OOE cells hatched.
+  let dgBlock="";
+  if(window.DIS){
+    const dgXs=DIS.linspace(15,180,20), dgYs=DIS.logspace(0.1,100,16);
+    const dg=DIS.grid({xs:dgXs,ys:dgYs,evalCell:function(T,pco2){
+      const pHc=(o.pH!=null&&isFinite(o.pH))?o.pH:CO2.co2InSituPH({pCO2_bar:pco2,T_C:T,bicarbonate_mg_l:o.bicarbonate||0}).pH_in_situ;
+      return {values:[
+        CO2.deWaard1975(T,pco2),
+        CO2.deWaard1995({T_C:T,pCO2_bar:pco2,u_m_s:o.velocity,d_pipe_m:o.pipeID,pH:pHc,X_glycol:o.glycol,applyScale:true}).CR_mmpy,
+        CO2.norsokM506({T_C:T,pCO2_bar:pco2,u_m_s:o.velocity,d_pipe_m:o.pipeID,pH:pHc}).CR_mmpy,
+        CO2.nescCassandra({T_C:T,pCO2_bar:pco2,u_m_s:o.velocity,pH:pHc,Fe2_ppm:o.fe2,water_cut:o.waterCut,oil_type:o.oilType}).CR_mmpy,
+        CO2.multicorpFreeCorp({T_C:T,pCO2_bar:pco2,pH2S_bar:o.pH2S,pH:pHc,u_m_s:o.velocity,age_h:o.ageH,Fe2_ppm:o.fe2}).CR_mmpy
+      ], ooe:(T<20||T>150||pHc<3.5||pHc>6.5)};
+    }});
+    const dgMap=Charts.heatmap({w:540,h:300,title:"model-disagreement map",xlabel:"Temperature (°C)",ylabel:"pCO₂ (bar, log)",
+      xs:dgXs,ys:dgYs,grid:dg.ratio,hatch:dg.ooe,colors:DIS.SPREAD_COLORS,
+      xfmt:v=>v.toFixed(0),yfmt:v=>v>=1?v.toFixed(0):v.toFixed(1),point:{x:o.T,y:o.pCO2}});
+    const sw=c=>`<span style="display:inline-block;width:12px;height:10px;background:${c};vertical-align:middle;border-radius:2px"></span>`;
+    const dgLegend=`<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:11px;color:var(--dim);margin-top:6px"><span><b style="color:var(--ink)">Model spread</b> (max/min):</span><span>${sw('#0f3d24')} agree ≤1.5×</span><span>${sw('#7a7416')} caution ~3–5×</span><span>${sw('#b4471a')} diverge &gt;10×</span><span><span style="display:inline-block;width:12px;height:10px;vertical-align:middle;border-radius:2px;background:repeating-linear-gradient(45deg,#334155,#334155 1px,transparent 1px,transparent 4px)"></span> outside validity envelope</span><span>◯ your operating point</span></div>`;
+    dgBlock=`<div class="chartwrap" style="margin:10px 0"><div style="font-size:12px;color:var(--dim);margin-bottom:2px">Where the five models <b style="color:var(--ink)">agree vs disagree</b> across the envelope — trust the number most where cells are green.</div>${dgMap}${dgLegend}</div>`;
+  }
   const rows=r.models.map(m=>`<tr><td>${m.name}</td><td class="num">${m.cr.toFixed(m.cr<1?3:2)}</td><td style="color:var(--dim);font-size:11px">${decompStr(m.decomposition)}</td><td style="color:var(--dim);font-size:10px">${m.ref}</td></tr>`).join("");
   $("co2_results").innerHTML=`
     <div class="verdict ${vb}"><div class="gauge">${r.crMax.toFixed(1)}<span class="u"> mm/y</span></div>
@@ -380,6 +402,7 @@ function renderCO2(){
       <div style="font-size:22px;font-weight:700;margin:2px 0">${r.crMin.toFixed(r.crMin<1?3:2)} – ${r.crMax.toFixed(r.crMax<1?3:2)} <span style="font-size:12px;font-weight:400;color:var(--dim)">mm/y · spread ${r.spread.toFixed(0)}×</span></div>
       <div style="font-size:12px;color:var(--dim);line-height:1.5">${r.spread>=3?"⚠ Models disagree strongly — read the band as your uncertainty, not a single number. Where a protective FeCO₃/FeS film dominates, even the lowest model can read high (see benchmark envelope-coverage, About).":"Models broadly agree — the band is your uncertainty range."}</div></div>
     ${envBars(r.uq&&r.uq.envelope)}
+    ${dgBlock}
     <div class="blab2">Model verdicts (mm/y)</div>${bars}
     <div class="chartwrap">${crT}</div>
     <div class="chartwrap">${crP}</div>

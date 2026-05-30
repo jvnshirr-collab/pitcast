@@ -66,8 +66,12 @@ window.Charts={
     const nx=o.xs.length,ny=o.ys.length,cw=pw/nx,ch=ph/ny;
     const color=v=>{for(const c of o.colors){if(v<=c.max)return c.color;} return o.colors[o.colors.length-1].color;};
     let s=o.title?`<text x="${m.l}" y="18" fill="${PAL.muted}" font-size="11" letter-spacing="1">${E(o.title).toUpperCase()}</text>`:'';
+    // optional hatch overlay (o.hatch[iy][ix]) — non-colour secondary indicator
+    // for e.g. out-of-validity-envelope cells (WCAG: pattern, not colour alone).
+    if(o.hatch) s+=`<defs><pattern id="dghatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#e2e8f0" stroke-width="1" opacity="0.55"/></pattern></defs>`;
     for(let iy=0;iy<ny;iy++)for(let ix=0;ix<nx;ix++){const X=m.l+ix*cw,Y=m.t+(ny-1-iy)*ch;
-      s+=`<rect x="${X.toFixed(1)}" y="${Y.toFixed(1)}" width="${(cw+0.7).toFixed(1)}" height="${(ch+0.7).toFixed(1)}" fill="${color(o.grid[iy][ix])}"/>`;}
+      s+=`<rect x="${X.toFixed(1)}" y="${Y.toFixed(1)}" width="${(cw+0.7).toFixed(1)}" height="${(ch+0.7).toFixed(1)}" fill="${color(o.grid[iy][ix])}"/>`;
+      if(o.hatch&&o.hatch[iy]&&o.hatch[iy][ix]) s+=`<rect x="${X.toFixed(1)}" y="${Y.toFixed(1)}" width="${(cw+0.7).toFixed(1)}" height="${(ch+0.7).toFixed(1)}" fill="url(#dghatch)"/>`;}
     s+=`<rect x="${m.l}" y="${m.t}" width="${pw}" height="${ph}" fill="none" stroke="${PAL.line}"/>`;
     [0,Math.floor(nx/2),nx-1].forEach(ix=>{const X=m.l+(ix+0.5)*cw;s+=`<text x="${X}" y="${m.t+ph+16}" fill="${PAL.dim}" font-size="10" text-anchor="middle">${E(o.xfmt?o.xfmt(o.xs[ix]):o.xs[ix])}</text>`;});
     [0,Math.floor(ny/2),ny-1].forEach(iy=>{const Y=m.t+(ny-1-iy+0.5)*ch;s+=`<text x="${m.l-6}" y="${Y+3}" fill="${PAL.dim}" font-size="10" text-anchor="end">${E(o.yfmt?o.yfmt(o.ys[iy]):o.ys[iy])}</text>`;});
