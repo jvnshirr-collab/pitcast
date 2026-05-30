@@ -161,9 +161,9 @@ validation + adoption + citation we must build.
 - [ ] Finalize the preprint (qualitative citations: Jiang 2025; Nor/Nešić 2011 + validation-scope note).
 - [ ] Pick venue (JOSS), mint Zenodo DOI, submit. *(Author action: affiliation, email, repo URL.)*
 
-### WS3.4 — Education (the Thermo-Calc adoption flywheel)  *(started — CO₂ walkthrough live)*
-- [ ] Worked-example walkthroughs per core domain (extend "show your work" mode into tutorials), **integrated into the console** (not marketing/landing pages). → **CO₂ ensemble walkthrough live** (Learn tab, `learn.js`, 6 steps, every number computed live by `CO2.assess()` — the teaching point is an 11× model spread → DIVERGE). CPT / B31G / MR0175 to follow on the same template.
-- [x] A "learn corrosion screening" track linked from the Atlas. → "Learn" console tab, deep-linkable (`#learn`), with a CTA in the Model Atlas intro.
+### WS3.4 — Education (the Thermo-Calc adoption flywheel)  ✅
+- [x] Worked-example walkthroughs per core domain (extend "show your work" mode into tutorials), **integrated into the console**. → **4 live walkthroughs** in the Learn tab (`learn.js`, domain selector): CO₂ ensemble (5-model spread → DIVERGE), CPT pitting (PRENₙ₃₀ → Student-t P(pit)), B31G metal-loss (Folias → Barlow; original vs Modified, P_safe 54.3/55.7 bar matching the oracle), MR0175 sour-spec (ISO 15156 decision tree). Every number computed live by the real engine.
+- [x] A "learn corrosion screening" track linked from the Atlas. → "Learn" console tab, deep-linkable (`#learn`), CTA in the Model Atlas intro; each lesson deep-links back to its console tab.
 
 ---
 
