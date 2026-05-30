@@ -536,8 +536,23 @@
     var crMin = Math.min.apply(null, crs);
     var spread = crMax > 0 ? crMax / Math.max(0.001, crMin) : 1;
 
+    // Standard UQ result schema (ADDITIVE — does not change any field below).
+    // Lets the universal disagreement-map / validity-envelope / export layers
+    // consume CO2 through the same contract every engine will speak (uq.js).
+    var _uq = _UQ();
+    var uqResult = _uq ? _uq.buildResult({
+      unit: 'mm/y',
+      verdict: verdictFor(crMax),
+      models: models.map(function (m) { return { name: m.name, id: m.id, value: m.cr, citation: m.ref }; }),
+      interval: { lo: crMin, hi: crMax, level: 'model-spread' },
+      envelope: _uq.envelopeCheck({ T_C: T_C, pH: pH }, { T_C: [20, 150], pH: [3.5, 6.5] }),
+      drivers: _co2Drivers(m2),
+      provenance: { basis: 'screening · carbon steel · sweet CO₂', benchmark: 'node benchmark/run.js', standard: 'NORSOK M-506:2017 validity: T 20–150 °C, pH 3.5–6.5' }
+    }) : null;
+
     return {
       models: models,
+      uq: uqResult,
       pH_insitu: pH,
       pH_pure_water: ph.pH_pure_water,
       pH_sat: pH_sat,
@@ -633,6 +648,28 @@
   // ── small numeric coalescer: first finite of (v, fallback) ──────────────
   function num(v, fallback) {
     return (v != null && isFinite(v)) ? Number(v) : fallback;
+  }
+
+  // ── UQ framework resolver (browser global or Node require; cached) ───────
+  var _uqCache;
+  function _UQ() {
+    if (_uqCache !== undefined) return _uqCache;
+    var u = null;
+    if (typeof window !== 'undefined' && window.UQ) u = window.UQ;
+    else if (typeof require === 'function') { try { u = require('./uq.js'); } catch (e) { u = null; } }
+    _uqCache = u; return u;
+  }
+
+  // ── CO2 rate drivers (what is moving the number) — read off the de Waard-95
+  //    decomposition; surfaced in the standard UQ schema for the engineer. ──
+  function _co2Drivers(m2) {
+    function r2(x) { return Math.round(x * 100) / 100; }
+    var d = [];
+    if (m2 && m2.F_scale < 0.7) d.push({ name: 'FeCO₃ scaling', effect: 'suppresses rate', factor: r2(m2.F_scale) });
+    if (m2 && m2.F_pH < 0.7) d.push({ name: 'in-situ pH', effect: 'suppresses rate', factor: r2(m2.F_pH) });
+    if (m2 && m2.F_glycol < 0.95) d.push({ name: 'glycol/MEG', effect: 'suppresses rate', factor: r2(m2.F_glycol) });
+    if (m2) d.push({ name: 'flow regime', effect: (m2.CR_mass_mmpy < m2.CR_react_mmpy ? 'mass-transfer limited (flow-sensitive)' : 'reaction limited') });
+    return d;
   }
 
   // ── Math.log10 polyfill (older engines) ─────────────────────────────────
