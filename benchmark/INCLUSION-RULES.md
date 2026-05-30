@@ -42,11 +42,26 @@ doc is the gate. When in doubt, **exclude**._
 
 These were evaluated this development cycle and **excluded** under the rules above:
 
-- Figure-only CO₂ flow-effect data (values only on plots, no table) — rule 1.
+- **NACE Paper 11242, "Corrosion of Carbon Steel in High CO₂ Environment: Flow
+  Effect"** (examined directly via library access, 2026-05-30): corrosion-rate
+  results are presented only as bar charts (Figures 3–5), not tables — **rule 1**;
+  and the test matrix spans pH 3 and pCO₂ 70 bar, outside the de Waard / NORSOK
+  validity envelope (pH ≥ 3.5, pCO₂ ≲ 10 bar) — **rule 3**. The single in-envelope
+  subset (pH 4, pCO₂ 10 bar, 25–50 °C) exists only inside the figures, so no clean
+  tabulated point can be extracted without figure-reading. Excluded.
+- Other figure-only CO₂ flow-effect data (values only on plots, no table) — rule 1.
 - Extreme-condition lab cases far outside NORSOK/de Waard validity — rule 3
   (would only ever show the bulk-flowline model failing, which is expected).
 - Conference papers whose full text could not be retrieved to confirm the exact
   conditions — rule 2.
+
+**Standing note on corpus growth:** the binding constraint is *extractable,
+tabulated, in-envelope, cited* measured data — not access. With METU library access
+available, the readily-reachable CO₂ sources are either image-only PDFs (no
+machine-readable table), figure-based, or run at out-of-envelope conditions
+(supercritical / very-low-pH). Growth therefore stays opportunistic and honest: a
+case is added only when a real tabulated in-envelope value with a retrievable
+identifier is in hand. No point is added to inflate `n`.
 
 Excluding these is the correct outcome, not a gap. The honest statement in the
 methods/limitations stands: **the corpus is small but every point is disclosed
