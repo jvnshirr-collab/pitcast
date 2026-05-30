@@ -961,6 +961,50 @@ function exportActiveCSV(){
 $("btnPrint")&&($("btnPrint").onclick=()=>window.print());
 $("btnCSV")&&($("btnCSV").onclick=exportActiveCSV);
 
+// ---- Reproducible permalinks (WS2.2) — share the EXACT calculation -----------
+// Hash form: #<tabId>?id=val&id2=val2  (values URL-encoded). #app / bare hashes ignored.
+const PC_TABS = ["assess","select","compare","envelope","data","co2","cpac","integrity","ili","ffs","mr0175","cips","products","atlas"];
+function pcEncode(){
+  const a = document.querySelector(".tab.active");
+  const at = a && a.dataset.tab ? a.dataset.tab : "assess";
+  const panel = $("tab-"+at), parts = [];
+  if (panel) panel.querySelectorAll("input[id], select[id], textarea[id]").forEach(function(el){
+    if (el.type==="button" || el.type==="file") return;
+    var v = (el.type==="checkbox") ? (el.checked?"1":"0") : el.value;
+    if (v==null || v==="") return;
+    parts.push(encodeURIComponent(el.id)+"="+encodeURIComponent(v));
+  });
+  return "#"+at+(parts.length?("?"+parts.join("&")):"");
+}
+function pcRestore(){
+  var h = (location.hash||"").replace(/^#/,"");
+  if (!h) return;
+  var qi = h.indexOf("?"), tab = qi>=0 ? h.slice(0,qi) : h, query = qi>=0 ? h.slice(qi+1) : "";
+  if (PC_TABS.indexOf(tab) < 0) return;                  // not a calc permalink (e.g. #app)
+  if (query) query.split("&").forEach(function(kv){
+    var p = kv.split("="); if (p.length<2) return;
+    var el = $(decodeURIComponent(p[0])); if (!el) return;
+    var val = decodeURIComponent(p.slice(1).join("="));
+    if (el.type==="checkbox") el.checked = (val==="1"||val==="true"); else el.value = val;
+  });
+  var btn = document.querySelector('.tab[data-tab="'+tab+'"]');
+  if (btn) btn.click();                                   // switch + render
+  var panel = $("tab-"+tab);
+  if (panel) panel.querySelectorAll("form").forEach(function(f){ f.dispatchEvent(new Event("input",{bubbles:true})); });
+  try { var app=document.getElementById("app"); if(app) app.scrollIntoView({behavior:"auto"}); } catch(e){}
+}
+$("btnLink")&&($("btnLink").onclick=function(){
+  var url = location.origin + location.pathname + pcEncode();
+  try { history.replaceState(null,"",url); } catch(e){ try{ location.hash = pcEncode(); }catch(_){} }
+  var b = $("btnLink"), orig = b.textContent;
+  var flash = function(msg){ b.textContent = msg; setTimeout(function(){ b.textContent = orig; }, 1800); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(function(){ flash("✓ link copied"); }, function(){ flash("link in address bar ↑"); });
+  else flash("link in address bar ↑");
+});
+// Also restore on in-page hash change (paste a permalink into the address bar of an
+// already-open tab). replaceState (used by Copy link) does not fire this; idempotent.
+window.addEventListener("hashchange", pcRestore);
+
 // ---- validation-cases table (cited measured anchors) ------------------------
 function renderValidations(){
   const host = $("validTable");
@@ -1906,6 +1950,7 @@ async function init(){
   _bindIndustryHandlers();
   renderValidations();
   _initProductsTab();
+  pcRestore();
 }
 init();
 
