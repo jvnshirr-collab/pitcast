@@ -10,7 +10,7 @@ tags:
   - JavaScript
 authors:
   - name: Javanshir Hasanov
-    orcid: 0000-0000-0000-0000   # [AUTHOR TO ADD a real ORCID before submission]
+    orcid: 0009-0004-3573-5709
     affiliation: 1
 affiliations:
   - name: Department of Metallurgical and Materials Engineering, Middle East Technical University (METU), Ankara, Türkiye   # [confirm; list as independent / student contributor if preferred]

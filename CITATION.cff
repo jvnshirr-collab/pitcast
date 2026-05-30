@@ -10,6 +10,7 @@ type: software
 authors:
   - family-names: Hasanov
     given-names: Javanshir
+    orcid: "https://orcid.org/0009-0004-3573-5709"
 license: Apache-2.0
 url: "https://pitcast.austenite.org"
 # repository-code: "https://github.com/<owner>/<repo>"   # TODO: confirm public repo URL
