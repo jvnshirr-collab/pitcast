@@ -728,6 +728,21 @@ function renderIntegrity(){
   const vb={PASS:"low",MONITOR:"moderate",REPAIR:"high",IMMEDIATE:"high"}[v.status]||"low";
   const rl=B31G.remainingLife({tNom:t,tMin:+gv("b_tmin"),CR:+gv("b_CR"),designLifeYr:+gv("b_life"),inhEff:+gv("b_inh")});
   const ds={ ff:ff, dAllow:dAllow, v:v };
+  // B31G is genuinely multi-model — compute BOTH methods for a method-spread ensemble
+  // (the disagreement view) + a d/t≤80% validity-envelope card (universal r.uq layer).
+  const ffB=B31G.failurePressure({D,t,SMYS:grade.SMYS,L,d,method:"b31g"});
+  const ffM=B31G.failurePressure({D,t,SMYS:grade.SMYS,L,d,method:"modb31g"});
+  const iEns=(window.UQ && !ff.throughWall && isFinite(ffB.P_safe_bar) && isFinite(ffM.P_safe_bar) && ffB.P_safe_bar>0 && ffM.P_safe_bar>0) ? UQ.ensemble([ffB.P_safe_bar, ffM.P_safe_bar]) : null;
+  const iEnvCard=(window.UQ && !ff.throughWall) ? envBars(UQ.envelopeCheck({dt:ff.depthRatio*100},{dt:[null,80]})) : "";
+  let iDisag="";
+  if(iEns){
+    const loP=Math.min(ffB.P_safe_bar,ffM.P_safe_bar), hiP=Math.max(ffB.P_safe_bar,ffM.P_safe_bar), dv=iEns.spread.verdict;
+    const bc=dv==="diverge"?"rgba(245,158,11,.45)":"rgba(56,189,248,.35)", bg=dv==="diverge"?"rgba(245,158,11,.07)":"rgba(56,189,248,.05)";
+    iDisag='<div style="margin:10px 0;padding:9px 12px;border:1px solid '+bc+';border-radius:8px;background:'+bg+'">'
+      +'<div style="font-size:12px;color:var(--dim)">Method spread — <b style="color:var(--ink)">B31G vs Modified-B31G (RSTRENG)</b></div>'
+      +'<div style="font-size:15px;font-weight:600;margin:2px 0">'+loP.toFixed(0)+' – '+hiP.toFixed(0)+' bar P<sub>safe</sub> <span style="font-size:12px;font-weight:400;color:var(--dim)">· '+iEns.spread.ratio.toFixed(2)+'× ('+dv+')</span></div>'
+      +'<div style="font-size:11px;color:var(--dim);line-height:1.5">Original B31G (⅔·dL parabolic) '+ffB.P_safe_bar.toFixed(0)+' bar · Modified B31G / RSTRENG (0.85·dL) '+ffM.P_safe_bar.toFixed(0)+' bar. '+(dv==="agree"?"Methods agree — robust estimate.":"Modified-B31G (RSTRENG) is the less-conservative, more-accurate basis — design to the relevant one.")+'</div></div>';
+  }
   const swB = [
     'd/t = ' + d + '/' + t + ' = ' + ff.depthRatio.toFixed(2),
     'Folias M = √(1 + 0.6275λ − 0.003375λ²), λ = L²/(D·t) = ' + (isFinite(ff.M)?ff.M.toFixed(2):'n/a'),
@@ -744,6 +759,8 @@ function renderIntegrity(){
       <div class="metric"><div class="k">Wall loss d/t</div><div class="val">${(ff.depthRatio*100).toFixed(0)}<span class="u"> %</span></div><div class="u">${ff.regime||"—"}</div></div>
       <div class="metric"><div class="k">Allowable d @ MAOP</div><div class="val">${dAllow!=null?dAllow.toFixed(1):"—"}<span class="u"> mm</span></div><div class="u">${dAllow!=null?((dAllow/t*100).toFixed(0)+"% wall · margin "+(dAllow-d).toFixed(1)+" mm"):"intact pipe weaker than MAOP"}</div></div>
     </div>
+    ${iDisag}
+    ${iEnvCard}
     <div class="explain"><b>Remaining life (uniform CR):</b> CR ${rl.CR_mmyr.toFixed(2)} mm/y${rl.inhibitorEff>0?(` × (1−η ${(rl.inhibitorEff*100).toFixed(0)}%) = ${rl.effective_CR_mmyr.toFixed(2)} mm/y eff`):""} → <b>${isFinite(rl.yearsToMinWT)?rl.yearsToMinWT.toFixed(1)+" yr"+(rl.yearsToMinWT<rl.designLifeYr?" (< design life)":""):"∞ (no corrosion)"}</b> to t<sub>min</sub> ${rl.tMin_mm} mm.
       ${!rl.ca_sufficient?` Required inhibitor efficiency for ${rl.designLifeYr} yr: <b>${(rl.required_inhibitor_efficiency*100).toFixed(0)}%</b>.`:` CA ${rl.CA_mm.toFixed(1)} mm sufficient for ${rl.designLifeYr} yr at this CR.`}
       <span style="color:var(--dim)"> ${ff.ref} · ${rl.ref}</span></div>${gbox("P<sub>f</sub> = σ<sub>f</sub>·(2t/D)·(1−d/t)/(1−(d/t)/M); Folias M=√(1+0.6275λ−0.003375λ²), λ=L²/(Dt). Mod-B31G uses 0.85·d·L effective area.", "ASME B31G-2012 · Kiefner &amp; Vieth 1989 (RSTRENG) · Folias 1965", "T2 · ASME B31G Appx B Ex 1 reproduced (P_safe 54.3 bar) — VR/b31g.md")}${ff.throughWall?"":showWork("B31G → P_safe", swB)}
