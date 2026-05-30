@@ -11,8 +11,9 @@ Before anything else, replace these — they are deliberately left blank, not gu
 - `.zenodo.json` — confirm the affiliation string.
 - `CITATION.cff` — set `repository-code:` (public repo URL), `version:` (release tag),
   and `doi:` (after step 4).
-- `paper.bib` — confirm the four DOIs flagged "to be confirmed" (deWaard1975, nyby2021
-  article, nyborg2010, nesic2007) on the publisher site / Crossref. **Do not guess a DOI.**
+- `paper.bib` — ✓ **done**: the four previously-flagged DOIs (deWaard1975, nyby2021,
+  nyborg2010, nesic2007) are now confirmed via Crossref (exact metadata match). Nothing
+  left here.
 
 ## 1. Make the repository public
 JOSS and Zenodo both require a public repo under an OSI licence — you have Apache-2.0.
