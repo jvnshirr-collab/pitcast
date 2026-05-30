@@ -23,7 +23,9 @@ document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
   if (t.dataset.tab === "ffs") renderFFS();
   if (t.dataset.tab === "mr0175") renderMR0175();
   if (t.dataset.tab === "cips") renderCIPSPlaceholder();
+  if (t.dataset.tab === "atlas") renderAtlas();
 });
+function renderAtlas(){ if (window.Atlas && $("atlas_results")) Atlas.render($("atlas_results")); }
 
 // ---- grade picker (searchable: curated grades + in-scope measured alloys) ---
 const gInput = $("a_grade_search");

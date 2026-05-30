@@ -62,6 +62,7 @@
     <button class="tab" data-tab="mr0175">MR0175 spec</button>
     <button class="tab" data-tab="cips">CIPS / DCVG</button>
     <button class="tab" data-tab="products">Vendor products</button>
+    <button class="tab" data-tab="atlas">Model atlas</button>
   </div>
   <div class="datastat" id="dataStat"></div>
   <div class="exportbar"><button type="button" id="btnPrint">🖶 Print / Save as PDF</button><button type="button" id="btnXLSX">⤓ Export XLSX</button><button type="button" id="btnCSV">⤓ Download CSV</button></div>
@@ -734,6 +735,11 @@ D-002,95,2.1
     </div>
   </section>
 
+  <!-- MODEL ATLAS — browsable cited reference of every model + validity envelope (WS1.3) -->
+  <section class="panel" id="tab-atlas">
+    <div id="atlas_results"></div>
+  </section>
+
 </main>
 
 <section id="how" class="info">
@@ -902,7 +908,8 @@ D-002,95,2.1
 <script src="storage.js?v=1"></script>
 <script src="projects-ui.js?v=3"></script>
 <script src="pitcast.js?v=13"></script>
-<script src="app.js?v=58"></script>
+<script src="atlas.js?v=1"></script>
+<script src="app.js?v=59"></script>
 <script>
   // Wait for mr0175 annexes to load (async fetch)
   if (typeof window !== "undefined") {
