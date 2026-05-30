@@ -1,0 +1,192 @@
+# PitCast Enhancement Plan — "The Open Corrosion Standard"
+
+> Living roadmap. Near-term (Phase 1–2) is detailed to the task level; far-term
+> (Phase 3–4) is intentionally coarser and will be refined as we execute.
+> **Read `feedback_pitcast_corrosion_only.md` before adding anything.** Every
+> task must answer "is this corrosion?" — yes, or it does not go in.
+
+## North Star
+Be the tool engineers keep in the *other* browser tab: the open, transparent,
+reproducible, uncertainty-first corrosion **screening + second-opinion** layer
+that the closed giants (OLI, Honeywell Predict, DNV, BEASY) structurally cannot
+copy. We do not compete on rigor or regulatory standing — we own transparency,
+reproducibility, integrated breadth, and education.
+
+## Hard guardrails (apply to every task)
+- **Corrosion-only.** No generic RBI/integrity/FFS empire-building.
+- **No fabrication.** No invented data, DOIs, authors, conditions, or vendor facts.
+- **No overclaiming.** A task is done only when every sub-item + acceptance met.
+- **No ceremony.** No audit/stamp/PE-signoff/SHA sheets. No pricing/marketing pages.
+- **Browser-verified.** "Test" = visual Chrome check of graphs/tables/data, not just a script.
+- **Deploy hygiene.** Bump `?v=N` cache-buster → wrangler deploy → CDN purge → verify live.
+
+---
+
+## PRIORITY ORDER (most important first)
+1. **Phase 1 — Deepen the unique core** (the 5 tools nobody else has, across all domains). *This is the differentiation.*
+2. **Phase 3 — Trust: benchmark + validation + citation.** *Without trust, uniqueness is just a demo.* (Runs in parallel with 1.)
+3. **Phase 2 — Workflow fit** (data in/out, permalinks). *Drives real adoption.*
+4. **Phase 4 — Depth in ONE wedge.** *Be best-in-open-class at one thing.*
+
+---
+
+# PHASE 1 — DEEPEN THE UNIQUE CORE  (highest priority)
+
+**Objective:** make the 5 unique tools real across *all* 13 domains, not just CO₂.
+**Why first:** this is the moat that no incumbent can follow into. It also reframes
+"small" into a strength: we are the meta-layer that tells engineers *how much to
+trust* any corrosion number.
+
+### WS1.1 — Universal Ensemble + Uncertainty framework  *(BLOCKS the rest of Phase 1; size: M)*
+The CO₂ engine already emits `models[]`, `crMin/crMax/spread`. Generalize it into a
+reusable contract every engine speaks.
+- [ ] **Define the standard result schema** (one source of truth):
+  `{ value, unit, interval:{lo,hi,level}, models:[{name,value,citation,envelope,inEnvelope}], spread:{abs,rel,verdict}, drivers:[{name,effect}], provenance }`.
+- [ ] **Create `uq.js`** with pure helpers (unit-tested):
+  - `makeEnsemble(models)` → min/max/median/mean + spread.
+  - `studentTInterval(point, sd, n, level)` → prediction interval (already used in CPT — extract & reuse).
+  - `spreadVerdict(rel)` → `'agree' | 'caution' | 'diverge'` with documented thresholds.
+  - `envelopeCheck(inputs, env)` → per-variable `{value,lo,hi,status}` (generalize existing extrapolation guards).
+- [ ] **Refactor `co2.js`** to emit the standard schema (it's closest — proves the contract).
+- [ ] **Audit every engine** for whether ≥2 legitimate models exist; classify each:
+  - `pitcast.js` (CPT/pitting): single correlation + Student-t PI → ensemble-of-one + measurement band; add alternate PREN coefficient sets *only if literature-supported*.
+  - `b31g.js`: B31G vs Modified-B31G vs effective-area screening → genuine burst-pressure ensemble + spread.
+  - `ffs.js`: RSF method variants where applicable.
+  - `mr0175.js`: not a rate → emit **envelope distance** (how far inside/outside the sour limits) instead of an interval.
+  - `galvanic / anode / groundbed / cpac / cips / hic / mic / cui / electrochem / interaction`: add UQ where ≥2 models exist; else surface **parameter/measurement uncertainty** honestly (don't fake an ensemble).
+- [ ] **Acceptance:** every primary output carries an interval; every multi-model output carries a spread + verdict + per-model envelope flag. `uq.js` has passing unit tests in `benchmark/`.
+
+### WS1.2 — Model-Disagreement Map  *(THE headline tool; size: M; depends on WS1.1)*
+For a service, show *where the models agree vs diverge* across the operating envelope.
+- [ ] **`disagreement.js`**: sweep 1–2 input axes over a grid; per cell, eval all in-domain models (reuse `uq.js`); compute spread (max/min ratio or CoV).
+- [ ] **Grid generator**: linspace over axis ranges; **mask/hatch out-of-envelope cells** (don't silently extrapolate).
+- [ ] **SVG heatmap renderer** (reuse schematic-visual approach):
+  - Colorblind-safe diverging palette **+ secondary indicator** (hatching for OOE) — per WCAG lessons.
+  - **Legend-table-below** pattern + **anchor-flipped** axis labels — per visual-collision lessons (no overlaps).
+  - Overlay **"your operating point"** marker from current tab inputs.
+  - Hover a cell → per-model values + which model dominates there.
+- [ ] **Start with CO₂** (T × pCO₂); then pitting (T × Cl⁻ or PREN), then metal-loss.
+- [ ] **Acceptance:** working CO₂ T×pCO₂ heatmap with OOE masking + operating-point marker; browser-verified clean (no label collisions); hover works.
+
+### WS1.3 — Model Atlas  *(browsable reference = the curated-knowledge moat; size: M)*
+The "assessed database" equivalent: every public corrosion model in one cited place.
+- [ ] **`atlas.js` / JSON** entries: `{domain, model, equation, citation{authors,title,venue,year,doi}, envelope{var:[lo,hi]}, assumptions[], failureModes[], pitcastImplements}`.
+- [ ] **DRY**: derive from existing glass-box content + `docs/vv/VR/*.md` + the methods-note references — single source of truth, no duplicate/fabricated citations.
+- [ ] **Render**: filterable cards/table; each entry links to its tab; shows validity envelope inline.
+- [ ] **Acceptance:** all 13 domains' primary models present with **real** citations; each links to its tab; no fabricated references (cross-checked against methods note).
+
+### WS1.4 — Validity-Envelope Visualizer  *(size: S; depends on WS1.1)*
+Make the extrapolation guards visual.
+- [ ] **Number-line component** (small SVG): per variable show valid range, current value marked, OOE highlighted (icon + color, WCAG; anchor-flipped labels).
+- [ ] Wire `envelopeCheck()` output into every load-bearing engine's result panel.
+- [ ] **Acceptance:** every load-bearing engine shows an envelope card; OOE flagged with a secondary indicator (not color alone).
+
+### Phase 1 — Definition of Done & test plan
+- [ ] `uq.js`, `disagreement.js` grid math, envelope checks all have oracle/unit tests in `benchmark/`.
+- [ ] `benchmark/run.js` self-tests still green (CPT LOO 6.58 °C, CO₂ ensemble, coverage).
+- [ ] Each new panel **Chrome-verified** on its tab(s); zero console errors.
+- [ ] Cache-buster bumped, deployed, CDN purged, verified live.
+
+---
+
+# PHASE 2 — WORKFLOW FIT  (drives adoption)
+
+**Objective:** read what engineers already have, and let them share/export. This is
+what turns a demo into a daily tool.
+
+### WS2.1 — Data-in  *(high adoption value; size: M)*
+- [ ] **ILI-CSV import** (batch metal-loss): file input → CSV parse (delimiters/headers) → column-mapping UI (depth %, length, OD, WT, MAOP) → per-row validation → run `b31g`/effective-area per row → reuse `ILI_RENDER_CAP=1000` render cap → worst-case summary → export results. Flag `d/t>80%` guard per row.
+- [ ] **Lab water-analysis import** (CO₂ tab): accept a defined CSV/JSON water schema → compute pCO₂ from total P × mol% CO₂ → accept measured pH or compute from bicarbonate → prefill inputs → **flag every assumption made**.
+- [ ] **Acceptance:** a real ILI CSV imports + assesses + renders capped; a water analysis prefills the CO₂ tab with assumptions shown.
+
+### WS2.2 — Reproducible permalinks  *(quick win; size: S)*
+- [ ] Serialize current tab + inputs → compact URL hash (versioned schema).
+- [ ] On load, parse hash → restore inputs → recompute.
+- [ ] "Copy shareable link" button. *(Reproducibility, not an audit ceremony.)*
+- [ ] **Acceptance:** a link round-trips to the exact calculation on a fresh load.
+
+### WS2.3 — Export  *(size: S; depends on WS1.1 schema)*
+- [ ] Export a result as clean **JSON/CSV** (inputs, outputs, models, intervals, citations, version, client-side timestamp) suitable for feeding RBI/integrity tools.
+- [ ] Keep existing PDF/Excel (Calc + Charts only — no audit sheets).
+- [ ] **Acceptance:** exported JSON validates against the schema; opens cleanly.
+
+---
+
+# PHASE 3 — TRUST: BENCHMARK, VALIDATION & STANDARD  (the moat; runs parallel to P1)
+
+**Objective:** earn the trust that makes uniqueness matter. Transparency we have;
+validation + adoption + citation we must build.
+
+### WS3.1 — Benchmark corpus growth (honest, slow)
+- [ ] Inclusion rule doc: **clean tabulated, in-envelope, cited, with DOI** — nothing else.
+- [ ] Use confirmed library access (Wiley/Elsevier/OnePetro) opportunistically; add a few verified cases at a time; record source + DOI in `benchmark/`; re-run `run.js`; update coverage honestly.
+- [ ] Keep the **"small but fully disclosed = transparency strength"** note in the methods/limitations.
+
+### WS3.2 — Regression / oracle test expansion
+- [ ] Grow `benchmark/run.js`: per-engine oracle cases vs cited literature; envelope-guard tests; `uq.js` math tests.
+
+### WS3.3 — Methods paper / citation
+- [ ] Finalize the preprint (qualitative citations: Jiang 2025; Nor/Nešić 2011 + validation-scope note).
+- [ ] Pick venue (JOSS), mint Zenodo DOI, submit. *(Author action: affiliation, email, repo URL.)*
+
+### WS3.4 — Education (the Thermo-Calc adoption flywheel)
+- [ ] Worked-example walkthroughs per core domain (extend "show your work" mode into tutorials), **integrated into the console** (not marketing/landing pages).
+- [ ] A "learn corrosion screening" track linked from the Atlas. Goal: get it used in teaching.
+
+---
+
+# PHASE 4 — GO DEEP IN ONE WEDGE  (be best-in-open-class at one thing)
+
+**Pick the wedge (recommend CO₂ ensemble+UQ — existing strength).** Don't chase depth everywhere.
+- **If CO₂:** FreeCorp-parity point model; NORSOK glycol/inhibitor/scaling correction factors; de Waard flow + scaling factors; expand the CO₂ benchmark; make the disagreement map best-in-class.
+- **If metal-loss:** effective-area (RSTRENG-style) beyond B31G; interacting-defect rules; river-bottom profile from ILI.
+- **Acceptance:** the chosen wedge is demonstrably the best *open* implementation, benchmarked + documented.
+
+---
+
+## CROSS-CUTTING (every phase)
+- **Accessibility:** WCAG contrast + secondary indicators on all critical verdicts.
+- **Visual QA:** anchor-flip x-labels, legend-table-below, greedy label dodging (per visual-collision audit lessons).
+- **Performance:** render caps, lazy compute on heavy grids.
+- **CI:** `benchmark/run.js` self-tests green before every deploy.
+- **Scope:** every task answers "is this corrosion?"
+
+---
+
+## DEPENDENCY-ORDERED BACKLOG (concrete "do next")
+1. `uq.js` shared framework *(blocks P1)* — **M**
+2. Refactor `co2.js` to standard schema *(proves framework)* — **S**
+3. Disagreement map for CO₂ *(headline)* — **M**
+4. Envelope visualizer *(all engines)* — **S**
+5. Extend ensemble/UQ → pitting/CPT + b31g — **M**
+6. Model Atlas — **M**
+7. Reproducible permalinks *(independent quick win)* — **S**
+8. ILI-CSV import *(adoption)* — **M**
+9. Export JSON/CSV *(depends on #1)* — **S**
+10. Lab water-analysis import — **S/M**
+11. Benchmark growth + tests *(ongoing)* — **L**
+12. Preprint submit *(author)* — **S**
+13. Educational walkthroughs — **M**
+14. Deep wedge — **L**
+
+## MILESTONE UNLOCKS (what each buys, honestly)
+- After #1–#3: **first unique tool live** — "PitCast shows you how much to trust the number." Demo-able, genuinely novel.
+- After #4–#6: **the meta-layer is complete** — disagreement + envelope + atlas across domains. This is the "only one who has it" claim, made real.
+- After #7–#10: **adoptable by a real engineer** — reads their data, shares a calc, exports to their stack.
+- After #11–#12: **citable** — the trust artifact + a DOI. Citations are the "revenue" of the research-vehicle model.
+- After #13–#14: **standard + best-in-class wedge** — taught, and demonstrably #1 open at one thing.
+
+## RISKS & GUARDRAILS
+- **Scope drift** → corrosion-only check on every task.
+- **Fabrication** → no fake data/citations/vendor claims; verify before publishing any competitor fact.
+- **Overclaiming** → DoD discipline; nothing marked done until acceptance met.
+- **Visual regressions** → browser QA every deploy.
+- **Trust-before-claims** → never imply regulatory standing; screening-grade is the brand.
+
+## HONEST CEILING
+In 1–2 years this can make PitCast *the* open corrosion-screening + transparency
+standard — cited, taught, used as the free second opinion. That is a real,
+compounding asset and the stated career/research vehicle. It is **not** a
+near-term path to "worth millions" (that needs decades + a curated data moat +
+a commercial model, which is explicitly off the table now). The near-term goal
+is **reputation and adoption, not valuation.**
