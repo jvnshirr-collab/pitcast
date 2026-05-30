@@ -40,6 +40,12 @@ if [ -z "$EXPECTED_VER" ]; then
 fi
 echo "→ Deploying app.js?v=$EXPECTED_VER  ($COMMIT_MSG)"
 
+# --- 0. deploy gate: every benchmark / engine-oracle suite must pass -------
+#        (cross-cutting rule: benchmark self-tests green before every deploy)
+echo "→ running benchmark self-tests (deploy gate) …"
+node benchmark/test-all.js
+echo "✓ benchmark suites green — proceeding to deploy"
+
 # --- 1. wrangler deploy ---------------------------------------------------
 echo "→ wrangler pages deploy …"
 DEPLOY_OUT=$(npx -y wrangler@latest pages deploy . \
