@@ -63,6 +63,23 @@ machine-readable table), figure-based, or run at out-of-envelope conditions
 case is added only when a real tabulated in-envelope value with a retrievable
 identifier is in hand. No point is added to inflate `n`.
 
+**Open-access hunt, 2026-05-30 (library + OA search) — all examined and rejected:**
+- NACE Paper 11242 (figure-based corrosion rates; pCO₂ to 70 bar — out of envelope).
+- Bai et al., *Materials* 11(9):1765 (2018), J55 — corrosion rate only in Figures 4/13,
+  pCO₂ 1.5–15 MPa (out of envelope + rule 1). DOI 10.3390/ma11091765.
+- Dong et al., *Materials* 17(16):4046 (2024), ML model — only summary statistics
+  (Table 1), raw points "cannot be publicly disclosed", supercritical-CO₂ training
+  sources. DOI 10.3390/ma17164046.
+- CPT side: reachable duplex CPT values are either electrochemical-basis (ASTM G150 in
+  NaCl — **not** the G48 / 6% FeCl₃ basis the PitCast correlation is calibrated on; a
+  basis mismatch would corrupt the spot-check), or the open reviews tabulate only
+  composition / PREN, not measured CPT.
+
+Conclusion: no responsibly-addable point was found. The corpus is held at its
+fully-trustworthy state (CPT n=51 leave-one-out; CO₂ small cited spot-check) rather
+than admit a figure-read, out-of-envelope, or wrong-basis entry. That is the correct
+outcome under these rules — integrity over a larger `n`.
+
 Excluding these is the correct outcome, not a gap. The honest statement in the
 methods/limitations stands: **the corpus is small but every point is disclosed
 and reproducible** — which is more than the closed validation decks of
