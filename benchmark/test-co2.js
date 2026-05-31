@@ -55,6 +55,15 @@ ok(a.spread > 1, 'ensemble shows genuine model disagreement (spread > 1)');
 ok(typeof a.verdict === 'string' && a.verdict.length > 0, 'verdict band present');
 ok(a.uq && a.uq.models && a.uq.models.length === 5, 'standard UQ schema present (5 models)');
 
+// ── validated model-accuracy guidance (P4 best-in-class differentiator) ──────
+const rec = CO2.recommendModel({ T_C: 60, u_m_s: 1 });
+ok(rec.recommended === 'DWM-1995', 'recommendModel() picks the validated best-fit (DWM-1995)');
+ok(rec.ranked[0] === 'DWM-1995' && rec.ranked.length === 5, 'ranking lists all 5 models, best MAE first');
+ok(CO2.MODEL_VALIDATION.perModel['DWM-1995'].MAE < CO2.MODEL_VALIDATION.perModel['NORSOK'].MAE, 'validated ordering: DWM-1995 MAE < NORSOK MAE');
+ok(/spread/i.test(rec.caveat), 'recommendation carries the honest ensemble-spread caveat');
+ok(a.recommendation && a.recommendation.recommended === 'DWM-1995', 'assess() surfaces the recommendation');
+ok(a.models[0].validation && typeof a.models[0].validation.MAE === 'number', 'each model annotated with its validated accuracy');
+
 console.log(fail
   ? ('  CO2 suite: ' + fail + ' FAILED (' + pass + ' passed)')
   : ('✓ ' + pass + ' passed (CO2 ensemble: De Waard 1975/1995 fugacity, NORSOK M-506 K_t, Crolet-Bonis pH)'));
