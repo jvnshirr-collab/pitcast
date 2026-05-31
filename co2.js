@@ -420,6 +420,46 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════
+  // INHIBITED CORROSION RATE — availability-weighted (NORSOK / de Waard)
+  //   An inhibitor cuts CR by `efficiency` only while it is present/effective
+  //   a fraction `availability` of the time; the steel corrodes bare the rest:
+  //       CR_inh = CR_uninhibited * (1 - availability * efficiency)
+  //   This is why field practice chases AVAILABILITY, not just lab efficiency —
+  //   a 95%-efficient inhibitor at 80% availability still leaves ~24% of the
+  //   bare rate, not 5%.
+  //   opts: { cr, efficiency 0..1, availability 0..1, designLifeYr?, caMm? }
+  // ══════════════════════════════════════════════════════════════════════
+  function inhibitedRate(opts) {
+    opts = opts || {};
+    function c01(x) { return Math.max(0, Math.min(1, x)); }
+    var cr = Math.max(0, opts.cr == null ? 0 : opts.cr);
+    var eff = c01(opts.efficiency == null ? 0.9 : opts.efficiency);
+    var avail = c01(opts.availability == null ? 0.95 : opts.availability);
+    var effEff = avail * eff;
+    var crInh = cr * (1 - effEff);
+    var crFull = cr * (1 - eff);
+    var out = {
+      uninhibited_CR_mmpy: cr,
+      efficiency: eff,
+      availability: avail,
+      effective_efficiency: effEff,
+      inhibited_CR_mmpy: crInh,
+      CR_at_full_availability_mmpy: crFull,
+      availability_penalty_mmpy: crInh - crFull
+    };
+    if (opts.designLifeYr != null || opts.caMm != null) {
+      var life = opts.designLifeYr == null ? 20 : opts.designLifeYr;
+      var CA = opts.caMm == null ? 3 : opts.caMm;
+      out.consumed_mm = crInh * life;
+      out.designLifeYr = life;
+      out.caMm = CA;
+      out.ca_sufficient = out.consumed_mm <= CA;
+      out.verdict = out.ca_sufficient ? 'CA SUFFICIENT (inhibited)' : 'CA EXCEEDED — raise availability or corrosion allowance';
+    }
+    return out;
+  }
+
+  // ══════════════════════════════════════════════════════════════════════
   // EROSIONAL VELOCITY — API RP 14E
   //   Ve = C / sqrt(rho_mix)  [ft/s, lb/ft^3];  SI: Ve[m/s] = 1.22*C/sqrt(rho[kg/m^3]).
   //   C ~ 100 for continuous solids-free service (conservative); 150-200 where
@@ -749,6 +789,7 @@
     sweepT: sweepT,
     sweepPCO2: sweepPCO2,
     allowance: allowance,
+    inhibitedRate: inhibitedRate,
     erosionalVelocity: erosionalVelocity,
     // individual models
     deWaard1975: deWaard1975,

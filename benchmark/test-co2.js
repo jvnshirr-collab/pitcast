@@ -64,6 +64,11 @@ ok(/spread/i.test(rec.caveat), 'recommendation carries the honest ensemble-sprea
 ok(a.recommendation && a.recommendation.recommended === 'DWM-1995', 'assess() surfaces the recommendation');
 ok(a.models[0].validation && typeof a.models[0].validation.MAE === 'number', 'each model annotated with its validated accuracy');
 
+// ── inhibitor availability model  CR_inh = CR*(1 - availability*efficiency) ──
+near(CO2.inhibitedRate({ cr: 1, efficiency: 0.9, availability: 1.0 }).inhibited_CR_mmpy, 0.10, 0.001, 'inhibited CR: 90% eff @ 100% avail -> 0.10*CR');
+near(CO2.inhibitedRate({ cr: 1, efficiency: 0.95, availability: 0.8 }).inhibited_CR_mmpy, 0.24, 0.001, 'availability gap: 95% eff @ 80% avail -> 0.24*CR (not 0.05)');
+ok(CO2.inhibitedRate({ cr: 5, efficiency: 0.9, availability: 0.85, designLifeYr: 20, caMm: 3 }).consumed_mm > 3, 'low availability can exceed CA over 20-y design life');
+
 console.log(fail
   ? ('  CO2 suite: ' + fail + ' FAILED (' + pass + ' passed)')
   : ('✓ ' + pass + ' passed (CO2 ensemble: De Waard 1975/1995 fugacity, NORSOK M-506 K_t, Crolet-Bonis pH)'));
