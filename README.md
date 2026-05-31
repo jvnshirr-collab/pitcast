@@ -31,6 +31,8 @@ redistributable measured data, with no synthetic or fabricated points.
 - **CO₂ corrosion ensemble.** Five canonical models (de Waard–Milliams 1975, de Waard
   1995, NORSOK M-506, NESC/Cassandra, Multicorp/FreeCorp) with an explicit
   **model-disagreement (envelope) view** that exposes where single-model estimates are unsafe.
+  Each model carries its **validated accuracy** on the cited corpus, and `recommendModel()`
+  names the best-fit with an honest spread caveat — see [`docs/CO2-WEDGE.md`](docs/CO2-WEDGE.md).
 - **Sour-service spec.** ISO 15156 / NACE MR0175 decision tree returning citation-grounded
   acceptability verdicts.
 - **Corroded-pipe fitness-for-service.** ASME B31G and Modified B31G (RSTRENG)

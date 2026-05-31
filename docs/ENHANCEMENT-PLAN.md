@@ -188,6 +188,18 @@ validation + adoption + citation we must build.
 
 ---
 
+> **STATUS — Phase 4 (CO₂ wedge) in progress (2026-05-30):** chose **CO₂** as the wedge
+> (existing 5-model strength). Engine + benchmark + docs done, **gate green (119
+> assertions)**: **(1)** faithful de Waard 1995 fugacity coefficient applied across the
+> full pressure range (was φ=1 below 250 bar — over-stated the driving force at high P);
+> **(2)** dedicated `benchmark/test-co2.js` oracle suite (27 assertions, hand-derived from
+> the published equations); **(3)** embedded per-model **validated accuracy** + `recommendModel()`
+> (DWM-1995 best, MAE 1.12 mm/y; honest ~10× spread caveat; regime notes); **(4)**
+> availability-weighted `inhibitedRate()` (CR·(1−avail·eff)); **(5)** `docs/CO2-WEDGE.md`
+> (the documented best-in-class write-up). **Remaining (browser-gated):** surface
+> `recommendModel` / `inhibitedRate` in the CO₂ tab UI, browser-verify, deploy, and sync to
+> the public `pitcast` repo. All engine work committed to the dev repo; **not yet live.**
+
 # PHASE 4 — GO DEEP IN ONE WEDGE  (be best-in-open-class at one thing)
 
 **Pick the wedge (recommend CO₂ ensemble+UQ — existing strength).** Don't chase depth everywhere.
