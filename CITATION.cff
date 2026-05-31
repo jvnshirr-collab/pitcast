@@ -13,7 +13,7 @@ authors:
     orcid: "https://orcid.org/0009-0004-3573-5709"
 license: Apache-2.0
 url: "https://pitcast.austenite.org"
-# repository-code: "https://github.com/<owner>/<repo>"   # TODO: confirm public repo URL
+repository-code: "https://github.com/jvnshirr-collab/pitcast"
 version: "1.0.0"
 date-released: 2026-05-30
 keywords:
@@ -24,4 +24,4 @@ keywords:
   - materials selection
   - open benchmark
   - uncertainty quantification
-# doi: "10.5281/zenodo.XXXXXXX"   # TODO: add after the Zenodo release is minted (P3-3b)
+doi: "10.5281/zenodo.20466523"

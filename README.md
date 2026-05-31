@@ -15,6 +15,7 @@ redistributable measured data, with no synthetic or fabricated points.
 
 - **Live:** https://pitcast.austenite.org
 - **Paper:** `docs/preprint/paper.md` (JOSS); long-form methods in `docs/preprint/METHODS-NOTE.md`
+- **Archive (DOI):** [10.5281/zenodo.20466523](https://doi.org/10.5281/zenodo.20466523) — every tagged release is permanently archived on Zenodo
 - **License:** Apache-2.0
 
 > **Scope.** PitCast is a screening-grade research and educational artifact. It is
