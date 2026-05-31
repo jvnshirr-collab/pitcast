@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-05-30T17:01:09.315Z",
+  "generated_utc": "2026-05-31T09:45:22.805Z",
   "about": "PitCast reproducible open benchmark v0 — built only on cited in-repo data.",
   "cpt_leave_one_out": {
     "basis": "ASTM G48-type FeCl3 immersion (headline); all-method LOO shown for transparency",
@@ -426,26 +426,26 @@
       {
         "id": "DWM-1995",
         "MAE_mmpy": 1.12,
-        "RMSE_mmpy": 1.9,
-        "bias_mmpy": 1.1
+        "RMSE_mmpy": 1.89,
+        "bias_mmpy": 1.09
       },
       {
         "id": "NORSOK",
         "MAE_mmpy": 3.03,
-        "RMSE_mmpy": 3.52,
-        "bias_mmpy": 2.85
+        "RMSE_mmpy": 3.51,
+        "bias_mmpy": 2.84
       },
       {
         "id": "NESC",
-        "MAE_mmpy": 4.77,
-        "RMSE_mmpy": 7.4,
-        "bias_mmpy": 4.76
+        "MAE_mmpy": 4.74,
+        "RMSE_mmpy": 7.36,
+        "bias_mmpy": 4.73
       },
       {
         "id": "FreeCorp",
-        "MAE_mmpy": 51.61,
-        "RMSE_mmpy": 127.7,
-        "bias_mmpy": 51.61
+        "MAE_mmpy": 51.39,
+        "RMSE_mmpy": 127.23,
+        "bias_mmpy": 51.39
       }
     ],
     "cases": [
@@ -457,7 +457,7 @@
         "uncertainty_mmpy": 0.6,
         "ensemble_min_mmpy": 1.09,
         "ensemble_max_mmpy": 13.66,
-        "spread_x": 12.5,
+        "spread_x": 12.6,
         "measured_in_envelope": true,
         "best_model": "NORSOK",
         "best_model_cr_mmpy": 1.09,
@@ -469,8 +469,8 @@
           },
           {
             "id": "DWM-1995",
-            "cr_mmpy": 4.38,
-            "err_mmpy": 2.38
+            "cr_mmpy": 4.34,
+            "err_mmpy": 2.34
           },
           {
             "id": "NORSOK",
@@ -479,13 +479,13 @@
           },
           {
             "id": "NESC",
-            "cr_mmpy": 3.47,
-            "err_mmpy": 1.47
+            "cr_mmpy": 3.46,
+            "err_mmpy": 1.46
           },
           {
             "id": "FreeCorp",
-            "cr_mmpy": 12.3,
-            "err_mmpy": 10.3
+            "cr_mmpy": 12.19,
+            "err_mmpy": 10.19
           }
         ],
         "source": "Nesic S., Corrosion Sci. 49 (2007) 4308; Ohio U flow-loop"
@@ -496,12 +496,12 @@
         "note": "sour-sweet; FeS co-film usually lowers the sweet-model rate",
         "measured_mmpy": 0.55,
         "uncertainty_mmpy": 0.25,
-        "ensemble_min_mmpy": 1.64,
-        "ensemble_max_mmpy": 52.76,
+        "ensemble_min_mmpy": 1.63,
+        "ensemble_max_mmpy": 52.38,
         "spread_x": 32.1,
         "measured_in_envelope": false,
         "best_model": "NORSOK",
-        "best_model_cr_mmpy": 1.64,
+        "best_model_cr_mmpy": 1.63,
         "per_model": [
           {
             "id": "DWM-1975",
@@ -510,23 +510,23 @@
           },
           {
             "id": "DWM-1995",
-            "cr_mmpy": 5.78,
-            "err_mmpy": 5.23
+            "cr_mmpy": 5.77,
+            "err_mmpy": 5.22
           },
           {
             "id": "NORSOK",
-            "cr_mmpy": 1.64,
-            "err_mmpy": 1.09
+            "cr_mmpy": 1.63,
+            "err_mmpy": 1.08
           },
           {
             "id": "NESC",
-            "cr_mmpy": 18.56,
-            "err_mmpy": 18.01
+            "cr_mmpy": 18.45,
+            "err_mmpy": 17.9
           },
           {
             "id": "FreeCorp",
-            "cr_mmpy": 52.76,
-            "err_mmpy": 52.21
+            "cr_mmpy": 52.38,
+            "err_mmpy": 51.83
           }
         ],
         "source": "Kahyarian A., Singer M., Nesic S., J. Nat. Gas Sci. Eng. 41 (2017) 14"
@@ -537,12 +537,12 @@
         "note": "top-of-line condensing water; bulk flowline models are not TLC models",
         "measured_mmpy": 3.2,
         "uncertainty_mmpy": 1,
-        "ensemble_min_mmpy": 1.13,
+        "ensemble_min_mmpy": 1.12,
         "ensemble_max_mmpy": 31.15,
-        "spread_x": 27.6,
+        "spread_x": 27.8,
         "measured_in_envelope": true,
         "best_model": "DWM-1995",
-        "best_model_cr_mmpy": 1.13,
+        "best_model_cr_mmpy": 1.12,
         "per_model": [
           {
             "id": "DWM-1975",
@@ -551,23 +551,23 @@
           },
           {
             "id": "DWM-1995",
-            "cr_mmpy": 1.13,
-            "err_mmpy": -2.07
+            "cr_mmpy": 1.12,
+            "err_mmpy": -2.08
           },
           {
             "id": "NORSOK",
-            "cr_mmpy": 19.54,
-            "err_mmpy": 16.34
+            "cr_mmpy": 19.35,
+            "err_mmpy": 16.15
           },
           {
             "id": "NESC",
-            "cr_mmpy": 8.84,
-            "err_mmpy": 5.64
+            "cr_mmpy": 8.74,
+            "err_mmpy": 5.54
           },
           {
             "id": "FreeCorp",
-            "cr_mmpy": 25.07,
-            "err_mmpy": 21.87
+            "cr_mmpy": 24.79,
+            "err_mmpy": 21.59
           }
         ],
         "source": "Singer M., Camacho A., Brown B., Nesic S., Corrosion 73 (2017) 1030"
@@ -578,12 +578,12 @@
         "note": "13Cr CRA passivates above ~120 C; carbon-steel CO2 models do not apply",
         "measured_mmpy": 0.12,
         "uncertainty_mmpy": 0.05,
-        "ensemble_min_mmpy": 2.87,
+        "ensemble_min_mmpy": 2.85,
         "ensemble_max_mmpy": 353.24,
-        "spread_x": 123,
+        "spread_x": 123.9,
         "measured_in_envelope": false,
         "best_model": "DWM-1995",
-        "best_model_cr_mmpy": 2.87,
+        "best_model_cr_mmpy": 2.85,
         "per_model": [
           {
             "id": "DWM-1975",
@@ -592,23 +592,23 @@
           },
           {
             "id": "DWM-1995",
-            "cr_mmpy": 2.87,
-            "err_mmpy": 2.75
+            "cr_mmpy": 2.85,
+            "err_mmpy": 2.73
           },
           {
             "id": "NORSOK",
-            "cr_mmpy": 4.76,
-            "err_mmpy": 4.64
+            "cr_mmpy": 4.69,
+            "err_mmpy": 4.57
           },
           {
             "id": "NESC",
-            "cr_mmpy": 82.63,
-            "err_mmpy": 82.51
+            "cr_mmpy": 82.09,
+            "err_mmpy": 81.97
           },
           {
             "id": "FreeCorp",
-            "cr_mmpy": 321.51,
-            "err_mmpy": 321.39
+            "cr_mmpy": 322.95,
+            "err_mmpy": 322.83
           }
         ],
         "source": "Mishina K. et al., NACE Paper 4226 (2014)"
@@ -621,7 +621,7 @@
         "uncertainty_mmpy": 0.4,
         "ensemble_min_mmpy": 1.59,
         "ensemble_max_mmpy": 2110.15,
-        "spread_x": 1328.2,
+        "spread_x": 1330.1,
         "measured_in_envelope": false,
         "best_model": "DWM-1995",
         "best_model_cr_mmpy": 1.59,
@@ -638,8 +638,8 @@
           },
           {
             "id": "NORSOK",
-            "cr_mmpy": 5.28,
-            "err_mmpy": 4.48
+            "cr_mmpy": 5.26,
+            "err_mmpy": 4.46
           },
           {
             "id": "NESC",
@@ -648,8 +648,8 @@
           },
           {
             "id": "FreeCorp",
-            "cr_mmpy": 399.87,
-            "err_mmpy": 399.07
+            "cr_mmpy": 398.43,
+            "err_mmpy": 397.63
           }
         ],
         "source": "Nyborg R., NACE Paper 07522 (2007)"
@@ -660,12 +660,12 @@
         "note": "stagnant 2-L autoclave (8.9 cm dia); 187 h steady-state LPR; scale-forming at 80 C; pH omitted -> computed in-situ (Crolet-Bonis), no added bicarbonate",
         "measured_mmpy": 0.32,
         "uncertainty_mmpy": 0.1,
-        "ensemble_min_mmpy": 1.15,
+        "ensemble_min_mmpy": 1.14,
         "ensemble_max_mmpy": 23.36,
-        "spread_x": 20.3,
+        "spread_x": 20.4,
         "measured_in_envelope": false,
         "best_model": "NORSOK",
-        "best_model_cr_mmpy": 1.15,
+        "best_model_cr_mmpy": 1.14,
         "per_model": [
           {
             "id": "DWM-1975",
@@ -679,18 +679,18 @@
           },
           {
             "id": "NORSOK",
-            "cr_mmpy": 1.15,
-            "err_mmpy": 0.83
+            "cr_mmpy": 1.14,
+            "err_mmpy": 0.82
           },
           {
             "id": "NESC",
-            "cr_mmpy": 6.77,
-            "err_mmpy": 6.45
+            "cr_mmpy": 6.73,
+            "err_mmpy": 6.41
           },
           {
             "id": "FreeCorp",
-            "cr_mmpy": 18.92,
-            "err_mmpy": 18.6
+            "cr_mmpy": 18.82,
+            "err_mmpy": 18.5
           }
         ],
         "source": "Elgaddafi R. et al., J. Nat. Gas Sci. Eng. 27 (2015) 1620"
@@ -701,12 +701,12 @@
         "note": "stagnant 2-L autoclave; 187 h steady-state LPR; scale-forming at 80 C; pH computed in-situ",
         "measured_mmpy": 0.28,
         "uncertainty_mmpy": 0.1,
-        "ensemble_min_mmpy": 1.45,
+        "ensemble_min_mmpy": 1.44,
         "ensemble_max_mmpy": 30.82,
-        "spread_x": 21.3,
+        "spread_x": 21.4,
         "measured_in_envelope": false,
         "best_model": "DWM-1995",
-        "best_model_cr_mmpy": 1.45,
+        "best_model_cr_mmpy": 1.44,
         "per_model": [
           {
             "id": "DWM-1975",
@@ -715,23 +715,23 @@
           },
           {
             "id": "DWM-1995",
-            "cr_mmpy": 1.45,
-            "err_mmpy": 1.17
+            "cr_mmpy": 1.44,
+            "err_mmpy": 1.16
           },
           {
             "id": "NORSOK",
-            "cr_mmpy": 1.55,
-            "err_mmpy": 1.27
+            "cr_mmpy": 1.54,
+            "err_mmpy": 1.26
           },
           {
             "id": "NESC",
-            "cr_mmpy": 8.93,
-            "err_mmpy": 8.65
+            "cr_mmpy": 8.86,
+            "err_mmpy": 8.58
           },
           {
             "id": "FreeCorp",
-            "cr_mmpy": 24.96,
-            "err_mmpy": 24.68
+            "cr_mmpy": 24.75,
+            "err_mmpy": 24.47
           }
         ],
         "source": "Elgaddafi R. et al., J. Nat. Gas Sci. Eng. 27 (2015) 1620"
@@ -743,7 +743,7 @@
         "measured_mmpy": 0.323,
         "uncertainty_mmpy": 0.005,
         "ensemble_min_mmpy": 0.5,
-        "ensemble_max_mmpy": 5.06,
+        "ensemble_max_mmpy": 5.05,
         "spread_x": 10.2,
         "measured_in_envelope": false,
         "best_model": "DWM-1995",
@@ -757,12 +757,12 @@
           {
             "id": "DWM-1995",
             "cr_mmpy": 0.5,
-            "err_mmpy": 0.18
+            "err_mmpy": 0.17
           },
           {
             "id": "NORSOK",
-            "cr_mmpy": 5.06,
-            "err_mmpy": 4.74
+            "cr_mmpy": 5.05,
+            "err_mmpy": 4.73
           },
           {
             "id": "NESC",
@@ -771,7 +771,7 @@
           },
           {
             "id": "FreeCorp",
-            "cr_mmpy": 1.69,
+            "cr_mmpy": 1.68,
             "err_mmpy": 1.36
           }
         ],
@@ -783,12 +783,12 @@
         "note": "CO2 purged at 1 atm (pCO2 ~ 1 - P_H2O(70C) ~ 0.69 bar); low-Cl geothermal brine; 7 d; pH 4 measured",
         "measured_mmpy": 0.16,
         "uncertainty_mmpy": 0.03,
-        "ensemble_min_mmpy": 0.45,
+        "ensemble_min_mmpy": 0.44,
         "ensemble_max_mmpy": 5.11,
         "spread_x": 11.5,
         "measured_in_envelope": false,
         "best_model": "DWM-1995",
-        "best_model_cr_mmpy": 0.45,
+        "best_model_cr_mmpy": 0.44,
         "per_model": [
           {
             "id": "DWM-1975",
@@ -797,13 +797,13 @@
           },
           {
             "id": "DWM-1995",
-            "cr_mmpy": 0.45,
-            "err_mmpy": 0.29
+            "cr_mmpy": 0.44,
+            "err_mmpy": 0.28
           },
           {
             "id": "NORSOK",
-            "cr_mmpy": 4.91,
-            "err_mmpy": 4.75
+            "cr_mmpy": 4.9,
+            "err_mmpy": 4.74
           },
           {
             "id": "NESC",
@@ -825,7 +825,7 @@
         "measured_mmpy": 0.385,
         "uncertainty_mmpy": 0.02,
         "ensemble_min_mmpy": 0.49,
-        "ensemble_max_mmpy": 5.47,
+        "ensemble_max_mmpy": 5.46,
         "spread_x": 11.1,
         "measured_in_envelope": false,
         "best_model": "DWM-1995",
@@ -843,7 +843,7 @@
           },
           {
             "id": "NORSOK",
-            "cr_mmpy": 5.47,
+            "cr_mmpy": 5.46,
             "err_mmpy": 5.08
           },
           {
@@ -854,7 +854,7 @@
           {
             "id": "FreeCorp",
             "cr_mmpy": 3.24,
-            "err_mmpy": 2.86
+            "err_mmpy": 2.85
           }
         ],
         "source": "Tang J. et al., Molecules 23(12) (2018) 3270"
@@ -885,7 +885,7 @@
           {
             "id": "NORSOK",
             "cr_mmpy": 2.7,
-            "err_mmpy": 2.38
+            "err_mmpy": 2.37
           },
           {
             "id": "NESC",
@@ -894,8 +894,8 @@
           },
           {
             "id": "FreeCorp",
-            "cr_mmpy": 0.75,
-            "err_mmpy": 0.42
+            "cr_mmpy": 0.74,
+            "err_mmpy": 0.41
           }
         ],
         "source": "Corrosion inhibition of mild steel by an imidazoline hydrolysate in CO2-saturated solution, RSC Adv. 9 (2019), Table 1"
@@ -926,16 +926,16 @@
           {
             "id": "NORSOK",
             "cr_mmpy": 5.43,
-            "err_mmpy": 4.82
+            "err_mmpy": 4.81
           },
           {
             "id": "NESC",
-            "cr_mmpy": 1.18,
+            "cr_mmpy": 1.17,
             "err_mmpy": 0.56
           },
           {
             "id": "FreeCorp",
-            "cr_mmpy": 3.27,
+            "cr_mmpy": 3.26,
             "err_mmpy": 2.65
           }
         ],

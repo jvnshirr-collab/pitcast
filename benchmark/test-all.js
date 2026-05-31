@@ -6,6 +6,7 @@
  *
  * Suites:
  *   test-uq.js      — shared UQ framework math + CO2 standard-schema hook
+ *   test-co2.js     — CO2 ensemble oracle (de Waard 1975/1995 fugacity, NORSOK K_t)
  *   test-b31g.js    — B31G corroded-pipe oracle (ASME B31G-2012 App. B Ex. 1)
  *   test-ffs.js     — API 579 corrosion Parts 4/5/6/7 (embedded 29 + boundaries)
  *   test-mr0175.js  — ISO 15156 spec-issuer (embedded 10 + decision boundaries)
@@ -15,7 +16,7 @@
 const { execFileSync } = require('child_process');
 const path = require('path');
 
-const suites = ['test-uq.js', 'test-b31g.js', 'test-ffs.js', 'test-mr0175.js'];
+const suites = ['test-uq.js', 'test-co2.js', 'test-b31g.js', 'test-ffs.js', 'test-mr0175.js'];
 let failed = 0;
 
 for (const s of suites) {

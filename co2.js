@@ -56,13 +56,21 @@
     return 3.71 + 0.00417 * T_C - 0.5 * Math.log10(Math.max(1e-6, pCO2_bar));
   }
 
-  /** Fugacity correction f_CO2 ~ pCO2 at low pressure, slightly less at high.
-   *  Lee-Kesler-style correction (Nyborg 2010) above 250 bar. */
+  /** CO2 fugacity f_CO2 = phi * pCO2 (bar). De Waard-Lotz-Dugstad 1995
+   *  fugacity coefficient applied across the WHOLE pressure range (the old
+   *  code left phi=1 below 250 bar, over-stating the CO2 driving force at
+   *  elevated pressure):
+   *      log10(phi) = (0.0031 - 1.4/T_K) * P ,   P capped at 250 bar
+   *  phi is clamped <= 1 (CO2 fugacity never exceeds partial pressure within
+   *  the model's T window). Sanity: ~0.99 at 1 bar, ~0.78 at 100 bar/60 C,
+   *  ~0.53 at >=250 bar — the documented de Waard 1995 behaviour.
+   *  De Waard, Lotz & Dugstad, NACE Corrosion/95 Paper 128. */
   function fugacity_CO2(pCO2_bar, T_C) {
     if (T_C === undefined) T_C = 60;
-    if (pCO2_bar <= 250) return pCO2_bar;
-    var a = 0.0031 - 1.4e-6 * (T_C + 273.15);
-    return pCO2_bar * Math.exp(-a * Math.max(0, pCO2_bar - 250));
+    var T = T_C + 273.15;
+    var P = Math.max(0, pCO2_bar);
+    var logPhi = Math.min(0, (0.0031 - 1.4 / T) * Math.min(P, 250));
+    return Math.pow(10, logPhi) * P;
   }
 
   // ══════════════════════════════════════════════════════════════════════
