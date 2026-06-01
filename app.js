@@ -804,6 +804,7 @@ function renderIntegrity(){
   host.innerHTML=`
     <div class="verdict ${vb}"><div class="gauge">${ff.throughWall?"—":ff.P_safe_bar.toFixed(0)}<span class="u"> bar</span></div>
       <div class="vtext"><b>${v.status} · safe operating pressure</b><div>${v.note} ${ff.throughWall?"":(`vs MAOP ${MAOP} bar — predicted failure ${ff.P_f_bar.toFixed(0)} bar (σ<sub>f</sub> ${ff.sigma_f_MPa.toFixed(0)} MPa, M ${isFinite(ff.M)?ff.M.toFixed(2):"n/a"}).`)}</div></div></div>
+    <div class="cdnote" style="border-left:3px solid #fbbf24">⚠ <b>${v.status}</b> is a B31G Level-1 <b>screening</b> band, not a fitness-for-service determination — high-consequence integrity decisions require a qualified engineer, verified (not vendor-default) inputs, and the full ASME B31G / API 579 procedure. PitCast is an open, unverified screening tool.</div>
     ${ff.depthRatio>0.80 ? `<div class="cdnote">⚠ LIMIT — d/t ${(ff.depthRatio*100).toFixed(0)}% exceeds the ASME B31G 80% wall-loss limit; the defect is beyond B31G applicability — repair/replace or escalate to a Level-2/3 FFS (API 579 Part 5).</div>` : ""}
     <div class="metrics">
       <div class="metric"><div class="k">P<sub>safe</sub></div><div class="val">${ff.P_safe_bar.toFixed(0)}<span class="u"> bar</span></div><div class="u">P<sub>f</sub> ${ff.P_f_bar.toFixed(0)} bar · SF ${ff.SF}</div></div>
