@@ -218,5 +218,60 @@
     "source": "Coatings 15(1):93 (2025) - uninhibited (blank) corrosion rate v0 (oleic-acid-imidazoline/CeCl3 inhibitor study)",
     "doi": "10.3390/coatings15010093",
     "note": "Blank (no-inhibitor) weight-loss rate of AISI 1018 in CO2-saturated simulated oilfield brine (chloride-carbonate). In-envelope (T 60 C, pCO2 ~1 bar). Distinct from existing 60 C NaCl cases (chloride-carbonate brine, higher salinity)."
+  },
+  {
+    "domain": "CO2",
+    "case": "Thiophene-imidazoline RSC 2025 - Q235 blank, CO2-sat formation water, 90 C",
+    "conditions": "T 90 C, pCO2 0.31 bar (CO2-saturated ~1 atm), simulated formation water (3.5% NaCl + 0.06% CaCl2 + 0.03% NaHCO3 + 0.02% MgCl2), pH 4.13, blank (no inhibitor)",
+    "measured": 1.8115,
+    "units": "mm/y",
+    "uncertainty": 0.1,
+    "source": "Jia et al., RSC Adv. (2025), DOI 10.1039/d5ra04201a - inhibitor-free (blank) weight-loss rate (text, Sec. 3.2)",
+    "doi": "10.1039/d5ra04201a",
+    "note": "Blank Q235 weight-loss, CO2-saturated formation water at 1 atm (pCO2~0.31 bar at 90 C), 22 h, pH 4.13. Text-stated: 'at 90 C, the corrosion rate of carbon steel in the inhibitor-free solution reaches 1.8115 mm/a'. Highest-T CO2 anchor in corpus."
+  },
+  {
+    "domain": "CO2",
+    "case": "2-phenyl imidazoline AJC 2023 - X65 blank, CO2-sat 3% NaCl, 20 C",
+    "conditions": "T 20 C, pCO2 0.99 bar (CO2-saturated ~1 atm), 3 wt% NaCl, pH 4.11, blank (no inhibitor)",
+    "measured": 0.499,
+    "units": "mm/y",
+    "uncertainty": 0.03,
+    "source": "Jiang, Wang et al., Arabian J. Chemistry 16(6):104774 (2023), DOI 10.1016/j.arabjc.2023.104774 - X65 inhibitor-free (blank) weight-loss rate, Table 2 (converted from g/m2/h x1.116)",
+    "doi": "10.1016/j.arabjc.2023.104774",
+    "note": "Blank X65 weight-loss, CO2-saturated 3% NaCl at 1 atm, 72 h, pH 4.11 (measured). 2-phenyl imidazoline study Table 2, 0 mg/L row."
+  },
+  {
+    "domain": "CO2",
+    "case": "2-phenyl imidazoline AJC 2023 - X65 blank, CO2-sat 3% NaCl, 30 C",
+    "conditions": "T 30 C, pCO2 0.97 bar (CO2-saturated ~1 atm), 3 wt% NaCl, pH 4.11, blank (no inhibitor)",
+    "measured": 0.652,
+    "units": "mm/y",
+    "uncertainty": 0.03,
+    "source": "Jiang, Wang et al., Arabian J. Chemistry 16(6):104774 (2023), DOI 10.1016/j.arabjc.2023.104774 - X65 inhibitor-free (blank) weight-loss rate, Table 2 (converted from g/m2/h x1.116)",
+    "doi": "10.1016/j.arabjc.2023.104774",
+    "note": "Blank X65 weight-loss, CO2-saturated 3% NaCl at 1 atm, 72 h, pH 4.11 (measured). 2-phenyl imidazoline study Table 2, 0 mg/L row."
+  },
+  {
+    "domain": "CO2",
+    "case": "2-phenyl imidazoline AJC 2023 - X65 blank, CO2-sat 3% NaCl, 40 C",
+    "conditions": "T 40 C, pCO2 0.94 bar (CO2-saturated ~1 atm), 3 wt% NaCl, pH 4.11, blank (no inhibitor)",
+    "measured": 0.791,
+    "units": "mm/y",
+    "uncertainty": 0.03,
+    "source": "Jiang, Wang et al., Arabian J. Chemistry 16(6):104774 (2023), DOI 10.1016/j.arabjc.2023.104774 - X65 inhibitor-free (blank) weight-loss rate, Table 2 (converted from g/m2/h x1.116)",
+    "doi": "10.1016/j.arabjc.2023.104774",
+    "note": "Blank X65 weight-loss, CO2-saturated 3% NaCl at 1 atm, 72 h, pH 4.11 (measured). 2-phenyl imidazoline study Table 2, 0 mg/L row."
+  },
+  {
+    "domain": "CO2",
+    "case": "2-phenyl imidazoline AJC 2023 - X65 blank, CO2-sat 3% NaCl, 50 C",
+    "conditions": "T 50 C, pCO2 0.89 bar (CO2-saturated ~1 atm), 3 wt% NaCl, pH 4.11, blank (no inhibitor)",
+    "measured": 0.885,
+    "units": "mm/y",
+    "uncertainty": 0.03,
+    "source": "Jiang, Wang et al., Arabian J. Chemistry 16(6):104774 (2023), DOI 10.1016/j.arabjc.2023.104774 - X65 inhibitor-free (blank) weight-loss rate, Table 2 (converted from g/m2/h x1.116)",
+    "doi": "10.1016/j.arabjc.2023.104774",
+    "note": "Blank X65 weight-loss, CO2-saturated 3% NaCl at 1 atm, 72 h, pH 4.11 (measured). 2-phenyl imidazoline study Table 2, 0 mg/L row."
   }
 ]

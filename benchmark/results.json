@@ -1,16 +1,16 @@
 {
-  "generated_utc": "2026-06-01T13:24:46.369Z",
+  "generated_utc": "2026-06-01T15:03:41.149Z",
   "about": "PitCast reproducible open benchmark v0 — built only on cited in-repo data.",
   "cpt_leave_one_out": {
     "basis": "ASTM G48-type FeCl3 immersion (headline); all-method LOO shown for transparency",
-    "n_cpt_records": 117,
+    "n_cpt_records": 118,
     "n_no_composition": 0,
-    "n_points_fecl3": 51,
-    "n_points_all_methods": 117,
+    "n_points_fecl3": 52,
+    "n_points_all_methods": 118,
     "full_sample_fit_fecl3": {
-      "slope": 2.0382,
-      "intercept": -32.731,
-      "r2": 0.834
+      "slope": 2.0605,
+      "intercept": -33.407,
+      "r2": 0.84
     },
     "published_fit": {
       "slope": 2.038176,
@@ -18,14 +18,14 @@
       "note": "pitcast.js CPT constants (n=51)"
     },
     "loo_fecl3": {
-      "MAE_C": 6.58,
-      "RMSE_C": 8.49,
+      "MAE_C": 6.6,
+      "RMSE_C": 8.45,
       "bias_C": -0.01
     },
     "loo_all_methods": {
-      "n": 117,
-      "MAE_C": 13.33,
-      "RMSE_C": 16.16,
+      "n": 118,
+      "MAE_C": 13.28,
+      "RMSE_C": 16.1,
       "bias_C": -0.01
     },
     "parity": [
@@ -33,91 +33,91 @@
         "code": "S31726",
         "pren_n30": 37.19,
         "measured_C": 32.2,
-        "loo_resid_C": -11.1
+        "loo_resid_C": -11.3
       },
       {
         "code": "S31803",
         "pren_n30": 39.06,
         "measured_C": 37.5,
-        "loo_resid_C": -9.6
+        "loo_resid_C": -9.8
       },
       {
         "code": "S32550",
         "pren_n30": 44.05,
         "measured_C": 62.3,
-        "loo_resid_C": 5.5
+        "loo_resid_C": 5.2
       },
       {
         "code": "N08926",
         "pren_n30": 45.8,
         "measured_C": 67.5,
-        "loo_resid_C": 7.2
+        "loo_resid_C": 6.8
       },
       {
         "code": "S32050",
         "pren_n30": 50.96,
         "measured_C": 88.1,
-        "loo_resid_C": 18.4
+        "loo_resid_C": 17.8
       },
       {
         "code": "S31266",
         "pren_n30": 57.3,
         "measured_C": 100.9,
-        "loo_resid_C": 19.5
+        "loo_resid_C": 18.7
       },
       {
         "code": "N06625",
         "pren_n30": 65.55,
         "measured_C": 83.1,
-        "loo_resid_C": -23.6
+        "loo_resid_C": -24.2
       },
       {
         "code": null,
         "pren_n30": 33.93,
         "measured_C": 27.6,
-        "loo_resid_C": -9
+        "loo_resid_C": -9.1
       },
       {
         "code": null,
         "pren_n30": 34.46,
         "measured_C": 27.5,
-        "loo_resid_C": -10.2
+        "loo_resid_C": -10.3
       },
       {
         "code": null,
         "pren_n30": 36.24,
         "measured_C": 27.5,
-        "loo_resid_C": -13.9
+        "loo_resid_C": -14
       },
       {
         "code": null,
         "pren_n30": 36.75,
         "measured_C": 40.2,
-        "loo_resid_C": -2
+        "loo_resid_C": -2.2
       },
       {
         "code": "304",
         "pren_n30": 18.24,
         "measured_C": 3.8,
-        "loo_resid_C": -0.7
+        "loo_resid_C": -0.4
       },
       {
         "code": "304",
         "pren_n30": 19,
         "measured_C": 8.9,
-        "loo_resid_C": 3.2
+        "loo_resid_C": 3.4
       },
       {
         "code": "321",
         "pren_n30": 19.65,
         "measured_C": 8.8,
-        "loo_resid_C": 1.6
+        "loo_resid_C": 1.8
       },
       {
         "code": "316L",
         "pren_n30": 25.15,
         "measured_C": 23.8,
-        "loo_resid_C": 5.5
+        "loo_resid_C": 5.6
       },
       {
         "code": "8427-1",
@@ -135,7 +135,7 @@
         "code": "7579-1",
         "pren_n30": 31.25,
         "measured_C": 26.2,
-        "loo_resid_C": -4.9
+        "loo_resid_C": -5
       },
       {
         "code": "317L",
@@ -147,91 +147,91 @@
         "code": "8427-3",
         "pren_n30": 30.96,
         "measured_C": 31.3,
-        "loo_resid_C": 1
+        "loo_resid_C": 0.9
       },
       {
         "code": "8427-4",
         "pren_n30": 32.43,
         "measured_C": 33.8,
-        "loo_resid_C": 0.5
+        "loo_resid_C": 0.4
       },
       {
         "code": "7579-2",
         "pren_n30": 35.85,
         "measured_C": 41.4,
-        "loo_resid_C": 1
+        "loo_resid_C": 0.9
       },
       {
         "code": "G1111",
         "pren_n30": 36.29,
         "measured_C": 38.9,
-        "loo_resid_C": -2.4
+        "loo_resid_C": -2.6
       },
       {
         "code": "7579-3",
         "pren_n30": 40.19,
         "measured_C": 49,
-        "loo_resid_C": -0.2
+        "loo_resid_C": -0.4
       },
       {
         "code": "7579-4",
         "pren_n30": 44.39,
         "measured_C": 56.4,
-        "loo_resid_C": -1.4
+        "loo_resid_C": -1.8
       },
       {
         "code": "8428-1",
         "pren_n30": 33.39,
         "measured_C": 26.2,
-        "loo_resid_C": -9.3
+        "loo_resid_C": -9.4
       },
       {
         "code": "8428-2",
         "pren_n30": 34.24,
         "measured_C": 26.2,
-        "loo_resid_C": -11.1
+        "loo_resid_C": -11.2
       },
       {
         "code": "7580-1",
         "pren_n30": 34.9,
         "measured_C": 31.3,
-        "loo_resid_C": -7.3
+        "loo_resid_C": -7.4
       },
       {
         "code": "8428-3",
         "pren_n30": 35.46,
         "measured_C": 28.8,
-        "loo_resid_C": -11
+        "loo_resid_C": -11.1
       },
       {
         "code": "8428-4",
         "pren_n30": 36.38,
         "measured_C": 31.3,
-        "loo_resid_C": -10.4
+        "loo_resid_C": -10.5
       },
       {
         "code": "7580-2",
         "pren_n30": 39.78,
         "measured_C": 41.3,
-        "loo_resid_C": -7.2
+        "loo_resid_C": -7.4
       },
       {
         "code": "7580-3",
         "pren_n30": 42.48,
         "measured_C": 51.4,
-        "loo_resid_C": -2.6
+        "loo_resid_C": -2.9
       },
       {
         "code": "Alloy B",
         "pren_n30": 35.8,
         "measured_C": 51.4,
-        "loo_resid_C": 11.3
+        "loo_resid_C": 11.2
       },
       {
         "code": "7580-4",
         "pren_n30": 47.97,
         "measured_C": 61.4,
-        "loo_resid_C": -3.9
+        "loo_resid_C": -4.3
       },
       {
         "code": "7581-1",
@@ -243,19 +243,19 @@
         "code": "7581-2",
         "pren_n30": 34.42,
         "measured_C": 36.3,
-        "loo_resid_C": -1.2
+        "loo_resid_C": -1.3
       },
       {
         "code": "Alloy C",
         "pren_n30": 34.05,
         "measured_C": 41.3,
-        "loo_resid_C": 4.7
+        "loo_resid_C": 4.6
       },
       {
         "code": "Alloy A",
         "pren_n30": 33.5,
         "measured_C": 44,
-        "loo_resid_C": 8.6
+        "loo_resid_C": 8.5
       },
       {
         "code": "7582-1",
@@ -267,7 +267,7 @@
         "code": "7582-2",
         "pren_n30": 34.85,
         "measured_C": 46.5,
-        "loo_resid_C": 8.4
+        "loo_resid_C": 8.3
       },
       {
         "code": "8429-1",
@@ -285,37 +285,37 @@
         "code": "8430-2",
         "pren_n30": 34.04,
         "measured_C": 36.2,
-        "loo_resid_C": -0.5
+        "loo_resid_C": -0.6
       },
       {
         "code": "8430-3",
         "pren_n30": 35.16,
         "measured_C": 41.2,
-        "loo_resid_C": 2.3
+        "loo_resid_C": 2.2
       },
       {
         "code": "8426",
         "pren_n30": 45.31,
         "measured_C": 74.1,
-        "loo_resid_C": 15.1
+        "loo_resid_C": 14.7
       },
       {
         "code": "7995",
         "pren_n30": 46.18,
         "measured_C": 73.2,
-        "loo_resid_C": 12.4
+        "loo_resid_C": 12
       },
       {
         "code": null,
         "pren_n30": 34.9,
         "measured_C": 31.3,
-        "loo_resid_C": -7.3
+        "loo_resid_C": -7.4
       },
       {
         "code": null,
         "pren_n30": 47.97,
         "measured_C": 61.3,
-        "loo_resid_C": -4
+        "loo_resid_C": -4.4
       },
       {
         "code": null,
@@ -333,7 +333,13 @@
         "code": null,
         "pren_n30": 40.97,
         "measured_C": 51.3,
-        "loo_resid_C": 0.5
+        "loo_resid_C": 0.2
+      },
+      {
+        "code": "N08367 (AL-6XN base metal, Qian & DuPont 2010)",
+        "pren_n30": 48.86,
+        "measured_C": 74,
+        "loo_resid_C": 7.1
       }
     ]
   },
@@ -413,39 +419,39 @@
     "on_basis_MAE_C": 3.53
   },
   "co2_ensemble": {
-    "n_cases_total": 13,
-    "n_cases_in_scope_cs": 11,
-    "envelope_coverage_in_scope": 0.36,
+    "n_cases_total": 18,
+    "n_cases_in_scope_cs": 16,
+    "envelope_coverage_in_scope": 0.56,
     "per_model_error_in_scope": [
       {
         "id": "DWM-1975",
-        "MAE_mmpy": 203.34,
-        "RMSE_mmpy": 636.26,
-        "bias_mmpy": 203.34
+        "MAE_mmpy": 140.32,
+        "RMSE_mmpy": 527.56,
+        "bias_mmpy": 140.32
       },
       {
         "id": "DWM-1995",
-        "MAE_mmpy": 1.13,
-        "RMSE_mmpy": 1.84,
-        "bias_mmpy": 0.88
+        "MAE_mmpy": 0.94,
+        "RMSE_mmpy": 1.58,
+        "bias_mmpy": 0.44
       },
       {
         "id": "NORSOK",
-        "MAE_mmpy": 2.87,
-        "RMSE_mmpy": 3.38,
+        "MAE_mmpy": 2.95,
+        "RMSE_mmpy": 3.35,
         "bias_mmpy": 2.46
       },
       {
         "id": "NESC",
-        "MAE_mmpy": 4.38,
-        "RMSE_mmpy": 7.02,
-        "bias_mmpy": 4.23
+        "MAE_mmpy": 3.06,
+        "RMSE_mmpy": 5.82,
+        "bias_mmpy": 2.86
       },
       {
         "id": "FreeCorp",
-        "MAE_mmpy": 46.87,
-        "RMSE_mmpy": 121.31,
-        "bias_mmpy": 46.87
+        "MAE_mmpy": 32.59,
+        "RMSE_mmpy": 100.59,
+        "bias_mmpy": 32.59
       }
     ],
     "cases": [
@@ -981,34 +987,241 @@
           }
         ],
         "source": "Coatings 15(1):93 (2025) - uninhibited (blank) corrosion rate v0 (oleic-acid-imidazoline/CeCl3 inhibitor study)"
+      },
+      {
+        "case": "Thiophene-imidazoline RSC 2025 - Q235 blank, CO2-sat formation water, 90 C",
+        "scope": "cs_aqueous",
+        "note": "Blank Q235 weight-loss, CO2-saturated formation water at 1 atm (pCO2~0.31 bar at 90 C), 22 h, pH 4.13. Text-stated: 'at 90 C, the corrosion rate of carbon steel in the inhibitor-free solution reaches 1.8115 mm/a'. Highest-T CO2 anchor in corpus.",
+        "measured_mmpy": 1.8115,
+        "uncertainty_mmpy": 0.1,
+        "ensemble_min_mmpy": 0.12,
+        "ensemble_max_mmpy": 5.63,
+        "spread_x": 47.3,
+        "measured_in_envelope": true,
+        "best_model": "NESC",
+        "best_model_cr_mmpy": 1.64,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 5.63,
+            "err_mmpy": 3.82
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 0.21,
+            "err_mmpy": -1.6
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 0.12,
+            "err_mmpy": -1.69
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 1.64,
+            "err_mmpy": -0.17
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 4.56,
+            "err_mmpy": 2.75
+          }
+        ],
+        "source": "Jia et al., RSC Adv. (2025), DOI 10.1039/d5ra04201a - inhibitor-free (blank) weight-loss rate (text, Sec. 3.2)"
+      },
+      {
+        "case": "2-phenyl imidazoline AJC 2023 - X65 blank, CO2-sat 3% NaCl, 20 C",
+        "scope": "cs_aqueous",
+        "note": "Blank X65, CO2-saturated 3% NaCl ~1 atm, 72 h, pH 4.11 measured; quiescent.",
+        "measured_mmpy": 0.499,
+        "uncertainty_mmpy": 0.03,
+        "ensemble_min_mmpy": 0.27,
+        "ensemble_max_mmpy": 2.7,
+        "spread_x": 10,
+        "measured_in_envelope": true,
+        "best_model": "DWM-1995",
+        "best_model_cr_mmpy": 0.38,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 0.92,
+            "err_mmpy": 0.42
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 0.38,
+            "err_mmpy": -0.12
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 2.7,
+            "err_mmpy": 2.2
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 0.27,
+            "err_mmpy": -0.23
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 0.74,
+            "err_mmpy": 0.24
+          }
+        ],
+        "source": "Jiang, Wang et al., Arabian J. Chemistry 16(6):104774 (2023), DOI 10.1016/j.arabjc.2023.104774 - X65 inhibitor-free (blank) weight-loss rate, Table 2 (converted from g/m2/h x1.116)"
+      },
+      {
+        "case": "2-phenyl imidazoline AJC 2023 - X65 blank, CO2-sat 3% NaCl, 30 C",
+        "scope": "cs_aqueous",
+        "note": "Blank X65, CO2-saturated 3% NaCl ~1 atm, 72 h, pH 4.11 measured; quiescent.",
+        "measured_mmpy": 0.652,
+        "uncertainty_mmpy": 0.03,
+        "ensemble_min_mmpy": 0.41,
+        "ensemble_max_mmpy": 3.84,
+        "spread_x": 9.3,
+        "measured_in_envelope": true,
+        "best_model": "DWM-1995",
+        "best_model_cr_mmpy": 0.44,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 1.41,
+            "err_mmpy": 0.76
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 0.44,
+            "err_mmpy": -0.21
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 3.84,
+            "err_mmpy": 3.18
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 0.41,
+            "err_mmpy": -0.24
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 1.14,
+            "err_mmpy": 0.49
+          }
+        ],
+        "source": "Jiang, Wang et al., Arabian J. Chemistry 16(6):104774 (2023), DOI 10.1016/j.arabjc.2023.104774 - X65 inhibitor-free (blank) weight-loss rate, Table 2 (converted from g/m2/h x1.116)"
+      },
+      {
+        "case": "2-phenyl imidazoline AJC 2023 - X65 blank, CO2-sat 3% NaCl, 40 C",
+        "scope": "cs_aqueous",
+        "note": "Blank X65, CO2-saturated 3% NaCl ~1 atm, 72 h, pH 4.11 measured; quiescent.",
+        "measured_mmpy": 0.791,
+        "uncertainty_mmpy": 0.03,
+        "ensemble_min_mmpy": 0.49,
+        "ensemble_max_mmpy": 4.92,
+        "spread_x": 10,
+        "measured_in_envelope": true,
+        "best_model": "NESC",
+        "best_model_cr_mmpy": 0.61,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 2.1,
+            "err_mmpy": 1.3
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 0.49,
+            "err_mmpy": -0.3
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 4.92,
+            "err_mmpy": 4.13
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 0.61,
+            "err_mmpy": -0.18
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 1.69,
+            "err_mmpy": 0.9
+          }
+        ],
+        "source": "Jiang, Wang et al., Arabian J. Chemistry 16(6):104774 (2023), DOI 10.1016/j.arabjc.2023.104774 - X65 inhibitor-free (blank) weight-loss rate, Table 2 (converted from g/m2/h x1.116)"
+      },
+      {
+        "case": "2-phenyl imidazoline AJC 2023 - X65 blank, CO2-sat 3% NaCl, 50 C",
+        "scope": "cs_aqueous",
+        "note": "Blank X65, CO2-saturated 3% NaCl ~1 atm, 72 h, pH 4.11 measured; quiescent.",
+        "measured_mmpy": 0.885,
+        "uncertainty_mmpy": 0.03,
+        "ensemble_min_mmpy": 0.51,
+        "ensemble_max_mmpy": 5.24,
+        "spread_x": 10.3,
+        "measured_in_envelope": true,
+        "best_model": "NESC",
+        "best_model_cr_mmpy": 0.87,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 2.98,
+            "err_mmpy": 2.1
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 0.51,
+            "err_mmpy": -0.38
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 5.24,
+            "err_mmpy": 4.36
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 0.87,
+            "err_mmpy": -0.02
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 2.41,
+            "err_mmpy": 1.53
+          }
+        ],
+        "source": "Jiang, Wang et al., Arabian J. Chemistry 16(6):104774 (2023), DOI 10.1016/j.arabjc.2023.104774 - X65 inhibitor-free (blank) weight-loss rate, Table 2 (converted from g/m2/h x1.116)"
       }
     ]
   },
   "b31g_burst": {
-    "n": 52,
+    "n": 75,
     "basis": "predicted failure pressure P_f (SF=1) vs measured burst; specimen actual yield used as SMYS",
     "b31g": {
-      "n": 52,
-      "mean_ratio": 0.695,
+      "n": 75,
+      "mean_ratio": 0.678,
       "min_ratio": 0.339,
-      "max_ratio": 0.929,
+      "max_ratio": 0.932,
       "pct_conservative": 100,
-      "MAPE_pct": 30.5
+      "MAPE_pct": 32.2
     },
     "modb31g": {
-      "n": 52,
-      "mean_ratio": 0.766,
-      "min_ratio": 0.563,
+      "n": 75,
+      "mean_ratio": 0.822,
+      "min_ratio": 0.51,
       "max_ratio": 1.587,
-      "pct_conservative": 96,
-      "MAPE_pct": 25.6
+      "pct_conservative": 80,
+      "MAPE_pct": 24
     },
     "sources": {
       "BENJAMIN2016": "Benjamin A.C., Freire J.L.F., Vieira R.D., Cunha D.J.S., Interaction of corrosion defects in pipelines - Part 2: MTI JIP database of corroded pipe tests, Int. J. Press. Vessels Pip. 145 (2016) 41-59, DOI 10.1016/j.ijpvp.2016.06.006. PRIMARY source of the IDTS 13-30 series: full-scale hydrotest-to-failure of API 5L X70 (OD 457.2 mm, t ~7.9 mm) with spark-eroded defect colonies. Measured failure pressures = Table 8; cluster geometry = Table 6; per-tube yields = Table 1.",
       "EFA2020": "Mousavi S.S., Moghaddam A.S., Failure pressure estimation error for corroded pipeline using various revisions of ASME B31G, Engineering Failure Analysis 108 (2020) 104284, DOI 10.1016/j.engfailanal.2019.104284. Secondary tabulation of the same IDTS series (its Table 4); used to cross-verify every value.",
       "QI2023": "Qi C. et al., Experiments and evaluation on residual strength of X52 steel pipe with various internal defects, Front. Energy Res. 10 (2023) 1046900, DOI 10.3389/fenrg.2022.1046900",
       "CRONIN2000": "Cronin D.S., \"Assessment of Corrosion Defects in Pipelines\", PhD thesis, Dept. of Mechanical Engineering, University of Waterloo, 2000 (UWSpace, open access: uwspace.uwaterloo.ca). Full-scale burst tests of pipe sections removed from operating pipelines, each containing a single isolated REAL corrosion defect. Geometry (OD, wall thickness, SMYS/actual YS/UTS), measured failure pressure, max defect depth and defect length from Table 4.2.1; per-model predictions (original B31G, RSTRENG, PCORRC, Ritchie&Last) from the page-182 table. Tables extracted with PyMuPDF find_tables(); every stored specimen's geometry was independently VERIFIED by reproducing Cronin's own tabulated original-B31G prediction with b31g.js to within a systematic -2..-6% (a B31G-variant offset that is the same sign across ALL specimens, confirming correct column extraction). 8 of 40 rows were excluded because their defect depth/length did not extract cleanly.",
-      "HEZHAO2024": "He P., Zhao B., \"Experimental and Numerical Analysis of the Impact of Corrosion on the Failure Pressure of API 5L X65 Pipeline\", J. Mar. Sci. Eng. 12(10):1810, 2024, DOI 10.3390/jmse12101810 (MDPI, open access). Test Pipeline 1 hydrostatic burst: OD 325 mm, t 12 mm (Table 3), defect length 395 mm (l/D 1.215) and max depth 9.3 mm (d/t 0.775) (Table 5), measured failure pressure 11.4 MPa (Sec. 3.4, text). API 5L X65, actual yield 545 MPa (Table 2). Tests 2-4 reported only as normalized pf/p0 and were excluded (no directly-tabulated absolute burst pressure)."
+      "HEZHAO2024": "He P., Zhao B., \"Experimental and Numerical Analysis of the Impact of Corrosion on the Failure Pressure of API 5L X65 Pipeline\", J. Mar. Sci. Eng. 12(10):1810, 2024, DOI 10.3390/jmse12101810 (MDPI, open access). Test Pipeline 1 hydrostatic burst: OD 325 mm, t 12 mm (Table 3), defect length 395 mm (l/D 1.215) and max depth 9.3 mm (d/t 0.775) (Table 5), measured failure pressure 11.4 MPa (Sec. 3.4, text). API 5L X65, actual yield 545 MPa (Table 2). Tests 2-4 reported only as normalized pf/p0 and were excluded (no directly-tabulated absolute burst pressure).",
+      "SOUZA2007_P4": "Souza R.D., Benjamin A.C., Vieira R.D., Freire J.L.F., Castro J.T.P., \"Part 4: Rupture tests of pipeline segments containing long real corrosion defects\", Experimental Techniques 31(1) (2007) 46-51, DOI 10.1111/j.1747-1567.2006.00134.x (Wiley; accessed via METU). Full-scale burst tests, single isolated irregular-shaped REAL internal corrosion defects (API 5L X42 OD273, X46 OD457). Geometry Table 4, measured transverse-tensile yield Table 2, measured burst + B31G prediction Table 5. b31g.js reproduces the paper's own original-B31G prediction EXACTLY (0.0% diff) for all 7, confirming extraction.",
+      "FREIRE2006_P3": "Benjamin A.C., Freire J.L.F., Vieira R.D. et al., pipeline-integrity \"Part 3\" burst-test series, Experimental Techniques (2006), DOI 10.1111/j.1747-1567.2006.00109.x (Wiley; accessed via METU). Full-scale burst tests, single machined/spark-eroded longitudinal metal-loss defects (API 5L X60 OD324 & OD508, X80 OD457/459 short, X46 & A25 OD76.2). Geometry Table 3 (max defect depth d = wall t minus tabulated minimum defect thickness t*), measured yield means Table 3, measured burst + B31G Table 3. b31g.js reproduces the paper's own original-B31G EXACTLY (<=2.3% diff) for all 16, confirming extraction + the d=t-t* depth."
     },
     "cases": [
       {
@@ -1790,6 +2003,351 @@
         "modb31g_Pf_MPa": 18.09,
         "ratio_b31g": 0.874,
         "ratio_modb31g": 1.587
+      },
+      {
+        "id": "Souza P4 TS6.1 (X42, real corrosion)",
+        "src": "SOUZA2007_P4",
+        "OD_mm": 273.7,
+        "t_mm": 5.24,
+        "yield_MPa": 380,
+        "L_mm": 1000,
+        "d_mm": 2.04,
+        "dt_pct": 39,
+        "measured_burst_MPa": 15.34,
+        "b31g_Pf_MPa": 9.77,
+        "modb31g_Pf_MPa": 11.65,
+        "ratio_b31g": 0.637,
+        "ratio_modb31g": 0.76
+      },
+      {
+        "id": "Souza P4 TS6.2 (X42, real corrosion)",
+        "src": "SOUZA2007_P4",
+        "OD_mm": 273.8,
+        "t_mm": 5.3,
+        "yield_MPa": 380,
+        "L_mm": 1000,
+        "d_mm": 2.52,
+        "dt_pct": 48,
+        "measured_burst_MPa": 15.53,
+        "b31g_Pf_MPa": 8.49,
+        "modb31g_Pf_MPa": 10.52,
+        "ratio_b31g": 0.547,
+        "ratio_modb31g": 0.678
+      },
+      {
+        "id": "Souza P4 TS02 (X46, real corrosion)",
+        "src": "SOUZA2007_P4",
+        "OD_mm": 457.7,
+        "t_mm": 6.03,
+        "yield_MPa": 345.4,
+        "L_mm": 2750,
+        "d_mm": 2.79,
+        "dt_pct": 46,
+        "measured_burst_MPa": 13.04,
+        "b31g_Pf_MPa": 5.38,
+        "modb31g_Pf_MPa": 6.65,
+        "ratio_b31g": 0.413,
+        "ratio_modb31g": 0.51
+      },
+      {
+        "id": "Souza P4 TS04 (X46, real corrosion)",
+        "src": "SOUZA2007_P4",
+        "OD_mm": 457.7,
+        "t_mm": 6.23,
+        "yield_MPa": 355.7,
+        "L_mm": 2750,
+        "d_mm": 3.27,
+        "dt_pct": 52,
+        "measured_burst_MPa": 12.06,
+        "b31g_Pf_MPa": 5.06,
+        "modb31g_Pf_MPa": 6.44,
+        "ratio_b31g": 0.42,
+        "ratio_modb31g": 0.534
+      },
+      {
+        "id": "Souza P4 TS05 (X46, real corrosion)",
+        "src": "SOUZA2007_P4",
+        "OD_mm": 457.7,
+        "t_mm": 6.04,
+        "yield_MPa": 285.1,
+        "L_mm": 2750,
+        "d_mm": 2.71,
+        "dt_pct": 45,
+        "measured_burst_MPa": 10.13,
+        "b31g_Pf_MPa": 4.56,
+        "modb31g_Pf_MPa": 5.81,
+        "ratio_b31g": 0.45,
+        "ratio_modb31g": 0.573
+      },
+      {
+        "id": "Souza P4 TS06 (X46, real corrosion)",
+        "src": "SOUZA2007_P4",
+        "OD_mm": 456.5,
+        "t_mm": 6.56,
+        "yield_MPa": 357.9,
+        "L_mm": 2750,
+        "d_mm": 3.32,
+        "dt_pct": 51,
+        "measured_burst_MPa": 10.34,
+        "b31g_Pf_MPa": 5.59,
+        "modb31g_Pf_MPa": 7.03,
+        "ratio_b31g": 0.54,
+        "ratio_modb31g": 0.68
+      },
+      {
+        "id": "Souza P4 TS10 (X46, real corrosion)",
+        "src": "SOUZA2007_P4",
+        "OD_mm": 457.1,
+        "t_mm": 6.09,
+        "yield_MPa": 362.3,
+        "L_mm": 2750,
+        "d_mm": 2.8,
+        "dt_pct": 46,
+        "measured_burst_MPa": 12.63,
+        "b31g_Pf_MPa": 5.74,
+        "modb31g_Pf_MPa": 7.03,
+        "ratio_b31g": 0.454,
+        "ratio_modb31g": 0.557
+      },
+      {
+        "id": "Freire P3 ET4.1 (X60, machined)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 324,
+        "t_mm": 9.79,
+        "yield_MPa": 452,
+        "L_mm": 500,
+        "d_mm": 6.99,
+        "dt_pct": 71,
+        "measured_burst_MPa": 11.99,
+        "b31g_Pf_MPa": 8.59,
+        "modb31g_Pf_MPa": 13.82,
+        "ratio_b31g": 0.717,
+        "ratio_modb31g": 1.152
+      },
+      {
+        "id": "Freire P3 ET4.2 (X60, machined)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 324,
+        "t_mm": 9.74,
+        "yield_MPa": 452,
+        "L_mm": 528,
+        "d_mm": 7.14,
+        "dt_pct": 73,
+        "measured_burst_MPa": 11.3,
+        "b31g_Pf_MPa": 7.98,
+        "modb31g_Pf_MPa": 13.14,
+        "ratio_b31g": 0.706,
+        "ratio_modb31g": 1.163
+      },
+      {
+        "id": "Freire P3 ET5.1 (X60, machined)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 324,
+        "t_mm": 9.8,
+        "yield_MPa": 452,
+        "L_mm": 256,
+        "d_mm": 7.08,
+        "dt_pct": 72,
+        "measured_burst_MPa": 14.4,
+        "b31g_Pf_MPa": 8.35,
+        "modb31g_Pf_MPa": 14.72,
+        "ratio_b31g": 0.58,
+        "ratio_modb31g": 1.022
+      },
+      {
+        "id": "Freire P3 ET1.2 (X60, machined)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 324,
+        "t_mm": 9.66,
+        "yield_MPa": 452,
+        "L_mm": 306,
+        "d_mm": 6.76,
+        "dt_pct": 70,
+        "measured_burst_MPa": 14.07,
+        "b31g_Pf_MPa": 8.9,
+        "modb31g_Pf_MPa": 14.73,
+        "ratio_b31g": 0.633,
+        "ratio_modb31g": 1.047
+      },
+      {
+        "id": "Freire P3 ET2.2 (X60, machined)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 324,
+        "t_mm": 9.71,
+        "yield_MPa": 452,
+        "L_mm": 350,
+        "d_mm": 6.93,
+        "dt_pct": 71,
+        "measured_burst_MPa": 13.58,
+        "b31g_Pf_MPa": 8.53,
+        "modb31g_Pf_MPa": 14.19,
+        "ratio_b31g": 0.628,
+        "ratio_modb31g": 1.045
+      },
+      {
+        "id": "Freire P3 ET2.1 (X60, machined)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 324,
+        "t_mm": 9.71,
+        "yield_MPa": 452,
+        "L_mm": 395,
+        "d_mm": 6.91,
+        "dt_pct": 71,
+        "measured_burst_MPa": 12.84,
+        "b31g_Pf_MPa": 8.59,
+        "modb31g_Pf_MPa": 14.08,
+        "ratio_b31g": 0.669,
+        "ratio_modb31g": 1.097
+      },
+      {
+        "id": "Freire P3 ET3.1 (X60, machined)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 324,
+        "t_mm": 9.91,
+        "yield_MPa": 452,
+        "L_mm": 433,
+        "d_mm": 7.31,
+        "dt_pct": 74,
+        "measured_burst_MPa": 12.13,
+        "b31g_Pf_MPa": 7.98,
+        "modb31g_Pf_MPa": 13.53,
+        "ratio_b31g": 0.658,
+        "ratio_modb31g": 1.115
+      },
+      {
+        "id": "Freire P3 ET1.1 (X60, machined)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 324,
+        "t_mm": 9.94,
+        "yield_MPa": 452,
+        "L_mm": 467,
+        "d_mm": 7.22,
+        "dt_pct": 73,
+        "measured_burst_MPa": 11.92,
+        "b31g_Pf_MPa": 8.35,
+        "modb31g_Pf_MPa": 13.79,
+        "ratio_b31g": 0.7,
+        "ratio_modb31g": 1.157
+      },
+      {
+        "id": "Freire P3 ET3.2 (X60, machined)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 324,
+        "t_mm": 9.79,
+        "yield_MPa": 452,
+        "L_mm": 484,
+        "d_mm": 6.99,
+        "dt_pct": 71,
+        "measured_burst_MPa": 11.91,
+        "b31g_Pf_MPa": 8.59,
+        "modb31g_Pf_MPa": 13.86,
+        "ratio_b31g": 0.722,
+        "ratio_modb31g": 1.164
+      },
+      {
+        "id": "Freire P3 CP E2 (X60, machined)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 508,
+        "t_mm": 14.3,
+        "yield_MPa": 478,
+        "L_mm": 500,
+        "d_mm": 10.3,
+        "dt_pct": 72,
+        "measured_burst_MPa": 13.4,
+        "b31g_Pf_MPa": 8.28,
+        "modb31g_Pf_MPa": 13.92,
+        "ratio_b31g": 0.618,
+        "ratio_modb31g": 1.039
+      },
+      {
+        "id": "Freire P3 CPI (X60, machined (internal))",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 508,
+        "t_mm": 14.8,
+        "yield_MPa": 478,
+        "L_mm": 500,
+        "d_mm": 9.7,
+        "dt_pct": 66,
+        "measured_burst_MPa": 15.8,
+        "b31g_Pf_MPa": 10.56,
+        "modb31g_Pf_MPa": 16.24,
+        "ratio_b31g": 0.668,
+        "ratio_modb31g": 1.028
+      },
+      {
+        "id": "Freire P3 CP E1 (X60, machined)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 508,
+        "t_mm": 14.6,
+        "yield_MPa": 478,
+        "L_mm": 500,
+        "d_mm": 10.35,
+        "dt_pct": 71,
+        "measured_burst_MPa": 14.6,
+        "b31g_Pf_MPa": 8.8,
+        "modb31g_Pf_MPa": 14.54,
+        "ratio_b31g": 0.603,
+        "ratio_modb31g": 0.996
+      },
+      {
+        "id": "Freire P3 IDTS8 (X80, spark-eroded short)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 459,
+        "t_mm": 8,
+        "yield_MPa": 589,
+        "L_mm": 40,
+        "d_mm": 3.75,
+        "dt_pct": 47,
+        "measured_burst_MPa": 24.2,
+        "b31g_Pf_MPa": 21.24,
+        "modb31g_Pf_MPa": 21.33,
+        "ratio_b31g": 0.878,
+        "ratio_modb31g": 0.881
+      },
+      {
+        "id": "Freire P3 IDTS2 (X80, spark-eroded short)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 457,
+        "t_mm": 8.1,
+        "yield_MPa": 601,
+        "L_mm": 39.6,
+        "d_mm": 5.39,
+        "dt_pct": 67,
+        "measured_burst_MPa": 22.7,
+        "b31g_Pf_MPa": 21.15,
+        "modb31g_Pf_MPa": 20.75,
+        "ratio_b31g": 0.932,
+        "ratio_modb31g": 0.914
+      },
+      {
+        "id": "Freire P3 1-D1 (X46, machined)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 76.2,
+        "t_mm": 2,
+        "yield_MPa": 391,
+        "L_mm": 75,
+        "d_mm": 1.4,
+        "dt_pct": 70,
+        "measured_burst_MPa": 9.4,
+        "b31g_Pf_MPa": 6.77,
+        "modb31g_Pf_MPa": 11.3,
+        "ratio_b31g": 0.721,
+        "ratio_modb31g": 1.202
+      },
+      {
+        "id": "Freire P3 2-D1 (A25, machined)",
+        "src": "FREIRE2006_P3",
+        "OD_mm": 76.2,
+        "t_mm": 2.04,
+        "yield_MPa": 260,
+        "L_mm": 75,
+        "d_mm": 1.44,
+        "dt_pct": 71,
+        "measured_burst_MPa": 5.45,
+        "b31g_Pf_MPa": 4.5,
+        "modb31g_Pf_MPa": 8.16,
+        "ratio_b31g": 0.826,
+        "ratio_modb31g": 1.497
       }
     ]
   }

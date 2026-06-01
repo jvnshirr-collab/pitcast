@@ -238,6 +238,44 @@ study** of Zhou, W. & Huang, G.X., *Int. J. Press. Vessels Pip.* 99–100 (2012)
 10.1016/j.ijpvp.2012.06.001 (B31G test/predicted 1.473 → 0.679; Modified 1.297 → 0.771) — a
 strong external cross-validation of `b31g.js`, not just a larger `n`.
 
+## ✓ Added (2026-06-01, EXPANSION 2) — parallel-agent journal sweep (Wiley/ScienceDirect unlocked)
+
+With the user's METU session unlocking Wiley + ScienceDirect full text, four extraction agents
+swept the literature **through the authenticated browser** (each in its own tab). **Every returned
+value was independently re-verified by the maintainer before admission** — agents discover/extract,
+the maintainer is the integrity gate.
+
+**Added (+30 datapoints):**
+- **Burst +23 → 75 total.** Souza/Benjamin *"Part 4"* 2007 (Exp. Tech., DOI 10.1111/j.1747-1567.2006.00134.x)
+  — 7 single-defect **real-corrosion** bursts (X42/X46); Freire/Benjamin *"Part 3"* 2006 (DOI
+  10.1111/j.1747-1567.2006.00109.x) — 16 single machined/spark-eroded defects (X60/X80/X46/A25,
+  OD 76–508 mm; depth d = t − t*). **Verification:** `b31g.js` reproduces each paper's *own* tabulated
+  original-B31G **exactly (0.0 % for Part 4, ≤2.3 % for Part 3)** — definitive extraction confirmation.
+- **CO₂ +5 → 16 in-scope.** 2-phenyl imidazoline (Jiang & Wang, *Arabian J. Chem.* 16:104774, 2023,
+  DOI 10.1016/j.arabjc.2023.104774) — X65 blank weight-loss at 20/30/40/50 °C, Table 2 (DOI verified
+  to resolve to the real peer-reviewed Elsevier-origin paper; values present in source);
+  thiophene-imidazoline (Jia et al., *RSC Adv.* 2025, DOI 10.1039/d5ra04201a) — Q235 blank 1.8115 mm/a
+  at **90 °C** (text-stated, maintainer-verified after two agents disagreed on text-vs-figure).
+- **CPT +1 → 52.** AL-6XN wrought base metal (Qian & DuPont, *Corros. Sci.* 2010,
+  DOI 10.1016/j.corsci.2010.07.007) — CPT 74 °C by 6 % FeCl₃ + 1 % HCl G48-97 immersion;
+  composition matches textbook N08367.
+
+**Excluded under the rules (honest log):**
+- **Gum Arabic / N80** (JMEP 2019) — blank 4.2–4.8 mm/y looked anomalously high, KCl (not NaCl) brine,
+  and the mg cm⁻²h⁻¹ → mm/y conversion is 24×-sensitive → too uncertain (excluded, not risked).
+- **ER2594N super-duplex weld claddings** (Surf. Coat. Tech. 2014) — clean G48 Method-E CPT (50/40 °C),
+  but **weld metal is a different metallurgical population** than the wrought-calibrated correlation
+  (segregation/N-loss → systematically lower CPT); would bias the fit. Held out.
+- **L360N 5 % NaCl 40 °C** (Materials 2024) — duplicate of the existing Peng 2024 case.
+- **Al-Owaisi 2016** (EFA 68) — **FEA-only**; its "experimental" burst values are cited from other
+  papers (one = the Part-3 IDTS2 already captured), its own values are finite-element.
+- **Under-deposit X65, Nd³⁺/X52, LaCl₃/1018, 2-thiobarbituric/X60, AGGPAM, Frontiers C1018, etc.** —
+  electrochemical (Icorr/LPR/EIS) or figure-only blank rates, or localized/under-deposit (out of bulk scope).
+
+The verification gate caught a real agent error (one agent rejected the thiophene point as
+figure-only; the maintainer confirmed the blank rate IS text-stated and admitted it) and a duplicate —
+exactly why agent output is re-verified, never trusted blind.
+
 ## The one rule under all the others
 
 **Never invent a datapoint, DOI, author, or condition.** A benchmark that lies

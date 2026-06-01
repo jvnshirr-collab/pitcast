@@ -128,6 +128,56 @@
       "Fe2_ppm": 10,
       "scope": "cs_aqueous",
       "note": "Uninhibited blank, AISI 1018, 30 g/L NaCl + 0.1 g/L NaHCO3 + 0.1 g/L CaCO3, CO2-saturated at 1 atm (pCO2 ~ 1 - P_H2O(60C) ~ 0.8 bar), 72 h mass loss, quiescent; pH computed in-situ. Coatings 15(1):93 (2025), DOI 10.3390/coatings15010093."
+    },
+    "Thiophene-imidazoline RSC 2025 - Q235 blank, CO2-sat formation water, 90 C": {
+      "T_C": 90,
+      "pCO2_bar": 0.31,
+      "pH": 4.13,
+      "u_m_s": 0.1,
+      "d_pipe_m": 0.05,
+      "Fe2_ppm": 10,
+      "scope": "cs_aqueous",
+      "note": "Blank Q235 weight-loss, CO2-saturated formation water at 1 atm (pCO2~0.31 bar at 90 C), 22 h, pH 4.13. Text-stated: 'at 90 C, the corrosion rate of carbon steel in the inhibitor-free solution reaches 1.8115 mm/a'. Highest-T CO2 anchor in corpus."
+    },
+    "2-phenyl imidazoline AJC 2023 - X65 blank, CO2-sat 3% NaCl, 20 C": {
+      "T_C": 20,
+      "pCO2_bar": 0.99,
+      "pH": 4.11,
+      "u_m_s": 0.1,
+      "d_pipe_m": 0.05,
+      "Fe2_ppm": 10,
+      "scope": "cs_aqueous",
+      "note": "Blank X65, CO2-saturated 3% NaCl ~1 atm, 72 h, pH 4.11 measured; quiescent."
+    },
+    "2-phenyl imidazoline AJC 2023 - X65 blank, CO2-sat 3% NaCl, 30 C": {
+      "T_C": 30,
+      "pCO2_bar": 0.97,
+      "pH": 4.11,
+      "u_m_s": 0.1,
+      "d_pipe_m": 0.05,
+      "Fe2_ppm": 10,
+      "scope": "cs_aqueous",
+      "note": "Blank X65, CO2-saturated 3% NaCl ~1 atm, 72 h, pH 4.11 measured; quiescent."
+    },
+    "2-phenyl imidazoline AJC 2023 - X65 blank, CO2-sat 3% NaCl, 40 C": {
+      "T_C": 40,
+      "pCO2_bar": 0.94,
+      "pH": 4.11,
+      "u_m_s": 0.1,
+      "d_pipe_m": 0.05,
+      "Fe2_ppm": 10,
+      "scope": "cs_aqueous",
+      "note": "Blank X65, CO2-saturated 3% NaCl ~1 atm, 72 h, pH 4.11 measured; quiescent."
+    },
+    "2-phenyl imidazoline AJC 2023 - X65 blank, CO2-sat 3% NaCl, 50 C": {
+      "T_C": 50,
+      "pCO2_bar": 0.89,
+      "pH": 4.11,
+      "u_m_s": 0.1,
+      "d_pipe_m": 0.05,
+      "Fe2_ppm": 10,
+      "scope": "cs_aqueous",
+      "note": "Blank X65, CO2-saturated 3% NaCl ~1 atm, 72 h, pH 4.11 measured; quiescent."
     }
   }
 }
