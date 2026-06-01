@@ -8,6 +8,12 @@
 // Replaces the earlier 9-point handbook calibration; reported on an ASTM G48 (6% FeCl3) basis.
 const CPT = { slope: 2.038176, intercept: -32.730883, resid: 8.033109,
               prenMean: 36.1689, sxx: 3821.5641, n: 51, prenMin: 18.24, prenMax: 65.55 };
+// SECOND CPT correlation on a DISTINCT basis: electrochemical (potentiodynamic) CPT in chloride,
+// n=123 austenitic-SS records (npj Materials Degradation 2025, DOI 10.1038/s41529-025-00563-0;
+// leave-one-out MAE 6.11 C, R2 0.93). NEVER merged with the G48/FeCl3 model above — the two scale
+// differently with PREN (slope 4.10 vs 2.04). Reported as a separate, broader-coverage estimate.
+const CPT_ELEC = { slope: 4.0958, intercept: -96.223, resid: 7.450,
+                   prenMean: 31.06, sxx: 5478.4, n: 123, prenMin: 23.9, prenMax: 47.2 };
 const C_SIGMA_CPT = 5.0, SIGMA_CR = 30.0, SIGMA_MO = 8.0;
 const SIGMA = { Tlow: 600, Thigh: 1000, Tnose: 850, W: 110, jmakN: 1.5, feq: 0.12,
                 tauRef: 3.0, prenRef: 35.0, kPren: 0.43, tauMin: 0.005,
@@ -141,6 +147,12 @@ function cptMean(c){ return CPT.slope*prenN30(c) + CPT.intercept; }
 function cptSE(c){
   const p = prenN30(c);
   return CPT.resid*Math.sqrt(1 + 1/CPT.n + Math.pow(p-CPT.prenMean,2)/CPT.sxx);
+}
+// Electrochemical (potentiodynamic) basis CPT — separate correlation (see CPT_ELEC, n=123).
+function cptMeanElec(c){ return CPT_ELEC.slope*prenN30(c) + CPT_ELEC.intercept; }
+function cptSEElec(c){
+  const p = prenN30(c);
+  return CPT_ELEC.resid*Math.sqrt(1 + 1/CPT_ELEC.n + Math.pow(p-CPT_ELEC.prenMean,2)/CPT_ELEC.sxx);
 }
 // CPT chloride dependence (screening). CPT falls ~linearly with log[Cl-]; slope B ~ 24 C per
 // decade (Abd El Meguid & Abd El Latif, Corros. Sci. 49 (2007) 263: Type 254 SMO CPT 89/67/57 C
@@ -386,7 +398,8 @@ var _PitCastAPI = {
   get GRADES(){ return GRADES; }, get MEASUREMENTS(){ return MEASUREMENTS; },
   setGrades, setMeasurements, measuredCPT,
   assess, selectAlloys, envelope, complianceDiff, pren, prenW, prenN30, ferritePct,
-  inferFamily, relativeCost, cptMean, cptSE, cptConstants: CPT };
+  inferFamily, relativeCost, cptMean, cptSE, cptMeanElec, cptSEElec,
+  cptConstants: CPT, cptElecConstants: CPT_ELEC };
 // Browser: attach to window. Node (benchmark/V&V harness): export via module.
 if (typeof window !== 'undefined') window.PitCast = _PitCastAPI;
 if (typeof module !== 'undefined' && module.exports) module.exports = _PitCastAPI;

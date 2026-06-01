@@ -39,6 +39,7 @@ const grades = loadJSON(path.join(ROOT, 'data', 'grades.json'));
 const validations = loadJSON(path.join(ROOT, 'data', 'validations.json'));
 const co2inputs = loadJSON(path.join(__dirname, 'co2-inputs.json')).cases;
 const b31gBurst = loadJSON(path.join(__dirname, 'b31g-burst.json'));
+const cptElec = loadJSON(path.join(ROOT, 'data', 'cpt-electrochemical.json')).records;
 
 // ── stats helpers ──────────────────────────────────────────────────────────
 const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
@@ -92,6 +93,22 @@ const cptResult = {
   parity: cptFeCl3.map((p, i) => ({ code: p.code, pren_n30: round(p.x, 2), measured_C: round(p.y, 1), loo_resid_C: round(looFeCl3.resid[i], 1) }))
 };
 const cptWorst = cptResult.parity.slice().sort((a, b) => Math.abs(b.loo_resid_C) - Math.abs(a.loo_resid_C)).slice(0, 5);
+
+// ── CPT electrochemical (potentiodynamic) basis — SEPARATE correlation (npj 2025, n=123) ──
+//    Distinct basis from G48/FeCl3 (different slope/intercept); reported alongside, never merged.
+const elecPts = [];
+for (const r of cptElec) {
+  const pren = PitCast.prenN30(r.comp);
+  if (isFinite(pren) && pren > 0 && isFinite(Number(r.CPT_C))) elecPts.push({ x: pren, y: Number(r.CPT_C) });
+}
+const looElec = looStats(elecPts);
+const fitElec = olsFit(elecPts);
+const cptElecResult = {
+  basis: 'electrochemical (potentiodynamic) in chloride solution — npj Materials Degradation 2025 (DOI 10.1038/s41529-025-00563-0); DISTINCT basis from the G48/FeCl3 correlation, reported separately (not merged)',
+  n_points: elecPts.length,
+  full_sample_fit: { slope: round(fitElec.slope, 4), intercept: round(fitElec.intercept, 3), r2: round(fitElec.r2, 3) },
+  loo: { MAE_C: round(looElec.MAE_C, 2), RMSE_C: round(looElec.RMSE_C, 2), bias_C: round(looElec.bias_C, 2) }
+};
 
 // ── CPT spot-check vs the fully-cited CRA validation cases ──────────────────
 const cptSpot = [];
@@ -182,7 +199,8 @@ const results = {
   cpt_leave_one_out: cptResult,
   cpt_validation_spotcheck: cptSpotResult,
   co2_ensemble: co2Result,
-  b31g_burst: b31gResult
+  b31g_burst: b31gResult,
+  cpt_electrochemical: cptElecResult
 };
 fs.writeFileSync(path.join(__dirname, 'results.json'), JSON.stringify(results, null, 2));
 fs.writeFileSync(path.join(__dirname, 'REPORT.md'), renderReport(results, cptWorst));
@@ -197,6 +215,8 @@ console.log('CO2: in-scope cases=%d  envelope-coverage=%s', co2Result.n_cases_in
 co2PerModel.forEach(m => console.log('  %s MAE=%s bias=%s mm/y', m.id.padEnd(10), m.MAE_mmpy, m.bias_mmpy));
 console.log('B31G burst (n=%d): Mod-B31G mean ratio=%s (%s%% conservative, MAPE %s%%) · orig B31G mean ratio=%s',
   b31gResult.n, b31gResult.modb31g.mean_ratio, b31gResult.modb31g.pct_conservative, b31gResult.modb31g.MAPE_pct, b31gResult.b31g.mean_ratio);
+console.log('CPT electrochemical (npj 2025, separate basis): n=%d  LOO MAE=%s C  fit slope=%s int=%s R2=%s',
+  cptElecResult.n_points, cptElecResult.loo.MAE_C, cptElecResult.full_sample_fit.slope, cptElecResult.full_sample_fit.intercept, cptElecResult.full_sample_fit.r2);
 console.log('Wrote benchmark/results.json + benchmark/REPORT.md');
 
 function renderReport(R, worst) {
@@ -223,6 +243,20 @@ function renderReport(R, worst) {
   L.push('| Alloy/code | PREN_N30 | Measured °C | LOO resid °C |', '|---|--:|--:|--:|');
   for (const w of worst) L.push('| ' + w.code + ' | ' + w.pren_n30 + ' | ' + w.measured_C + ' | ' + w.loo_resid_C + ' |');
   L.push('');
+  const e = R.cpt_electrochemical;
+  if (e) {
+    L.push('### 1b. CPT — electrochemical (potentiodynamic) basis — SEPARATE correlation', '');
+    L.push('A second, independent CPT correlation on a **distinct measurement basis** (electrochemical /');
+    L.push('potentiodynamic in chloride), kept separate from the G48/FeCl₃ model above — the two scale');
+    L.push('differently with PREN and are **never merged**. Source: npj Materials Degradation 2025, DOI');
+    L.push('10.1038/s41529-025-00563-0 (123 austenitic-SS records with composition + test conditions).', '');
+    L.push('| Metric | Value |', '|---|---|');
+    L.push('| **LOO MAE (electrochemical basis)** | **' + e.loo.MAE_C + ' °C** (n=' + e.n_points + ') |');
+    L.push('| LOO RMSE / bias | ' + e.loo.RMSE_C + ' / ' + e.loo.bias_C + ' °C |');
+    L.push('| Full-sample fit | slope ' + e.full_sample_fit.slope + ', intercept ' + e.full_sample_fit.intercept + ', R² ' + e.full_sample_fit.r2 + ' |');
+    L.push('');
+    L.push('_Total CPT validation: **' + c.n_points_fecl3 + ' G48 + ' + e.n_points + ' electrochemical = ' + (c.n_points_fecl3 + e.n_points) + ' points** across two cited bases._', '');
+  }
 
   L.push('## 2. CPT spot-check vs fully-cited CRA anchor cases', '');
   L.push('| Case | Alloy | Basis | Measured °C | Predicted (G48) °C | Δ °C |', '|---|---|---|--:|--:|--:|');

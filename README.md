@@ -54,7 +54,7 @@ The benchmark spans three validation domains, all built on cited measured data:
 
 | Domain | Data | Headline result |
 |---|---|---|
-| Pitting CPT | n = 52 (Nyby 2021 + AL-6XN, ASTM G48 basis) | leave-one-out MAE 6.6 °C, R² 0.84 |
+| Pitting CPT | **175 pts, 2 bases**: 52 G48/FeCl₃ (Nyby 2021 + AL-6XN) + 123 electrochemical/potentiodynamic (npj 2025) | G48 LOO MAE **6.6 °C** (R² 0.84); electrochemical LOO MAE **6.11 °C** (R² 0.93) — separate correlations, not merged |
 | CO₂ ensemble | 16 in-scope cases, 20–90 °C, 8 cited sources | models disagree ~10×; envelope brackets ~56%; best model DWM-1995 MAE 0.94 mm/y |
 | Corroded-pipe burst | 75 full-scale tests, API 5L A25–X80, OD 76–864 mm (Benjamin MTI-JIP; Cronin real-corrosion; Souza/Freire ET series; Qi; He & Zhao) | orig-B31G 0.678× (100% conservative, MAPE 32%) — matches Zhou & Huang 2012 (n=149, 0.679); Mod-B31G 0.822× (80% conservative) |
 

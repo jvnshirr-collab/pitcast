@@ -22,16 +22,18 @@ repository. Data-inclusion rules and the full rejected-data log are in
 | Full-sample data refit | slope 2.06, intercept −33.4, **R² 0.84** (deployed model held at 2.038/−32.73) |
 | Spot-check vs cited CRA anchors (on-basis) | MAE **3.53 °C** |
 | Sources | Nyby et al. 2021 *Sci. Data* 8:58 (51 FeCl₃ pts) + AL-6XN wrought base metal (Qian & DuPont, *Corros. Sci.* 2010, DOI 10.1016/j.corsci.2010.07.007, G48-97 immersion, CPT 74 °C) |
+| **2nd basis — electrochemical (potentiodynamic)** | **123 pts**, LOO MAE **6.11 °C**, R² **0.93**, fit slope 4.10 (npj Materials Degradation 2025, DOI 10.1038/s41529-025-00563-0; austenitic-SS, with composition + test conditions). A **separate** correlation — never merged with G48 (slope 4.10 vs 2.04). Surfaced in the UI as a distinct, clearly-labeled estimate; **total CPT validation = 52 + 123 = 175 points across two bases.** |
 
 **Honest bounds.** Lab ASTM G48 (6 % FeCl₃) basis, not service conditions. Individual alloys
 miss by ≫MAE in leave-one-out (e.g. N06625 −23.6 °C). The UI returns a Student-t **prediction
-interval**, not a bare point, with a screening caveat. **On the open ceiling:** the repository
-holds 118 CPT records; exactly **52 are ferric-chloride/G48 basis** (the model's calibration
-basis) — the other 66 are electrochemical (NaCl), correctly excluded. G48 CPT *with composition*
-is genuinely scarce in the open/journal literature (one wrought point, AL-6XN, was added this
-cycle after a four-database journal sweep; superduplex weld-clad points were found but **excluded**
-as a different metallurgical population). The corpus is **not** padded with off-basis or vendor
-"approximate" values.
+interval**, not a bare point, with a screening caveat. **On the two bases:** the G48/FeCl₃
+correlation is basis-limited to **52** points — a 5-agent, ~30-paper journal sweep confirmed that
+G48-CPT-with-composition is genuinely scarce (it added only the wrought AL-6XN; weld-clad and
+electrochemical points were **excluded** as off-basis / different-population). Rather than pad G48,
+the abundant **electrochemical** literature now powers a *separate* correlation built on the
+**123-point npj 2025 dataset** (single potentiodynamic method, with composition) → LOO MAE 6.11 °C,
+R² 0.93. The G48 corpus is **never** padded with off-basis, weld, spec-range, or vendor
+"approximate" values; the two bases are reported and surfaced independently.
 
 ---
 

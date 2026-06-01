@@ -276,6 +276,29 @@ The verification gate caught a real agent error (one agent rejected the thiophen
 figure-only; the maintainer confirmed the blank rate IS text-stated and admitted it) and a duplicate —
 exactly why agent output is re-verified, never trusted blind.
 
+## ✓ Added (2026-06-01, EXPANSION 3) — second CPT basis (electrochemical), not padding
+
+A 5-agent / ~30-paper journal sweep (Wiley + ScienceDirect unlocked) **confirmed the G48 ceiling**:
+zero new admissible wrought-base-metal G48 CPT points (the field measures CPT electrochemically;
+weld-clad = different population, spec-range/nominal compositions, censored ">85 °C", and paywalled
+Mori-2004 were all correctly rejected). The G48 correlation therefore stays at **n=52** — its honest,
+structurally-limited ceiling.
+
+Instead of padding G48 with off-basis values, the abundant electrochemical data was used to build a
+**genuinely separate** correlation:
+- **`data/cpt-electrochemical.json`** — 123 austenitic-SS records, electrochemical (potentiodynamic)
+  CPT + composition + test conditions, from **Liu et al., npj Materials Degradation 2025, DOI
+  10.1038/s41529-025-00563-0** (open-access Supplementary Table S1; transcribed via pdftotext).
+- Fit (`run.js`): **CPT_elec = 4.096·PREN_N30 − 96.22, R² 0.93, leave-one-out MAE 6.11 °C** (n=123).
+  Slope 4.10 vs the G48 slope 2.04 — the two bases scale **differently** with PREN and are **NEVER
+  merged**. The benchmark reports them in separate sections (§1 G48, §1b electrochemical); `pitcast.js`
+  exposes `cptMeanElec`/`cptSEElec`; the UI shows the electrochemical estimate as a distinct,
+  clearly-labelled second basis (with an extrapolation guard outside PREN 23.9–47.2).
+
+Net: **CPT validation = 52 (G48) + 123 (electrochemical) = 175 points across two cited, clearly-
+separated bases.** The G48 corpus is still never padded; the electrochemical corpus is a distinct,
+single-method, peer-reviewed dataset — not a dumping ground for mixed off-basis values.
+
 ## The one rule under all the others
 
 **Never invent a datapoint, DOI, author, or condition.** A benchmark that lies

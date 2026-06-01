@@ -1,0 +1,1852 @@
+{
+  "_README": "Electrochemical (potentiodynamic) Critical Pitting Temperature dataset for AUSTENITIC stainless steels. Source: Liu et al., 'Interpretable material descriptors for critical pitting temperature in austenitic stainless steel via machine learning', npj Materials Degradation (2025), DOI 10.1038/s41529-025-00563-0 (open access). 123 records from the article's Supplementary dataset (Table S1), each with measured composition (Cr/Mo/N etc.) + electrochemical CPT + test conditions (Cl-, pH, scan rate), compiled by the npj authors from 13 original sources (npj_ref column maps to that paper's reference list). BASIS = electrochemical / potentiodynamic in chloride solution — DISTINCT from the ASTM G48 / 6% FeCl3 immersion basis of PitCast's primary CPT correlation (data/measurements.json). The two MUST NOT be merged (G48 and potentiodynamic CPT scale differently with PREN). This file powers a SEPARATE electrochemical-basis CPT correlation, reported alongside (never mixed with) the G48 correlation. PREN_N30 = Cr + 3.3*Mo + 30*N. Values transcribed verbatim from the supplementary PDF via pdftotext; nothing fabricated.",
+  "source": "npj Materials Degradation 2025, DOI 10.1038/s41529-025-00563-0 (Supplementary Table S1; 123 austenitic SS, potentiodynamic CPT)",
+  "basis": "electrochemical (potentiodynamic) in chloride solution",
+  "records": [
+    {
+      "code": "npj2025-r45-1",
+      "comp": {
+        "Cr": 17,
+        "Mo": 2.3,
+        "N": 0.037
+      },
+      "CPT_C": 19,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-2",
+      "comp": {
+        "Cr": 16.86,
+        "Mo": 2.17,
+        "N": 0.036
+      },
+      "CPT_C": 12,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-3",
+      "comp": {
+        "Cr": 17.02,
+        "Mo": 2.35,
+        "N": 0.037
+      },
+      "CPT_C": 18,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-4",
+      "comp": {
+        "Cr": 16.77,
+        "Mo": 2.05,
+        "N": 0.011
+      },
+      "CPT_C": 9,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-5",
+      "comp": {
+        "Cr": 16.69,
+        "Mo": 2.09,
+        "N": 0.013
+      },
+      "CPT_C": 8,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-6",
+      "comp": {
+        "Cr": 16.76,
+        "Mo": 2.07,
+        "N": 0.014
+      },
+      "CPT_C": 10,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-7",
+      "comp": {
+        "Cr": 16.75,
+        "Mo": 2.06,
+        "N": 0.011
+      },
+      "CPT_C": 5,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-8",
+      "comp": {
+        "Cr": 16.77,
+        "Mo": 2.15,
+        "N": 0.013
+      },
+      "CPT_C": 10,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-9",
+      "comp": {
+        "Cr": 17.53,
+        "Mo": 2.15,
+        "N": 0.069
+      },
+      "CPT_C": 16,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-10",
+      "comp": {
+        "Cr": 17.39,
+        "Mo": 2.05,
+        "N": 0.062
+      },
+      "CPT_C": 15,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-11",
+      "comp": {
+        "Cr": 16.8,
+        "Mo": 2.16,
+        "N": 0.063
+      },
+      "CPT_C": 13,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-12",
+      "comp": {
+        "Cr": 16.77,
+        "Mo": 2.09,
+        "N": 0.047
+      },
+      "CPT_C": 10,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-13",
+      "comp": {
+        "Cr": 17.22,
+        "Mo": 2.41,
+        "N": 0.174
+      },
+      "CPT_C": 24,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-14",
+      "comp": {
+        "Cr": 17.19,
+        "Mo": 2.06,
+        "N": 0.136
+      },
+      "CPT_C": 26,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-15",
+      "comp": {
+        "Cr": 16.67,
+        "Mo": 2.73,
+        "N": 0.058
+      },
+      "CPT_C": 13,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-16",
+      "comp": {
+        "Cr": 16.74,
+        "Mo": 2.57,
+        "N": 0.037
+      },
+      "CPT_C": 18,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-17",
+      "comp": {
+        "Cr": 17.43,
+        "Mo": 2.67,
+        "N": 0.068
+      },
+      "CPT_C": 32,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-18",
+      "comp": {
+        "Cr": 17.54,
+        "Mo": 2.57,
+        "N": 0.07
+      },
+      "CPT_C": 28,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-19",
+      "comp": {
+        "Cr": 16.7,
+        "Mo": 2.54,
+        "N": 0.042
+      },
+      "CPT_C": 12,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-20",
+      "comp": {
+        "Cr": 17.27,
+        "Mo": 2.68,
+        "N": 0.066
+      },
+      "CPT_C": 24,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-21",
+      "comp": {
+        "Cr": 17.56,
+        "Mo": 2.58,
+        "N": 0.068
+      },
+      "CPT_C": 28,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-22",
+      "comp": {
+        "Cr": 16.89,
+        "Mo": 2.74,
+        "N": 0.052
+      },
+      "CPT_C": 26,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-23",
+      "comp": {
+        "Cr": 17.47,
+        "Mo": 2.55,
+        "N": 0.068
+      },
+      "CPT_C": 28,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-24",
+      "comp": {
+        "Cr": 17.3,
+        "Mo": 2.59,
+        "N": 0.052
+      },
+      "CPT_C": 22,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-25",
+      "comp": {
+        "Cr": 17.27,
+        "Mo": 2.46,
+        "N": 0.07
+      },
+      "CPT_C": 22,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-26",
+      "comp": {
+        "Cr": 17.29,
+        "Mo": 2.72,
+        "N": 0.066
+      },
+      "CPT_C": 21,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-27",
+      "comp": {
+        "Cr": 17.25,
+        "Mo": 2.56,
+        "N": 0.054
+      },
+      "CPT_C": 19,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-28",
+      "comp": {
+        "Cr": 17.37,
+        "Mo": 2.58,
+        "N": 0.05
+      },
+      "CPT_C": 19,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-29",
+      "comp": {
+        "Cr": 17.22,
+        "Mo": 2.6,
+        "N": 0.058
+      },
+      "CPT_C": 18,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-30",
+      "comp": {
+        "Cr": 17.59,
+        "Mo": 2.61,
+        "N": 0.142
+      },
+      "CPT_C": 34,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-31",
+      "comp": {
+        "Cr": 17.24,
+        "Mo": 2.55,
+        "N": 0.187
+      },
+      "CPT_C": 30,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-32",
+      "comp": {
+        "Cr": 17.59,
+        "Mo": 2.61,
+        "N": 0.144
+      },
+      "CPT_C": 35,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-33",
+      "comp": {
+        "Cr": 18.33,
+        "Mo": 3.18,
+        "N": 0.089
+      },
+      "CPT_C": 43,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-34",
+      "comp": {
+        "Cr": 18.09,
+        "Mo": 3.1,
+        "N": 0.065
+      },
+      "CPT_C": 32,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-35",
+      "comp": {
+        "Cr": 17.31,
+        "Mo": 4.51,
+        "N": 0.155
+      },
+      "CPT_C": 55,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-36",
+      "comp": {
+        "Cr": 17.71,
+        "Mo": 4.04,
+        "N": 0.14
+      },
+      "CPT_C": 51,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-37",
+      "comp": {
+        "Cr": 17.36,
+        "Mo": 4.46,
+        "N": 0.15
+      },
+      "CPT_C": 53,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-38",
+      "comp": {
+        "Cr": 20.16,
+        "Mo": 4.3,
+        "N": 0.035
+      },
+      "CPT_C": 64,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-39",
+      "comp": {
+        "Cr": 20.13,
+        "Mo": 4.35,
+        "N": 0.052
+      },
+      "CPT_C": 63,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-40",
+      "comp": {
+        "Cr": 19.58,
+        "Mo": 4.3,
+        "N": 0.061
+      },
+      "CPT_C": 63,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-41",
+      "comp": {
+        "Cr": 19.96,
+        "Mo": 4.24,
+        "N": 0.06
+      },
+      "CPT_C": 62,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-42",
+      "comp": {
+        "Cr": 19.83,
+        "Mo": 4.34,
+        "N": 0.061
+      },
+      "CPT_C": 60,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-43",
+      "comp": {
+        "Cr": 20.22,
+        "Mo": 4.35,
+        "N": 0.051
+      },
+      "CPT_C": 63,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-44",
+      "comp": {
+        "Cr": 19.97,
+        "Mo": 4.26,
+        "N": 0.064
+      },
+      "CPT_C": 60,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-45",
+      "comp": {
+        "Cr": 19.7,
+        "Mo": 4.33,
+        "N": 0.061
+      },
+      "CPT_C": 59,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-46",
+      "comp": {
+        "Cr": 19.89,
+        "Mo": 4.27,
+        "N": 0.062
+      },
+      "CPT_C": 59,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-47",
+      "comp": {
+        "Cr": 20.17,
+        "Mo": 6.29,
+        "N": 0.208
+      },
+      "CPT_C": 89,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-48",
+      "comp": {
+        "Cr": 19.27,
+        "Mo": 6.04,
+        "N": 0.203
+      },
+      "CPT_C": 90,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-49",
+      "comp": {
+        "Cr": 19.24,
+        "Mo": 6.14,
+        "N": 0.195
+      },
+      "CPT_C": 89,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-50",
+      "comp": {
+        "Cr": 19.97,
+        "Mo": 6.11,
+        "N": 0.204
+      },
+      "CPT_C": 91,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-51",
+      "comp": {
+        "Cr": 19.86,
+        "Mo": 6.1,
+        "N": 0.214
+      },
+      "CPT_C": 91,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-52",
+      "comp": {
+        "Cr": 19.91,
+        "Mo": 6.1,
+        "N": 0.196
+      },
+      "CPT_C": 85,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-53",
+      "comp": {
+        "Cr": 20,
+        "Mo": 6.13,
+        "N": 0.212
+      },
+      "CPT_C": 91,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-54",
+      "comp": {
+        "Cr": 20.1,
+        "Mo": 6.12,
+        "N": 0.213
+      },
+      "CPT_C": 91,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-55",
+      "comp": {
+        "Cr": 20.17,
+        "Mo": 6.09,
+        "N": 0.208
+      },
+      "CPT_C": 89,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r45-56",
+      "comp": {
+        "Cr": 19.82,
+        "Mo": 6.12,
+        "N": 0.194
+      },
+      "CPT_C": 93,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 45
+    },
+    {
+      "code": "npj2025-r46-57",
+      "comp": {
+        "Cr": 20.06,
+        "Mo": 4.32,
+        "N": 0.1
+      },
+      "CPT_C": 47.5,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 46
+    },
+    {
+      "code": "npj2025-r46-58",
+      "comp": {
+        "Cr": 20.06,
+        "Mo": 4.32,
+        "N": 0.1
+      },
+      "CPT_C": 55,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 46
+    },
+    {
+      "code": "npj2025-r41-59",
+      "comp": {
+        "Cr": 16.39,
+        "Mo": 2.03,
+        "N": 0.034
+      },
+      "CPT_C": 6.9,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 30
+      },
+      "npj_ref": 41
+    },
+    {
+      "code": "npj2025-r41-60",
+      "comp": {
+        "Cr": 17.97,
+        "Mo": 3.1,
+        "N": 0.079
+      },
+      "CPT_C": 26.5,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 3
+      },
+      "npj_ref": 41
+    },
+    {
+      "code": "npj2025-r41-61",
+      "comp": {
+        "Cr": 17.97,
+        "Mo": 3.1,
+        "N": 0.079
+      },
+      "CPT_C": 27.5,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 10
+      },
+      "npj_ref": 41
+    },
+    {
+      "code": "npj2025-r41-62",
+      "comp": {
+        "Cr": 17.97,
+        "Mo": 3.1,
+        "N": 0.079
+      },
+      "CPT_C": 28.45,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 41
+    },
+    {
+      "code": "npj2025-r41-63",
+      "comp": {
+        "Cr": 17.97,
+        "Mo": 3.1,
+        "N": 0.079
+      },
+      "CPT_C": 28.9,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 120
+      },
+      "npj_ref": 41
+    },
+    {
+      "code": "npj2025-r41-64",
+      "comp": {
+        "Cr": 19.84,
+        "Mo": 4.36,
+        "N": 0.055
+      },
+      "CPT_C": 52.5,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 10
+      },
+      "npj_ref": 41
+    },
+    {
+      "code": "npj2025-r41-65",
+      "comp": {
+        "Cr": 19.84,
+        "Mo": 4.36,
+        "N": 0.055
+      },
+      "CPT_C": 54.5,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 30
+      },
+      "npj_ref": 41
+    },
+    {
+      "code": "npj2025-r41-66",
+      "comp": {
+        "Cr": 19.81,
+        "Mo": 5.88,
+        "N": 0.19
+      },
+      "CPT_C": 86,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 30
+      },
+      "npj_ref": 41
+    },
+    {
+      "code": "npj2025-r41-67",
+      "comp": {
+        "Cr": 19.81,
+        "Mo": 5.88,
+        "N": 0.19
+      },
+      "CPT_C": 82,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 30
+      },
+      "npj_ref": 41
+    },
+    {
+      "code": "npj2025-r44-68",
+      "comp": {
+        "Cr": 17.5,
+        "Mo": 2.7,
+        "N": 0.1
+      },
+      "CPT_C": 21.5,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 30
+      },
+      "npj_ref": 44
+    },
+    {
+      "code": "npj2025-r44-69",
+      "comp": {
+        "Cr": 17.5,
+        "Mo": 3.5,
+        "N": 0.1
+      },
+      "CPT_C": 44.5,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 30
+      },
+      "npj_ref": 44
+    },
+    {
+      "code": "npj2025-r44-70",
+      "comp": {
+        "Cr": 20,
+        "Mo": 6.1,
+        "N": 0.2
+      },
+      "CPT_C": 90,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 1,
+        "scan_mV_min": 30
+      },
+      "npj_ref": 44
+    },
+    {
+      "code": "npj2025-r44-71",
+      "comp": {
+        "Cr": 20,
+        "Mo": 6.1,
+        "N": 0.2
+      },
+      "CPT_C": 91,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 3,
+        "scan_mV_min": 30
+      },
+      "npj_ref": 44
+    },
+    {
+      "code": "npj2025-r44-72",
+      "comp": {
+        "Cr": 20,
+        "Mo": 6.1,
+        "N": 0.2
+      },
+      "CPT_C": 90,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 30
+      },
+      "npj_ref": 44
+    },
+    {
+      "code": "npj2025-r44-73",
+      "comp": {
+        "Cr": 20,
+        "Mo": 6.1,
+        "N": 0.2
+      },
+      "CPT_C": 90,
+      "conditions": {
+        "Cl_M": 5,
+        "pH": 7,
+        "scan_mV_min": 30
+      },
+      "npj_ref": 44
+    },
+    {
+      "code": "npj2025-r47-74",
+      "comp": {
+        "Cr": 17.62,
+        "Mo": 2.09,
+        "N": 0.1
+      },
+      "CPT_C": 12.5,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 47
+    },
+    {
+      "code": "npj2025-r29-75",
+      "comp": {
+        "Cr": 17,
+        "Mo": 2,
+        "N": 0.1
+      },
+      "CPT_C": 15,
+      "conditions": {
+        "Cl_M": 0.06,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 29
+    },
+    {
+      "code": "npj2025-r29-76",
+      "comp": {
+        "Cr": 17,
+        "Mo": 2,
+        "N": 0.1
+      },
+      "CPT_C": 12.5,
+      "conditions": {
+        "Cl_M": 0.06,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 29
+    },
+    {
+      "code": "npj2025-r29-77",
+      "comp": {
+        "Cr": 17,
+        "Mo": 2,
+        "N": 0.1
+      },
+      "CPT_C": 11.5,
+      "conditions": {
+        "Cl_M": 0.06,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 29
+    },
+    {
+      "code": "npj2025-r29-78",
+      "comp": {
+        "Cr": 17,
+        "Mo": 2,
+        "N": 0.1
+      },
+      "CPT_C": 10,
+      "conditions": {
+        "Cl_M": 0.06,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 29
+    },
+    {
+      "code": "npj2025-r29-79",
+      "comp": {
+        "Cr": 17,
+        "Mo": 2,
+        "N": 0.1
+      },
+      "CPT_C": 9,
+      "conditions": {
+        "Cl_M": 0.06,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 29
+    },
+    {
+      "code": "npj2025-r29-80",
+      "comp": {
+        "Cr": 17,
+        "Mo": 2,
+        "N": 0.1
+      },
+      "CPT_C": 7.5,
+      "conditions": {
+        "Cl_M": 0.06,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 29
+    },
+    {
+      "code": "npj2025-r28-81",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 8,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 4,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r28-82",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 3.3,
+      "conditions": {
+        "Cl_M": 6,
+        "pH": 4,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r28-83",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 7.1,
+      "conditions": {
+        "Cl_M": 3.5,
+        "pH": 4,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r28-84",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 7.5,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r28-85",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 7.4,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 10,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r28-86",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 5,
+      "conditions": {
+        "Cl_M": 3.5,
+        "pH": 4,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r28-87",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 3.8,
+      "conditions": {
+        "Cl_M": 6,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r28-88",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 2.5,
+      "conditions": {
+        "Cl_M": 6,
+        "pH": 10,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r28-89",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 5.5,
+      "conditions": {
+        "Cl_M": 3.5,
+        "pH": 10,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r28-90",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 9.8,
+      "conditions": {
+        "Cl_M": 1,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r28-91",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 4,
+      "conditions": {
+        "Cl_M": 3.5,
+        "pH": 10,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r28-92",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 5.4,
+      "conditions": {
+        "Cl_M": 6,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r28-93",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 7.9,
+      "conditions": {
+        "Cl_M": 3.5,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r28-94",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 8.1,
+      "conditions": {
+        "Cl_M": 3.5,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r28-95",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 2.15,
+        "N": 0.1
+      },
+      "CPT_C": 8,
+      "conditions": {
+        "Cl_M": 3.5,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 28
+    },
+    {
+      "code": "npj2025-r34-96",
+      "comp": {
+        "Cr": 25.1,
+        "Mo": 0,
+        "N": 0.023
+      },
+      "CPT_C": 33.3,
+      "conditions": {
+        "Cl_M": 3,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 34
+    },
+    {
+      "code": "npj2025-r34-97",
+      "comp": {
+        "Cr": 25.1,
+        "Mo": 0,
+        "N": 0.194
+      },
+      "CPT_C": 47.6,
+      "conditions": {
+        "Cl_M": 3,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 34
+    },
+    {
+      "code": "npj2025-r34-98",
+      "comp": {
+        "Cr": 25,
+        "Mo": 0,
+        "N": 0.325
+      },
+      "CPT_C": 63.5,
+      "conditions": {
+        "Cl_M": 3,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 34
+    },
+    {
+      "code": "npj2025-r52-99",
+      "comp": {
+        "Cr": 17.13,
+        "Mo": 3,
+        "N": 0.1
+      },
+      "CPT_C": 12.5,
+      "conditions": {
+        "Cl_M": 0.06,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 52
+    },
+    {
+      "code": "npj2025-r48-100",
+      "comp": {
+        "Cr": 17.62,
+        "Mo": 2.02,
+        "N": 0.1
+      },
+      "CPT_C": 7.5,
+      "conditions": {
+        "Cl_M": 0.06,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 48
+    },
+    {
+      "code": "npj2025-r48-101",
+      "comp": {
+        "Cr": 17.62,
+        "Mo": 2.02,
+        "N": 0.1
+      },
+      "CPT_C": 12.5,
+      "conditions": {
+        "Cl_M": 0.06,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 48
+    },
+    {
+      "code": "npj2025-r49-102",
+      "comp": {
+        "Cr": 18.1,
+        "Mo": 2.1,
+        "N": 0.1
+      },
+      "CPT_C": 2.5,
+      "conditions": {
+        "Cl_M": 0.1,
+        "pH": 7,
+        "scan_mV_min": 30
+      },
+      "npj_ref": 49
+    },
+    {
+      "code": "npj2025-r50-103",
+      "comp": {
+        "Cr": 19.08,
+        "Mo": 4.05,
+        "N": 0.04
+      },
+      "CPT_C": 42.5,
+      "conditions": {
+        "Cl_M": 0.06,
+        "pH": 7,
+        "scan_mV_min": 60
+      },
+      "npj_ref": 50
+    },
+    {
+      "code": "npj2025-r51-104",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 13.7,
+      "conditions": {
+        "Cl_M": 0.06,
+        "pH": 4,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-105",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 9.3,
+      "conditions": {
+        "Cl_M": 0.63,
+        "pH": 4,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-106",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 9.6,
+      "conditions": {
+        "Cl_M": 1.45,
+        "pH": 4,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-107",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 7.1,
+      "conditions": {
+        "Cl_M": 2.4,
+        "pH": 4,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-108",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 6.4,
+      "conditions": {
+        "Cl_M": 3.73,
+        "pH": 4,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-109",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 14,
+      "conditions": {
+        "Cl_M": 0.06,
+        "pH": 5.5,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-110",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 9.8,
+      "conditions": {
+        "Cl_M": 0.63,
+        "pH": 5.5,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-111",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 9,
+      "conditions": {
+        "Cl_M": 1.45,
+        "pH": 5.5,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-112",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 7.1,
+      "conditions": {
+        "Cl_M": 2.4,
+        "pH": 5.5,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-113",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 6.6,
+      "conditions": {
+        "Cl_M": 3.73,
+        "pH": 5.5,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-114",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 14.1,
+      "conditions": {
+        "Cl_M": 0.06,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-115",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 9.8,
+      "conditions": {
+        "Cl_M": 0.63,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-116",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 9.7,
+      "conditions": {
+        "Cl_M": 1.45,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-117",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 7.4,
+      "conditions": {
+        "Cl_M": 2.4,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-118",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 5.4,
+      "conditions": {
+        "Cl_M": 3.73,
+        "pH": 7,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-119",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 14.2,
+      "conditions": {
+        "Cl_M": 0.06,
+        "pH": 8.5,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-120",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 11,
+      "conditions": {
+        "Cl_M": 0.63,
+        "pH": 8.5,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-121",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 9.4,
+      "conditions": {
+        "Cl_M": 1.45,
+        "pH": 8.5,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-122",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 6.2,
+      "conditions": {
+        "Cl_M": 2.4,
+        "pH": 8.5,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    },
+    {
+      "code": "npj2025-r51-123",
+      "comp": {
+        "Cr": 17.21,
+        "Mo": 2.04,
+        "N": 0.1
+      },
+      "CPT_C": 5.2,
+      "conditions": {
+        "Cl_M": 3.73,
+        "pH": 8.5,
+        "scan_mV_min": 20
+      },
+      "npj_ref": 51
+    }
+  ]
+}
