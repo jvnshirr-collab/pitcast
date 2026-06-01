@@ -122,6 +122,7 @@
       P_f_MPa: P_f_MPa, P_safe_MPa: P_safe_MPa,
       P_f_bar: P_f_MPa * 10, P_safe_bar: P_safe_MPa * 10,
       throughWall: false,
+      screening: B31G_SCREENING,
       ref: method === "b31g"
         ? "ASME B31G-2012 §2 (original 2/3 dL parabolic)."
         : "Kiefner & Vieth 1989 (Modified B31G, 0.85 dL); ASME B31G-2012 Appendix A."
@@ -148,15 +149,26 @@
     return +(0.5 * (lo + hi));
   }
 
+  /** Screening caveat that rides on every B31G result — this is a Level-1
+   *  remaining-strength SCREENING estimate, never an FFS determination. */
+  var B31G_SCREENING = "SCREENING ESTIMATE — NOT a fitness-for-service determination. " +
+    "B31G is a Level-1 screen; high-consequence integrity decisions require a qualified " +
+    "engineer, verified (not vendor-default) inputs, and the full ASME B31G / API 579 " +
+    "procedure. PitCast is an open, unverified screening tool.";
+
   /** Verdict bands for d/t metal loss (B31G screening conventions):
    *  <10% reportable but acceptable; 10–80% requires Level-1 check; ≥80% requires
-   *  immediate action (B31G §3.6 / API 1163 ILI guidance).  Combined with a
-   *  P_safe vs MAOP test to give an operational PASS/REPAIR/IMMEDIATE verdict. */
+   *  immediate action (B31G §3.6 / API 1163 ILI guidance).  Combined with a P_safe
+   *  vs MAOP test to give an operational triage band. These bands are screening
+   *  TRIAGE, not an FFS verdict — every result carries the `screening` caveat. */
   function classify(P_safe_bar, MAOP_bar, depthRatio, throughWall) {
-    if (throughWall || depthRatio >= 0.80) return { status: "IMMEDIATE", note: "≥80% wall loss — replace / repair before re-pressurise (B31G §3.6)." };
-    if (P_safe_bar < MAOP_bar) return { status: "REPAIR", note: "P_safe < MAOP — re-rate, sleeve, or replace." };
-    if (depthRatio >= 0.50) return { status: "MONITOR", note: "50–80% wall loss — frequent re-inspection (≤1 yr typical)." };
-    return { status: "PASS", note: "Within B31G allowable; routine inspection." };
+    var r;
+    if (throughWall || depthRatio >= 0.80) r = { status: "IMMEDIATE", note: "≥80% wall loss — replace / repair before re-pressurise (B31G §3.6)." };
+    else if (P_safe_bar < MAOP_bar) r = { status: "REPAIR", note: "P_safe < MAOP — re-rate, sleeve, or replace." };
+    else if (depthRatio >= 0.50) r = { status: "MONITOR", note: "50–80% wall loss — frequent re-inspection (≤1 yr typical)." };
+    else r = { status: "PASS", note: "Within B31G allowable; routine inspection." };
+    r.screening = B31G_SCREENING;
+    return r;
   }
 
   /** General remaining-life (any uniform CR source).

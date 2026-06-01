@@ -160,13 +160,19 @@ function cptChlorideAdj(Cl_ppm){
 // in practical aqueous service (the test electrolyte boils), so the exact value above that is
 // not meaningful; <=-15 C means it pits at any service temperature.
 const CPT_CEIL = 120, CPT_FLOOR = -15;
+// Honest-precision caveat carried on every CPT result: a SCREENING correlation fit on
+// n=51 ASTM G48 points (leave-one-out MAE 6.58 C). The Student-t prediction interval (se),
+// not the point CPT, is the decision-relevant output — never over-trust a single value.
+const CPT_SCREENING = "SCREENING correlation (CPT = 2.038*PREN_N30 - 32.73), fit on n=51 ASTM G48 " +
+  "points; leave-one-out MAE 6.58 C. The point CPT carries real scatter — read the prediction " +
+  "interval (from se), not the bare value, and confirm critical selections with alloy/heat-specific G48 testing.";
 function pPit(c, Tservice, aged, Cl){
   let mean = cptMean(c) + cptChlorideAdj(Cl), fsig = 0;
   if (aged && aged.t>0){ fsig = sigmaFraction(c, aged.T, aged.t); mean -= C_SIGMA_CPT*fsig*100; }
   const capped = mean > CPT_CEIL;
   mean = Math.max(CPT_FLOOR, Math.min(CPT_CEIL, mean));
   const p = tCDF((Tservice-mean)/cptSE(c), CPT.n - 2);   // Student-t (df=n-2), matches Python
-  return { p, cptLocal: mean, fsig, se: cptSE(c), capped };
+  return { p, cptLocal: mean, fsig, se: cptSE(c), capped, screening: CPT_SCREENING };
 }
 
 // ---- chloride SCC -----------------------------------------------------------
