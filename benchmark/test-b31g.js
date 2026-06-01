@@ -81,5 +81,14 @@ const long = B31G.failurePressure({ D, t, SMYS, L: 600, d, method: 'modb31g' });
 ok(long.z > 50 && long.regime.indexOf('z>50') >= 0, 'Mod-B31G long-defect branch (z>50)');
 near(long.M, 0.032 * long.z + 3.3, 0.01, 'Mod-B31G long M = 0.032 z + 3.3');
 
-console.log((fail ? '✗ ' + fail + ' FAILED, ' : '') + '✓ ' + pass + ' passed (B31G oracle vs ASME B31G-2012 App. B Ex. 1)');
+// ── PRIMARY-LITERATURE cross-validation: Benjamin et al. 2016 (MTI-JIP DB) ───
+//   The engine must reproduce the published B31G failure pressures for the two
+//   single-defect specimens — Int. J. Press. Vessels Pip. 145 (2016) Table 9,
+//   read from the full text. De=458.6 mm, t=7.90 mm, actual yield 639 MPa (Tube 2).
+//   Proves the metal-loss engine matches a peer-reviewed source's own B31G numbers,
+//   not just the ASME worked example. (Engine gives 22.24 / 22.87 vs published 22.2 / 22.9.)
+near(B31G.failurePressure({ D: 458.6, t: 7.90, SMYS: 639, L: 60, d: 3.07, method: 'b31g', SF: 1 }).P_f_MPa, 22.2, 0.4, 'Benjamin IDTS 13 (single BD1) B31G P_f = 22.2 MPa');
+near(B31G.failurePressure({ D: 458.6, t: 7.90, SMYS: 639, L: 30, d: 4.80, method: 'b31g', SF: 1 }).P_f_MPa, 22.9, 0.4, 'Benjamin IDTS 14 (single BD2) B31G P_f = 22.9 MPa');
+
+console.log((fail ? '✗ ' + fail + ' FAILED, ' : '') + '✓ ' + pass + ' passed (B31G oracle vs ASME B31G-2012 App. B Ex. 1 + Benjamin 2016 MTI-JIP)');
 process.exit(fail ? 1 : 0);
