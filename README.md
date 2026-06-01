@@ -56,7 +56,7 @@ The benchmark spans three validation domains, all built on cited measured data:
 |---|---|---|
 | Pitting CPT | n = 51 (Nyby 2021, ASTM G48 basis) | leave-one-out MAE 6.58 °C |
 | CO₂ ensemble | 10 in-scope cases, 20–80 °C, 5 cited sources | models disagree ~10×; envelope brackets ~30% |
-| Corroded-pipe burst | 19 full-scale tests (Benjamin 2016 MTI-JIP DB; Qi 2023) | Mod-B31G mean 0.689× measured, 100% conservative |
+| Corroded-pipe burst | 52 full-scale tests, API 5L X42–X70, OD 273–864 mm (Benjamin 2016 MTI-JIP; Cronin 2000 Waterloo real-corrosion DB; Qi 2023; He & Zhao 2024) | Mod-B31G mean 0.766× measured, 96% conservative (50/52), MAPE 25.6% — matches Zhou & Huang 2012 (n=149) |
 
 Every benchmark point is tabulated, in-envelope, and DOI-cited. See
 `benchmark/INCLUSION-RULES.md` for the data-inclusion rules and the honest rejected-data log.

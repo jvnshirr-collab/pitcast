@@ -207,6 +207,37 @@ precise (non-approximate) values* lives in paywalled journal papers
 is the responsible way to grow `n` — pending library access. Growing the set with
 distributor "approximate" numbers would weaken, not strengthen, the trust claim.
 
+## ✓ Added (2026-06-01) — B31G burst corpus 19 → 52 (METU/open-repo access)
+
+After the external reviewer's "51 points = illusion of precision" feedback and with
+journal/library access available, the burst corpus was grown with **real, cited,
+table-sourced** specimens. **+33 specimens (19 → 52):**
+
+- **Cronin, D.S., *Assessment of Corrosion Defects in Pipelines*, PhD thesis, University of
+  Waterloo, 2000** (UWSpace, **open access**). **32 full-scale burst tests of pipe sections
+  removed from operating pipelines** — single isolated **real corrosion** defects, API 5L
+  **X42 / X46 / X52 / X56**, OD **273–864 mm**. Geometry + measured failure pressure from
+  Table 4.2.1; Cronin's own per-model predictions (B31G/RSTRENG/PCORRC/Ritchie&Last) from the
+  page-182 table. Tables extracted with **PyMuPDF `find_tables()`** (not pdftotext, which
+  scrambled the columns; not figure-reading).
+- **He, P.; Zhao, B., *J. Mar. Sci. Eng.* 12(10):1810 (2024)**, DOI 10.3390/jmse12101810
+  (MDPI, open). **1 X65 hydrostatic burst** (Test Pipeline 1): OD 325, t 12, L 395, d 9.3 mm,
+  measured 11.4 MPa. Tests 2–4 gave only *normalized* pf/p0 → **excluded** (no absolute value).
+
+**Extraction integrity gate (every Cronin row):** each specimen's geometry was independently
+**verified** by reproducing Cronin's own tabulated original-B31G prediction with `b31g.js`.
+All 32 kept rows reproduce it to within a **systematic −2…−6 %** (same sign across every
+specimen — a B31G-variant offset, not a transcription error; random mis-reads would scatter).
+**8 of 40 Cronin rows were excluded** because their defect depth/length did not extract cleanly
+(`depth=0` artifacts) — **integrity over count**, per rule 1/4.
+
+**Result (auto-generated `REPORT.md`):** Modified-B31G mean predicted/measured **0.766**
+(96 % conservative, 50/52; MAPE **25.6 %**), original B31G **0.695** — over a now **grade- and
+diameter-diverse** set. This **independently matches the peer-reviewed 149-specimen model-error
+study** of Zhou, W. & Huang, G.X., *Int. J. Press. Vessels Pip.* 99–100 (2012) 1–8, DOI
+10.1016/j.ijpvp.2012.06.001 (B31G test/predicted 1.473 → 0.679; Modified 1.297 → 0.771) — a
+strong external cross-validation of `b31g.js`, not just a larger `n`.
+
 ## The one rule under all the others
 
 **Never invent a datapoint, DOI, author, or condition.** A benchmark that lies

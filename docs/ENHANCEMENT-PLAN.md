@@ -69,8 +69,8 @@ reproducibility, integrated breadth, and education.
 > **WS3.1 corpus** ✓ — 3 validation domains: pitting CPT (n=51 LOO, MAE 6.58 °C, G48 basis;
 > +254 SMO), CO₂ ensemble (10 in-scope cases over 20–80 °C from 5 independent cited sources;
 > envelope coverage 30 %, lower-bound model brackets mild-condition blank rates), and
-> **corroded-pipe burst** (19 full-scale tests; Mod-B31G mean 0.689× measured, 100 %
-> conservative, MAPE 31 %). Every point tabulated, in-envelope, DOI-cited, and (recent adds)
+> **corroded-pipe burst** (52 full-scale tests, API 5L X42–X70, OD 273–864 mm; Mod-B31G mean 0.766× measured, 96 %
+> conservative, MAPE 25.6 %; matches Zhou & Huang 2012 n=149). Every point tabulated, in-envelope, DOI-cited, and (recent adds)
 > verified against the source PDF; the burst series is **double-verified against its primary
 > source** (Benjamin 2016 MTI JIP DB) + a secondary tabulation. **WS3.2 oracle tests** ✓ — 92
 > gated assertions (`test-uq/b31g/ffs/mr0175.js`) + burst domain, enforced as a pre-deploy gate

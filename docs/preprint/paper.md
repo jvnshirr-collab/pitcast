@@ -79,11 +79,12 @@ design and is not a substitute for alloy- or heat-specific qualification testing
   returning citation-grounded acceptability verdicts.
 - **Corroded-pipe fitness-for-service.** ASME B31G and Modified B31G (RSTRENG)
   [@asmeB31G; @kiefner1989] remaining-strength estimates, including batch assessment
-  of in-line-inspection (ILI) defect lists, **validated against 19 full-scale
-  corroded-pipe burst tests** [@benjamin2016; @efa2020; @qi2023]: Modified-B31G
-  predicts a mean 0.689× the measured burst (100 % conservative across all 19),
-  consistent with the originating MTI-JIP study's own finding that B31G is uniformly
-  conservative (predicted/measured 0.39–0.83) and confirming the method's safe-side
+  of in-line-inspection (ILI) defect lists, **validated against 52 full-scale
+  corroded-pipe burst tests** spanning API 5L X42–X70 and 273–864 mm diameter
+  [@benjamin2016; @efa2020; @qi2023; @cronin2000; @hezhao2024]: Modified-B31G
+  predicts a mean 0.766× the measured burst (96 % conservative, 50/52; MAPE 25.6 %),
+  independently matching the 149-specimen model-error study of @zhou2012 (B31G
+  predicted/measured 0.679, Modified 0.771) and confirming the method's safe-side
   bias.
 - **Glass-box + education.** Every engine exposes its equation, citation, validity
   envelope, and uncertainty; an integrated "Learn" track provides live worked-example
@@ -94,7 +95,7 @@ design and is not a substitute for alloy- or heat-specific qualification testing
 All headline numbers regenerate from `node benchmark/run.js` using only cited
 in-repository data, now spanning **three validation domains** — pitting CPT (n=51
 leave-one-out, MAE 6.58 °C), the CO\textsubscript{2} ensemble (independent in-envelope
-cases), and **corroded-pipe burst tests** (19 measured bursts vs B31G). The
+cases), and **corroded-pipe burst tests** (52 measured bursts vs B31G). The
 load-bearing engines also carry literature-anchored regression / oracle suites — the
 ASME B31G Appendix-B worked example
 [@asmeB31G], the ISO 15156-2 Figure 1 region boundaries [@iso15156], and the NACE
