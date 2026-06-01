@@ -219,7 +219,7 @@ function renderAssess(){
     </div>
     ${aEnvCard}
     ${(!oos && (_pn30 < PitCast.cptConstants.prenMin || _pn30 > PitCast.cptConstants.prenMax)) ? `<div class="cdnote">⚠ EXTRAPOLATION — PREN<sub>N30</sub> ${_pn30.toFixed(0)} is outside the Nyby 2021 calibration range (${PitCast.cptConstants.prenMin}–${PitCast.cptConstants.prenMax}); the CPT value is extrapolated beyond the fitted data — indicative only.</div>` : ""}
-    ${oos ? "" : `<div style="margin:8px 0;padding:7px 10px;font-size:12px;line-height:1.5;color:var(--dim);border-left:3px solid #22c55e;background:rgba(34,197,94,.06);border-radius:4px">✓ CPT model validated — leave-one-out MAE 6.58 °C on n=51 cited records (reproducible: <code>node benchmark/run.js</code>). The ±${ci.toFixed(0)} °C above is the 90% prediction band.</div>`}
+    ${oos ? "" : `<div style="margin:8px 0;padding:7px 10px;font-size:12px;line-height:1.5;color:var(--dim);border-left:3px solid #22c55e;background:rgba(34,197,94,.06);border-radius:4px">✓ CPT model validated — leave-one-out MAE 6.58 °C on n=51 cited records (reproducible: <code>node benchmark/run.js</code>). The ±${ci.toFixed(0)} °C above is the 90% prediction band — <b>read that interval, not the bare CPT, as the answer.</b> This is a screening correlation fit on <b>n=51</b> cited points; confirm any critical alloy selection with alloy/heat-specific G48 testing.</div>`}
     <div class="bars">
       ${bar("Pitting  P(CPT < service T)", r.pPit)}
       ${bar("Chloride-SCC", r.pScc)}
@@ -1831,6 +1831,7 @@ function renderFFS(){
   // remaining-thickness ratio Rt ≥ 0.20 (Part 5 §5.4.2.2); below that → escalate to L2.
   var fEnvCard = (window.UQ && p5 && !p5.error && p5.Rt != null) ? envBars(UQ.envelopeCheck({Rt: p5.Rt}, {Rt:[0.20, 1.0]})) : "";
   host.innerHTML =
+    '<div class="cdnote" style="border-left:3px solid #fbbf24">⚠ These API 579 <b>Level-1 results are screening estimates</b>, not fitness-for-service determinations. A real FFS run needs verified (not vendor-default) thickness / flaw inputs, the full Part 4–7 procedure, and a qualified engineer to own the result. PitCast is an open, unverified screening tool.</div>' +
     '<div class="iso ' + cls(p5.passes) + '"><b>Part 5 LTA Level 1 — ' + (p5.passes === true ? 'PASS' : p5.passes === false ? 'FAIL' : 'GATES FAIL') + '</b><br>' +
       'Rt = <b>' + nv(p5.Rt, 3) + '</b> · λ = <b>' + nv(p5.lambda, 3) + '</b> · Mt = <b>' + nv(p5.Mt, 3) + '</b> · RSF = <b>' + nv(p5.RSF, 3) + '</b> (RSFa = ' + p5.RSFa + ')<br>' +
       'MAWP reduced: <b>' + nv(p5.MAWP_reduced_bar, 1) + ' bar</b><br>' +
