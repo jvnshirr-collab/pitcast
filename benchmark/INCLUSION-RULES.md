@@ -184,6 +184,29 @@ Benjamin, Freire, Vieira & Cunha, *Int. J. Press. Vessels Pip.* 145 (2016) 41–
 The burst data is now traced to, and verified against, its origin — the strongest provenance
 any point in the corpus has.
 
+## Considered, not added (2026-06-01) — open CPT sweep after external feedback
+
+A reviewer (asset-integrity/RBI practitioner) flagged that "extrapolating a pitting
+model from 51 data points risks an illusion of precision." Acting on it, the open web
+was swept for more cited, on-basis G48 CPT data:
+
+- **Outokumpu** CPT article — only the single 254 SMO example (already in the corpus).
+- **Rolled Alloys** ferric-chloride table (316L, 2205, 2507, AL-6XN, Zeron 100, 625,
+  C-276; CPT 17.8 → 112.9 °C) — **NOT added.** It is **G48 Method C** (vs the
+  correlation's Method A/E ferric-chloride basis), the values are explicitly labelled
+  **"approximate,"** and **no per-grade composition is stated** — adding them would mean
+  back-filling Cr/Mo/N from nominal specs (rule 4) on top of an approximate, off-method
+  number. Padding `n` with such points is precisely the *illusion of precision* the
+  feedback warns against. (Informally, the correlation predicts these seven within
+  ~5 °C MAE using nominal compositions — consistent with the LOO 6.58 °C, reassuring but
+  **not** benchmark-grade.)
+
+**Conclusion:** the admissible, on-basis G48 CPT data *with stated compositions and
+precise (non-approximate) values* lives in paywalled journal papers
+(ScienceDirect / Elsevier) reachable only via the METU library (IP/login-gated). That
+is the responsible way to grow `n` — pending library access. Growing the set with
+distributor "approximate" numbers would weaken, not strengthen, the trust claim.
+
 ## The one rule under all the others
 
 **Never invent a datapoint, DOI, author, or condition.** A benchmark that lies
