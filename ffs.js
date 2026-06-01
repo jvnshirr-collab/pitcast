@@ -136,6 +136,7 @@
       recommendation: !gatesPass ? "Level 1 applicability gates failed — escalate to Level 2"
         : pass ? "Level 1 PASS — use design MAWP"
                : "Level 1 FAIL — reduce MAWP per Eq 2.2 or escalate to Level 2",
+      screening: FFS_SCREENING,
       ref: "API 579-1/ASME FFS-1 (2021) Part 5 §5.4 Level 1; Folias Mt polynomial Annex 5A"
     };
   }
@@ -210,6 +211,7 @@
         : RSF == null
           ? "Type 4 — Level 1 not applicable; escalate to Level 2 (Eq 6.13 pit-couple) or remediate"
           : "Level 1 FAIL — reduce MAWP to " + (MAWP_reduced_bar||0).toFixed(1) + " bar per Eq 2.2",
+      screening: FFS_SCREENING,
       ref: "API 579-1/ASME FFS-1 (2021) Part 6 §6.4 Level 1 + ASTM G46-94(2018) Fig.2 pit "
          + "classification (Type 1-4). RSF screening thresholds from Cenosco IMS public "
          + "training tabulation; conservative."
@@ -259,10 +261,18 @@
       recommendation: pass
         ? "Level 2 PASS — continue service at design MAWP"
         : "Level 2 FAIL — reduce MAWP to " + (MAWP_reduced_bar||0).toFixed(1) + " bar OR escalate to Level 3 elastic-plastic",
+      screening: FFS_SCREENING,
       ref: "API 579-1/ASME FFS-1 (2021) Part 6 §6.4.3 Level 2 + Annex 6A Eq 6.A.4 pit-couple "
          + "stress-concentration. Mt_pit = 1/sqrt(1 - (d/s)²) for two adjacent equal pits."
     };
   }
+
+  // FFS screening caveat — rides on every API 579 result. FFS governs high-consequence
+  // safety decisions; an unverified screen must never be read as the determination itself.
+  var FFS_SCREENING = "SCREENING ESTIMATE — NOT a fitness-for-service determination. " +
+    "API 579 FFS governs high-consequence safety decisions; this Level-1/2 screen requires a " +
+    "qualified engineer, verified inputs, and the full API 579-1/ASME FFS-1 procedure before any " +
+    "run/repair/replace action. PitCast is an open, unverified screening tool.";
 
   // ===========================================================================
   // Part 7 — HIC / SOHIC / Hydrogen Blistering
@@ -320,6 +330,7 @@
       verdict: verdict,
       action: action,
       recommendation: action,
+      screening: FFS_SCREENING,
       ref: "API 579-1/ASME FFS-1 (2021) Part 7 §7.4 Level 1 + NACE TM0284-2016 acceptance "
          + "criteria CLR ≤ 15 %, CTR ≤ 5 %, CSR ≤ 2 % per NACE MR0103 / ISO 15156-2 §A.2."
     };
