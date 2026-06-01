@@ -2,63 +2,132 @@
   "_README": "Machine-runnable structured inputs for the cited CO2 cases in ../data/validations.json. Values transcribed faithfully from each case's free-text 'conditions' string; the cited source/DOI/measured value live in validations.json (single source of truth). 'scope' tags model applicability: cs_aqueous = valid carbon-steel aqueous CO2 test; tlc = top-of-line / condensing regime the bulk models are NOT designed for; cra_out_of_scope = a corrosion-resistant alloy that passivates, so carbon-steel CO2 models do not apply. MAE/RMSE are computed only over cs_aqueous cases.",
   "cases": {
     "Nesic 2007 - 5% CO2 flow-loop at 60 C": {
-      "T_C": 60, "pCO2_bar": 5, "pH": 5.0, "u_m_s": 1.0, "d_pipe_m": 0.015,
-      "Fe2_ppm": 5, "scope": "cs_aqueous"
+      "T_C": 60,
+      "pCO2_bar": 5,
+      "pH": 5,
+      "u_m_s": 1,
+      "d_pipe_m": 0.015,
+      "Fe2_ppm": 5,
+      "scope": "cs_aqueous"
     },
     "Tengiz (KZ) sour-sweet field - Kahyarian 2017": {
-      "T_C": 92, "pCO2_bar": 6.5, "pH": 4.0, "u_m_s": 3.5, "d_pipe_m": 0.30,
-      "Fe2_ppm": 40, "water_cut": 0.45, "oil_type": "crude", "scope": "cs_aqueous",
+      "T_C": 92,
+      "pCO2_bar": 6.5,
+      "pH": 4,
+      "u_m_s": 3.5,
+      "d_pipe_m": 0.3,
+      "Fe2_ppm": 40,
+      "water_cut": 0.45,
+      "oil_type": "crude",
+      "scope": "cs_aqueous",
       "note": "sour-sweet; FeS co-film usually lowers the sweet-model rate"
     },
     "Top-of-line corrosion - Singer 2017": {
-      "T_C": 75, "pCO2_bar": 8, "pH": 3.8, "u_m_s": 0.05, "d_pipe_m": 0.10,
-      "Fe2_ppm": 2, "scope": "tlc",
+      "T_C": 75,
+      "pCO2_bar": 8,
+      "pH": 3.8,
+      "u_m_s": 0.05,
+      "d_pipe_m": 0.1,
+      "Fe2_ppm": 2,
+      "scope": "tlc",
       "note": "top-of-line condensing water; bulk flowline models are not TLC models"
     },
     "13Cr OCTG threshold - Mishina 2014": {
-      "T_C": 130, "pCO2_bar": 30, "pH": 3.8, "u_m_s": 2.0, "d_pipe_m": 0.10,
-      "Fe2_ppm": 50, "scope": "cra_out_of_scope",
+      "T_C": 130,
+      "pCO2_bar": 30,
+      "pH": 3.8,
+      "u_m_s": 2,
+      "d_pipe_m": 0.1,
+      "Fe2_ppm": 50,
+      "scope": "cra_out_of_scope",
       "note": "13Cr CRA passivates above ~120 C; carbon-steel CO2 models do not apply"
     },
     "HP/HT well @ 175 C, 100 bar CO2 - Nyborg 2007": {
-      "T_C": 175, "pCO2_bar": 100, "pH": 4.5, "u_m_s": 5.0, "d_pipe_m": 0.10,
-      "Fe2_ppm": 60, "scope": "cs_aqueous",
+      "T_C": 175,
+      "pCO2_bar": 100,
+      "pH": 4.5,
+      "u_m_s": 5,
+      "d_pipe_m": 0.1,
+      "Fe2_ppm": 60,
+      "scope": "cs_aqueous",
       "note": "protective FeCO3 scale dominates at high T"
     },
     "Elgaddafi 2015 - autoclave 80 C, 4.1 bar CO2": {
-      "T_C": 80, "pCO2_bar": 4.1, "u_m_s": 0.1, "d_pipe_m": 0.089,
-      "Fe2_ppm": 10, "scope": "cs_aqueous",
+      "T_C": 80,
+      "pCO2_bar": 4.1,
+      "u_m_s": 0.1,
+      "d_pipe_m": 0.089,
+      "Fe2_ppm": 10,
+      "scope": "cs_aqueous",
       "note": "stagnant 2-L autoclave (8.9 cm dia); 187 h steady-state LPR; scale-forming at 80 C; pH omitted -> computed in-situ (Crolet-Bonis), no added bicarbonate"
     },
     "Elgaddafi 2015 - autoclave 80 C, 6.2 bar CO2": {
-      "T_C": 80, "pCO2_bar": 6.2, "u_m_s": 0.1, "d_pipe_m": 0.089,
-      "Fe2_ppm": 10, "scope": "cs_aqueous",
+      "T_C": 80,
+      "pCO2_bar": 6.2,
+      "u_m_s": 0.1,
+      "d_pipe_m": 0.089,
+      "Fe2_ppm": 10,
+      "scope": "cs_aqueous",
       "note": "stagnant 2-L autoclave; 187 h steady-state LPR; scale-forming at 80 C; pH computed in-situ"
     },
     "Peng 2024 - L360N blank, CO2-saturated 5% NaCl, 40 C": {
-      "T_C": 40, "pCO2_bar": 0.93, "u_m_s": 0.1, "d_pipe_m": 0.05,
-      "Fe2_ppm": 10, "scope": "cs_aqueous",
+      "T_C": 40,
+      "pCO2_bar": 0.93,
+      "u_m_s": 0.1,
+      "d_pipe_m": 0.05,
+      "Fe2_ppm": 10,
+      "scope": "cs_aqueous",
       "note": "CO2-saturated at 1 atm (pCO2 ~ 1 - P_H2O(40C) ~ 0.93 bar); 5 wt% NaCl; 72 h weight-loss; quiescent cell; pH omitted -> computed in-situ"
     },
     "Aristia 2019 - St-37 geothermal brine, 70 C, CO2 purged": {
-      "T_C": 70, "pCO2_bar": 0.69, "pH": 4, "u_m_s": 0.1, "d_pipe_m": 0.05,
-      "bicarbonate_mg_l": 15, "Fe2_ppm": 5, "scope": "cs_aqueous",
+      "T_C": 70,
+      "pCO2_bar": 0.69,
+      "pH": 4,
+      "u_m_s": 0.1,
+      "d_pipe_m": 0.05,
+      "bicarbonate_mg_l": 15,
+      "Fe2_ppm": 5,
+      "scope": "cs_aqueous",
       "note": "CO2 purged at 1 atm (pCO2 ~ 1 - P_H2O(70C) ~ 0.69 bar); low-Cl geothermal brine; 7 d; pH 4 measured"
     },
     "Tang 2018 - Q235 blank, CO2-saturated 3.5% NaCl, 60 C": {
-      "T_C": 60, "pCO2_bar": 0.8, "u_m_s": 0.1, "d_pipe_m": 0.05,
-      "Fe2_ppm": 10, "scope": "cs_aqueous",
+      "T_C": 60,
+      "pCO2_bar": 0.8,
+      "u_m_s": 0.1,
+      "d_pipe_m": 0.05,
+      "Fe2_ppm": 10,
+      "scope": "cs_aqueous",
       "note": "CO2-saturated at 1 atm (pCO2 ~ 0.8 bar at 60 C); 3.5% NaCl; 72 h; measured converted from 0.345 g/m2/h -> 0.385 mm/y; pH computed in-situ"
     },
     "Imidazoline RSC 2019 - Q235 blank, CO2-saturated 2% NaCl, 20 C": {
-      "T_C": 20, "pCO2_bar": 0.99, "pH": 4.11, "u_m_s": 0.1, "d_pipe_m": 0.05,
-      "Fe2_ppm": 10, "scope": "cs_aqueous",
+      "T_C": 20,
+      "pCO2_bar": 0.99,
+      "pH": 4.11,
+      "u_m_s": 0.1,
+      "d_pipe_m": 0.05,
+      "Fe2_ppm": 10,
+      "scope": "cs_aqueous",
       "note": "CO2-saturated at 1 atm (pCO2 ~ 1 - P_H2O(20C) ~ 0.99 bar); 2 wt% NaCl; pH 4.11 measured; 72 h weight-loss; quiescent 500 mL cell; Q235"
     },
     "Imidazoline RSC 2019 - Q235 blank, CO2-saturated 2% NaCl, 60 C": {
-      "T_C": 60, "pCO2_bar": 0.81, "pH": 4.11, "u_m_s": 0.1, "d_pipe_m": 0.05,
-      "Fe2_ppm": 10, "scope": "cs_aqueous",
+      "T_C": 60,
+      "pCO2_bar": 0.81,
+      "pH": 4.11,
+      "u_m_s": 0.1,
+      "d_pipe_m": 0.05,
+      "Fe2_ppm": 10,
+      "scope": "cs_aqueous",
       "note": "CO2-saturated at 1 atm (pCO2 ~ 1 - P_H2O(60C) ~ 0.81 bar); 2 wt% NaCl; pH 4.11 measured; 72 h weight-loss; quiescent cell; Q235"
+    },
+    "Coatings 2025 - blank, CO2-sat chloride-carbonate brine 60 C (AISI 1018)": {
+      "T_C": 60,
+      "pCO2_bar": 0.8,
+      "u_m_s": 0.1,
+      "d_pipe_m": 0.05,
+      "bicarbonate_mg_l": 73,
+      "Fe2_ppm": 10,
+      "scope": "cs_aqueous",
+      "note": "Uninhibited blank, AISI 1018, 30 g/L NaCl + 0.1 g/L NaHCO3 + 0.1 g/L CaCO3, CO2-saturated at 1 atm (pCO2 ~ 1 - P_H2O(60C) ~ 0.8 bar), 72 h mass loss, quiescent; pH computed in-situ. Coatings 15(1):93 (2025), DOI 10.3390/coatings15010093."
     }
   }
 }

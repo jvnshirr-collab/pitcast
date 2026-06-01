@@ -3,7 +3,7 @@
     "domain": "CO2",
     "case": "Nesic 2007 - 5% CO2 flow-loop at 60 C",
     "conditions": "T 60 C, pCO2 5 bar, pH 5.0, flow 1.0 m/s, 15 mm pipe, Fe2+ 5 ppm, 1 wt% NaCl, no scale, no inhibitor",
-    "measured": 2.0,
+    "measured": 2,
     "units": "mm/y",
     "uncertainty": 0.6,
     "source": "Nesic S., Corrosion Sci. 49 (2007) 4308; Ohio U flow-loop",
@@ -27,7 +27,7 @@
     "conditions": "T 75 C, pCO2 8 bar, pH 3.8, gas velocity 0.05 m/s, 100 mm pipe, Fe2+ 2 ppm, condensing water, no buffering",
     "measured": 3.2,
     "units": "mm/y",
-    "uncertainty": 1.0,
+    "uncertainty": 1,
     "source": "Singer M., Camacho A., Brown B., Nesic S., Corrosion 73 (2017) 1030",
     "doi": null,
     "note": "Condensing-water TLC; very low Fe2+ + no buffering = aggressive. Ported verbatim from austenite co2.ts CO2_VALIDATIONS (singer-tlc-2017)."
@@ -190,7 +190,7 @@
     "domain": "CRA",
     "case": "2205 (S31803/S32205) duplex - CPT in acidified ferric chloride",
     "conditions": "Acidified ferric chloride (ASTM G48 family), standard immersion method; 22Cr-5Ni-3.2Mo-0.2N duplex",
-    "measured": 40.0,
+    "measured": 40,
     "units": "degC",
     "uncertainty": null,
     "source": "Hoseinpoor M., Momeni M., Moayed M.H., Davoodi A., Corrosion Sci. 80 (2014) 197",
@@ -201,11 +201,22 @@
     "domain": "CRA",
     "case": "254 SMO (S31254, 6Mo) - CPT by ASTM G48 Method E",
     "conditions": "ASTM G48 Method E (6% FeCl3 + 1% HCl, ferric-chloride immersion), 24 h; 20Cr-18Ni-6.1Mo-0.2N",
-    "measured": 65.0,
+    "measured": 65,
     "units": "degC",
     "uncertainty": null,
     "source": "Outokumpu, 'Testing stainless steel for resistance to pitting corrosion' (2023)",
     "doi": null,
     "note": "On-basis ASTM G48 Method E CPT (65 C) from the alloy's originator (Outokumpu); the same source gives the electrochemical ASTM G150 CPT as 85 C, consistent with the 86.49 C electrochemical row above. First high-PREN (6Mo) point on the G48 basis the correlation predicts. Manufacturer technical source (labelled, stable; no DOI): https://www.outokumpu.com/en/expertise/2023/testing-stainless-steel-for-resistance-to-pitting-corrosion"
+  },
+  {
+    "domain": "CO2",
+    "case": "Coatings 2025 - blank, CO2-sat chloride-carbonate brine 60 C (AISI 1018)",
+    "conditions": "T 60 C, CO2-saturated at 1 atm (pCO2 ~0.8 bar), 30 g/L NaCl + 0.1 g/L NaHCO3 + 0.1 g/L CaCO3, AISI 1018, 72 h mass loss, quiescent; pH computed in-situ",
+    "measured": 1.57,
+    "units": "mm/y",
+    "uncertainty": 0.1,
+    "source": "Coatings 15(1):93 (2025) - uninhibited (blank) corrosion rate v0 (oleic-acid-imidazoline/CeCl3 inhibitor study)",
+    "doi": "10.3390/coatings15010093",
+    "note": "Blank (no-inhibitor) weight-loss rate of AISI 1018 in CO2-saturated simulated oilfield brine (chloride-carbonate). In-envelope (T 60 C, pCO2 ~1 bar). Distinct from existing 60 C NaCl cases (chloride-carbonate brine, higher salinity)."
   }
 ]

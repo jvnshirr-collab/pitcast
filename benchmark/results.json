@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-06-01T12:46:41.471Z",
+  "generated_utc": "2026-06-01T13:24:46.369Z",
   "about": "PitCast reproducible open benchmark v0 — built only on cited in-repo data.",
   "cpt_leave_one_out": {
     "basis": "ASTM G48-type FeCl3 immersion (headline); all-method LOO shown for transparency",
@@ -413,39 +413,39 @@
     "on_basis_MAE_C": 3.53
   },
   "co2_ensemble": {
-    "n_cases_total": 12,
-    "n_cases_in_scope_cs": 10,
-    "envelope_coverage_in_scope": 0.3,
+    "n_cases_total": 13,
+    "n_cases_in_scope_cs": 11,
+    "envelope_coverage_in_scope": 0.36,
     "per_model_error_in_scope": [
       {
         "id": "DWM-1975",
-        "MAE_mmpy": 223.43,
-        "RMSE_mmpy": 667.31,
-        "bias_mmpy": 223.43
+        "MAE_mmpy": 203.34,
+        "RMSE_mmpy": 636.26,
+        "bias_mmpy": 203.34
       },
       {
         "id": "DWM-1995",
-        "MAE_mmpy": 1.12,
-        "RMSE_mmpy": 1.89,
-        "bias_mmpy": 1.09
+        "MAE_mmpy": 1.13,
+        "RMSE_mmpy": 1.84,
+        "bias_mmpy": 0.88
       },
       {
         "id": "NORSOK",
-        "MAE_mmpy": 3.03,
-        "RMSE_mmpy": 3.51,
-        "bias_mmpy": 2.84
+        "MAE_mmpy": 2.87,
+        "RMSE_mmpy": 3.38,
+        "bias_mmpy": 2.46
       },
       {
         "id": "NESC",
-        "MAE_mmpy": 4.74,
-        "RMSE_mmpy": 7.36,
-        "bias_mmpy": 4.73
+        "MAE_mmpy": 4.38,
+        "RMSE_mmpy": 7.02,
+        "bias_mmpy": 4.23
       },
       {
         "id": "FreeCorp",
-        "MAE_mmpy": 51.39,
-        "RMSE_mmpy": 127.23,
-        "bias_mmpy": 51.39
+        "MAE_mmpy": 46.87,
+        "RMSE_mmpy": 121.31,
+        "bias_mmpy": 46.87
       }
     ],
     "cases": [
@@ -940,6 +940,47 @@
           }
         ],
         "source": "Corrosion inhibition of mild steel by an imidazoline hydrolysate in CO2-saturated solution, RSC Adv. 9 (2019), Table 1"
+      },
+      {
+        "case": "Coatings 2025 - blank, CO2-sat chloride-carbonate brine 60 C (AISI 1018)",
+        "scope": "cs_aqueous",
+        "note": "Uninhibited blank, AISI 1018, 30 g/L NaCl + 0.1 g/L NaHCO3 + 0.1 g/L CaCO3, CO2-saturated at 1 atm (pCO2 ~ 1 - P_H2O(60C) ~ 0.8 bar), 72 h mass loss, quiescent; pH computed in-situ. Coatings 15(1):93 (2025), DOI 10.3390/coatings15010093.",
+        "measured_mmpy": 1.57,
+        "uncertainty_mmpy": 0.1,
+        "ensemble_min_mmpy": 0.24,
+        "ensemble_max_mmpy": 4,
+        "spread_x": 16.6,
+        "measured_in_envelope": true,
+        "best_model": "NESC",
+        "best_model_cr_mmpy": 0.82,
+        "per_model": [
+          {
+            "id": "DWM-1975",
+            "cr_mmpy": 4,
+            "err_mmpy": 2.43
+          },
+          {
+            "id": "DWM-1995",
+            "cr_mmpy": 0.3,
+            "err_mmpy": -1.27
+          },
+          {
+            "id": "NORSOK",
+            "cr_mmpy": 0.24,
+            "err_mmpy": -1.33
+          },
+          {
+            "id": "NESC",
+            "cr_mmpy": 0.82,
+            "err_mmpy": -0.75
+          },
+          {
+            "id": "FreeCorp",
+            "cr_mmpy": 3.24,
+            "err_mmpy": 1.67
+          }
+        ],
+        "source": "Coatings 15(1):93 (2025) - uninhibited (blank) corrosion rate v0 (oleic-acid-imidazoline/CeCl3 inhibitor study)"
       }
     ]
   },
