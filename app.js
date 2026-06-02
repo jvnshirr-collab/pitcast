@@ -318,7 +318,17 @@ function gbox(eq, cite, tier){
 }
 // Compact validation-tier chip for the supporting corrosion engines (P2 2a:
 // every primary output shows its validation tier + worked-example anchor).
-function tierTag(v){ return '<div style="margin:6px 0 0;font-size:11px;color:var(--dim)">✓ <b style="color:#2dd4bf">Validation tier T2</b> · ' + v + ' — docs/vv/SVVP.md</div>'; }
+// Honest validation tier (wired to docs/ENGINE-STATUS.md): Validated = checked vs cited
+// measured data; Standard-reproducing = implements a named standard, not independently validated;
+// Screening-only = heuristic on cited standards, NOT validated. Default is Standard-reproducing.
+function tierTag(basis, tier){
+  var T = ({
+    validated: { ic:"✅", lab:"Validated",            c:"#22c55e", t:"checked against cited measured data" },
+    standard:  { ic:"📐", lab:"Standard-reproducing", c:"#2dd4bf", t:"reproduces the cited standard — not independently validated" },
+    screening: { ic:"🔎", lab:"Screening-only",       c:"#fbbf24", t:"heuristic on cited standards — NOT validated; refer to testing" }
+  })[tier || "standard"];
+  return '<div style="margin:6px 0 0;font-size:11px;color:var(--dim)">' + T.ic + ' <b style="color:' + T.c + '">' + T.lab + '</b> · ' + T.t + ' · ' + basis + ' — docs/ENGINE-STATUS.md</div>';
+}
 // Education "show your work": step-by-step worked arithmetic with the user's actual
 // inputs plugged in (PLAN-differentiation P3-3c). Distinct from gbox (symbolic equation).
 function showWork(title, steps){
@@ -585,7 +595,7 @@ function renderCPAC(){
         <br><span style="color:var(--dim);font-size:12px">${gc.env} · ${gc.T_C}°C · Cl ${gc.Cl_ppm.toFixed(0)} ppm · Tafel: ba ${gc.ba_anode_mV_dec} / bc ${gc.bc_cathode_mV_dec} mV·dec⁻¹ · i₀ anode ${gc.i0_anode_Am2.toExponential(0)} A/m² · EW ${gc.EW_anode} g/eq · ρ ${gc.rho_anode_g_cm3} g/cm³ · flow ${gc.flow} (i_lim ${gc.i_lim_cathode_Am2} A/m²)${gc.anode_source?` · anode src ${gc.anode_source}`:""}${gc.cathode_source?` · cath src ${gc.cathode_source}`:""}</span>${mtcLine}
         <br>${gc.note}</div>
         ${evansSvg}
-        <div class="explain"><span style="color:var(--dim)">${gc.ref}</span></div>${tierTag("ASTM G102 mixed-potential + LaQue marine 316L/CS bolt ~1.16 mm/yr reproduced")}`;})()}
+        <div class="explain"><span style="color:var(--dim)">${gc.ref}</span></div>${tierTag("ASTM G102 mixed-potential method; E_corr/Tafel are family typicals (not measured)","screening")}`;})()}
     ${(()=>{ if(!window.Groundbed) return ""; const sb=window.Groundbed.sundeMulti({rho_ohm_m:+gv("gb_rho"),L_m:+gv("gb_L"),d_m:(+gv("gb_d"))/1000,s_m:+gv("gb_s"),n:+gv("gb_n")});
       if(sb.error) return "";
       const cd=window.Groundbed.currentDemand({R_bed_ohm:sb.R_ohm,V_driving:+gv("gb_V")});
@@ -836,17 +846,17 @@ function renderIntegrity(){
         ${u.inWindow?`Drivers: T factor ${u.factors.temperature.toFixed(2)} · insulation ${u.factors.insulation.toFixed(2)} (${u.categories.insulation}) · jacket ${u.factors.jacket.toFixed(2)} (${u.categories.jacket}) · coating ${u.factors.coating.toFixed(2)} (${u.categories.coating}) · ambient ${u.factors.ambient.toFixed(2)} (${u.categories.ambient}) · age ${u.factors.age.toFixed(2)} ${u.cyclic?"· cyclic ×1.5":""}.`:""}
         ${propsLine}
         ${warnBlock}</div>${cuiRisk}
-        <div class="explain"><span style="color:var(--dim)">${u.ref}</span></div>${tierTag("API 583 §4.3 + ASTM C871 leachable-Cl patterns reproduced")}`;})()}
+        <div class="explain"><span style="color:var(--dim)">${u.ref}</span></div>${tierTag("API RP 583 / 581 + NACE SP0198 factor model (author-assembled)","screening")}`;})()}
     ${(()=>{ if(!window.MIC) return ""; const mr=window.MIC.risk({T_C:+gv("m_T"),oxygen:gv("m_o2"),nutrient:gv("m_n"),sulphate_mgL:+gv("m_so4"),flow:gv("m_flow"),biocide:gv("m_b")});
       const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[mr.level]||"within";
       const fam=mr.families?mr.families.map(f=>f.name+" "+f.score.toFixed(2)).join(" · "):"";
       return `<div class="iso ${cls}"><b>MIC risk — ${mr.level.toUpperCase()}</b> ${mr.inWindow?`(${mr.region})`:""}<br>
         Dominant: <b>${mr.dominant.split("—")[0].trim()}</b>. Total score ${mr.score.toFixed(2)}. ${mr.recommendation}
         ${mr.inWindow?`<br>Family scores: ${fam}.`:""}</div>
-        <div class="explain"><span style="color:var(--dim)">${mr.ref}</span></div>${tierTag("NACE SP0775 / TM0194 / TM0212 family classification reproduced")}`;})()}
+        <div class="explain"><span style="color:var(--dim)">${mr.ref}</span></div>${tierTag("NACE TM0194/TM0212/SP0775 factor model (author-assembled)","screening")}`;})()}
     ${(()=>{ if(!window.HIC) return ""; const hr=window.HIC.risk({pH2S_kPa:+gv("h_pH2S"),pH:+gv("h_pH"),S_wt:+gv("h_S"),HV:+gv("h_HV"),waterCut:+gv("h_wc"),stress:+gv("h_stress")});
       if(!hr.active) return `<div class="iso within"><b>HIC / SOHIC — INACTIVE</b><br>${hr.mech}</div>
-        <div class="explain"><span style="color:var(--dim)">${hr.ref}</span></div>${tierTag("NACE MR0103-2018 §4 + TM0284-2016 + ISO 15156-2 envelope reproduced")}`;
+        <div class="explain"><span style="color:var(--dim)">${hr.ref}</span></div>${tierTag("NACE MR0103/TM0284 + ISO 15156-2 factor model (author-assembled)","screening")}`;
       const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[hr.level]||"within";
       const hicRisk = riskBar([{name:"pH₂S", value:hr.pH2S_kPa, dangerLo:0.34, dangerHi:null, unit:"kPa", dangerLabel:"sour / HIC-susceptible", axisMin:0, axisMax:Math.max(2,hr.pH2S_kPa*1.3)},{name:"in-situ pH", value:hr.pH, dangerLo:null, dangerHi:5, unit:"", dangerLabel:"low-pH HIC severity", axisMin:3, axisMax:8}]);
       return `<div class="iso ${cls}"><b>HIC / SOHIC — ${hr.level.toUpperCase()}</b> · ${hr.dominant} dominant<br>
@@ -854,7 +864,7 @@ function renderIntegrity(){
         Drivers: pH₂S ${hr.factors.pH2S.toFixed(2)} · pH ${hr.factors.pH.toFixed(2)} · S ${hr.factors.S.toFixed(2)} · HV ${hr.factors.HV.toFixed(2)} · water ${hr.factors.water.toFixed(2)}.
         <br><b>Mechanism:</b> ${hr.mechanism}
         <br><b>Mitigation:</b><ul style="margin:4px 0 0 18px;padding:0">${hr.mitigation.map(m=>"<li>"+m+"</li>").join("")}</ul></div>${hicRisk}
-        <div class="explain"><span style="color:var(--dim)">${hr.ref}</span></div>${tierTag("NACE MR0103-2018 §4 + TM0284-2016 + ISO 15156-2 envelope reproduced")}`;})()}
+        <div class="explain"><span style="color:var(--dim)">${hr.ref}</span></div>${tierTag("NACE MR0103/TM0284 + ISO 15156-2 factor model (author-assembled)","screening")}`;})()}
 
 `;
 }
