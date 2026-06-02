@@ -38,7 +38,11 @@ const CL_SCC = {
 // 28 HRC->~290 HV (duplex), 35-40 HRC->~360 HV (Ni-base). Replaces the carbon-steel ladder.
 const SOUR = { threshold: 0.3,
   hvByFamily: { austenitic: 250, ferritic: 250, duplex: 290, super_duplex: 290, nickel: 360 },
-  hvSd: 15 };
+  hvSd: 15,
+  // SSC environmental severity (screening) after ISO 15156-2 Fig 1: severity rises with pH2S
+  // and with FALLING in-situ pH. A more severe environment lowers the effective tolerable
+  // hardness (the binding SSC criterion). severePP = kPa treated as fully severe on the log scale.
+  severePP: 1000, pHmild: 6.5, pHsevere: 3.5, wPP: 0.6, wPH: 0.4, sevHVpenalty: 45 };
 const PRICE = { Fe:0.6, Cr:10, Ni:17, Mo:53, W:35, Nb:45, Cu:9, Mn:2, Si:1.5, Co:40, N:0, C:0 };
 const REF304_COST = 3.6295;
 
@@ -207,12 +211,25 @@ function sourRegion(pp, pH){
   if (pp>=1  || pH<4.5) return 2;
   return 1;
 }
+// Continuous SSC environmental severity 0(mild)..1(severe) from pH2S (log) and in-situ pH,
+// after ISO 15156-2 Fig 1 (the SSC regions are bounded by pH2S x pH). Screening only.
+function sourSeverity(pp, pH){
+  if (pp < SOUR.threshold) return 0;
+  const sPP = Math.log10(pp/SOUR.threshold) / Math.log10(SOUR.severePP/SOUR.threshold);
+  const pHv = (pH==null) ? SOUR.pHmild : pH;
+  const sPH = (SOUR.pHmild - pHv) / (SOUR.pHmild - SOUR.pHsevere);
+  return Math.max(0, Math.min(1, SOUR.wPP*sPP + SOUR.wPH*sPH));
+}
 function sourFail(HV, pp, pH, family){
-  if (pp<SOUR.threshold) return { sour:false, region:0, pFail:0 };
+  if (pp<SOUR.threshold) return { sour:false, region:0, severity:0, limEff:null, pFail:0 };
   const region = sourRegion(pp, pH);
+  const sev = sourSeverity(pp, pH);
   const lim = SOUR.hvByFamily[family] || SOUR.hvByFamily.austenitic;
-  const pass = normCDF((lim - HV)/SOUR.hvSd);
-  return { sour:true, region, pFail: 1-pass };
+  // ISO 15156: more severe service demands stricter hardness. Encode as a severity-reduced
+  // effective limit — HV stays the primary axis, but pH2S AND in-situ pH now both move pFail.
+  const limEff = lim - SOUR.sevHVpenalty * sev;
+  const pass = normCDF((limEff - HV)/SOUR.hvSd);
+  return { sour:true, region, severity:sev, limEff, pFail: 1-pass };
 }
 
 // ISO 15156-3:2020 Annex A "use-without-further-testing" sour envelopes — SCREENING ONLY.
@@ -282,6 +299,8 @@ function assess(c, svc){
            cpt: pit.cptLocal, cptG48: cptMean(c), cptSE: pit.se, fsig: pit.fsig, aged: !!aged,
            cptCapped: pit.capped, clAdj: cptChlorideAdj(svc.Cl),
            pPit: svc.Cl>0?pit.p:null, pScc, pSourFail, sourRegion: sour?sour.region:null,
+           sourSeverity: sour?sour.severity:null, sourLimEff: sour?sour.limEff:null,
+           sourHVlimit: SOUR.hvByFamily[family]||SOUR.hvByFamily.austenitic,
            cost: relativeCost(c), overall, dominant, risks, iso };
 }
 

@@ -226,6 +226,13 @@ function renderAssess(){
       ${bar("Chloride-SCC", r.pScc)}
       ${bar("Sour SSC" + (r.sourRegion?` (Region ${r.sourRegion})`:""), r.pSourFail)}
     </div>
+    ${(() => {
+      const sour = (r.pSourFail!=null)
+        ? `Sour-SSC ${pct(r.pSourFail)} — ${svc.HV} HV vs effective limit ${r.sourLimEff.toFixed(0)} HV (${fam(r.family)} base ${r.sourHVlimit} − severity ${r.sourSeverity.toFixed(2)} from H₂S ${svc.pH2S} kPa + pH ${svc.pH})`
+        : (svc.pH2S>=0.3 ? `Sour-SSC — enter a hardness (HV) value to assess` : `Sour-SSC — inactive (H₂S ${svc.pH2S} kPa &lt; 0.3 kPa threshold)`);
+      const scc = (r.pScc!=null) ? `Chloride-SCC ${pct(r.pScc)} — tensile stress ${svc.stress}×YS at ${svc.T} °C / ${(svc.Cl||0).toLocaleString()} ppm Cl⁻` : ``;
+      return `<div style="margin:6px 0;padding:7px 10px;font-size:11.5px;line-height:1.6;color:var(--dim);background:rgba(56,189,248,.05);border-left:3px solid #38bdf8;border-radius:4px"><b style="color:var(--ink)">What the sour / SCC inputs change:</b> the headline verdict is <b>${dom}</b> at ${pct(r.overall)} — pH, H₂S, hardness and tensile stress drive the <b>Sour-SSC</b> &amp; <b>Chloride-SCC</b> bars above, <b>not</b> the CPT / pitting number.<br>${sour}${scc?`<br>${scc}`:``}</div>`;
+    })()}
     ${r.iso ? `<div class="iso ${r.iso.status}">${
       r.iso.status==="within" ? `✓ <b>ISO 15156-3 Annex A</b> (screening): within the ${r.iso.group} sour envelope (≤${r.iso.maxT} °C). Individual qualification per ISO 15156-3 is still required.`
       : r.iso.status==="exceeds" ? `⚠ <b>ISO 15156-3 Annex A</b> (screening): service <b>exceeds</b> the ${r.iso.group} envelope — ${r.iso.reason}. Annex B lab qualification required.`
