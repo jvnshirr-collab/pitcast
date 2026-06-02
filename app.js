@@ -769,14 +769,20 @@ function populateGradeSelect(){
 function renderIntegrity(){
   const host=$("integrity_results"); if(!host||!window.B31G) return;
   const gv=id=>$(id)?$(id).value:"";
+  // Units presentation layer (units.js): engine math stays SI. inSI() reads a field in the active
+  // system and returns SI; uv()/ul() format an SI value for display in the active system.
+  const _sys=(window.Units && Units.getSystem()==="US")?"US":"SI";
+  const inSI=(q,id)=> window.Units?Units.toSI(q,+gv(id),_sys):+gv(id);
+  const uv=(q,si,dig)=>{ const x=window.Units?Units.fromSI(q,si,_sys):si; return (x==null||isNaN(x))?String(x):x.toFixed(dig==null?0:dig); };
+  const ul=q=> window.Units?Units.label(q,_sys):({pressure_bar:"bar",length:"mm",stress_MPa:"MPa",rate_mmpy:"mm/y"}[q]||"");
   const grade=B31G.GRADES[gv("b_grade")]||B31G.GRADES.X52;
-  const D=+gv("b_D"), t=+gv("b_t"), L=+gv("b_L"), d=+gv("b_d"), MAOP=+gv("b_MAOP");
+  const D=inSI("length","b_D"), t=inSI("length","b_t"), L=inSI("length","b_L"), d=inSI("length","b_d"), MAOP=inSI("pressure_bar","b_MAOP");
   const method=gv("b_method")||"modb31g";
   const ff=B31G.failurePressure({D,t,SMYS:grade.SMYS,L,d,method});
   const dAllow=B31G.allowableDepth({D,t,SMYS:grade.SMYS,L,MAOP_bar:MAOP,method});
   const v=B31G.classify(ff.P_safe_bar, MAOP, ff.depthRatio, ff.throughWall);
   const vb={PASS:"low",MONITOR:"moderate",REPAIR:"high",IMMEDIATE:"high"}[v.status]||"low";
-  const rl=B31G.remainingLife({tNom:t,tMin:+gv("b_tmin"),CR:+gv("b_CR"),designLifeYr:+gv("b_life"),inhEff:+gv("b_inh")});
+  const rl=B31G.remainingLife({tNom:t,tMin:inSI("length","b_tmin"),CR:inSI("rate_mmpy","b_CR"),designLifeYr:+gv("b_life"),inhEff:+gv("b_inh")});
   const ds={ ff:ff, dAllow:dAllow, v:v };
   // B31G is genuinely multi-model — compute BOTH methods for a method-spread ensemble
   // (the disagreement view) + a d/t≤80% validity-envelope card (universal r.uq layer).
@@ -790,8 +796,8 @@ function renderIntegrity(){
     const bc=dv==="diverge"?"rgba(245,158,11,.45)":"rgba(56,189,248,.35)", bg=dv==="diverge"?"rgba(245,158,11,.07)":"rgba(56,189,248,.05)";
     iDisag='<div style="margin:10px 0;padding:9px 12px;border:1px solid '+bc+';border-radius:8px;background:'+bg+'">'
       +'<div style="font-size:12px;color:var(--dim)">Method spread — <b style="color:var(--ink)">B31G vs Modified-B31G (RSTRENG)</b></div>'
-      +'<div style="font-size:15px;font-weight:600;margin:2px 0">'+loP.toFixed(0)+' – '+hiP.toFixed(0)+' bar P<sub>safe</sub> <span style="font-size:12px;font-weight:400;color:var(--dim)">· '+iEns.spread.ratio.toFixed(2)+'× ('+dv+')</span></div>'
-      +'<div style="font-size:11px;color:var(--dim);line-height:1.5">Original B31G (⅔·dL parabolic) '+ffB.P_safe_bar.toFixed(0)+' bar · Modified B31G / RSTRENG (0.85·dL) '+ffM.P_safe_bar.toFixed(0)+' bar. '+(dv==="agree"?"Methods agree — robust estimate.":"Modified-B31G (RSTRENG) is the less-conservative, more-accurate basis — design to the relevant one.")+'</div></div>';
+      +'<div style="font-size:15px;font-weight:600;margin:2px 0">'+uv("pressure_bar",loP)+' – '+uv("pressure_bar",hiP)+' '+ul("pressure_bar")+' P<sub>safe</sub> <span style="font-size:12px;font-weight:400;color:var(--dim)">· '+iEns.spread.ratio.toFixed(2)+'× ('+dv+')</span></div>'
+      +'<div style="font-size:11px;color:var(--dim);line-height:1.5">Original B31G (⅔·dL parabolic) '+uv("pressure_bar",ffB.P_safe_bar)+' '+ul("pressure_bar")+' · Modified B31G / RSTRENG (0.85·dL) '+uv("pressure_bar",ffM.P_safe_bar)+' '+ul("pressure_bar")+'. '+(dv==="agree"?"Methods agree — robust estimate.":"Modified-B31G (RSTRENG) is the less-conservative, more-accurate basis — design to the relevant one.")+'</div></div>';
   }
   // Method-disagreement MAP — B31G vs Mod-B31G P_safe ratio across defect geometry
   // (d/t × length). The two methods genuinely diverge at long/deep defects (B31G
@@ -813,27 +819,27 @@ function renderIntegrity(){
     iMapBlock=`<div class="chartwrap" style="margin:10px 0"><div style="font-size:12px;color:var(--dim);margin-bottom:2px">Where the two B31G methods <b style="color:var(--ink)">agree vs diverge</b> across defect geometry — long, deep defects (B31G goes rectangular) are where the method choice bites.</div>${mMap}${mLegend}</div>`;
   }
   const swB = [
-    'd/t = ' + d + '/' + t + ' = ' + ff.depthRatio.toFixed(2),
+    'd/t = ' + uv("length",d,2) + '/' + uv("length",t,2) + ' = ' + ff.depthRatio.toFixed(2),
     'Folias M = √(1 + 0.6275λ − 0.003375λ²), λ = L²/(D·t) = ' + (isFinite(ff.M)?ff.M.toFixed(2):'n/a'),
-    'σ_f (flow stress) = ' + ff.sigma_f_MPa.toFixed(0) + ' MPa',
-    'P_f = σ_f·(2t/D)·(1−d/t)/(1−(d/t)/M) = ' + ff.P_f_bar.toFixed(0) + ' bar',
-    'P_safe = P_f / SF(' + ff.SF + ') = ' + ff.P_safe_bar.toFixed(0) + ' bar'
+    'σ_f (flow stress) = ' + uv("stress_MPa",ff.sigma_f_MPa) + ' ' + ul("stress_MPa"),
+    'P_f = σ_f·(2t/D)·(1−d/t)/(1−(d/t)/M) = ' + uv("pressure_bar",ff.P_f_bar) + ' ' + ul("pressure_bar"),
+    'P_safe = P_f / SF(' + ff.SF + ') = ' + uv("pressure_bar",ff.P_safe_bar) + ' ' + ul("pressure_bar")
   ];
   host.innerHTML=`
-    <div class="verdict ${vb}"><div class="gauge">${ff.throughWall?"—":ff.P_safe_bar.toFixed(0)}<span class="u"> bar</span></div>
-      <div class="vtext"><b>${v.status} · safe operating pressure</b><div>${v.note} ${ff.throughWall?"":(`vs MAOP ${MAOP} bar — predicted failure ${ff.P_f_bar.toFixed(0)} bar (σ<sub>f</sub> ${ff.sigma_f_MPa.toFixed(0)} MPa, M ${isFinite(ff.M)?ff.M.toFixed(2):"n/a"}).`)}</div></div></div>
+    <div class="verdict ${vb}"><div class="gauge">${ff.throughWall?"—":uv("pressure_bar",ff.P_safe_bar)}<span class="u"> ${ul("pressure_bar")}</span></div>
+      <div class="vtext"><b>${v.status} · safe operating pressure</b><div>${v.note} ${ff.throughWall?"":(`vs MAOP ${uv("pressure_bar",MAOP)} ${ul("pressure_bar")} — predicted failure ${uv("pressure_bar",ff.P_f_bar)} ${ul("pressure_bar")} (σ<sub>f</sub> ${uv("stress_MPa",ff.sigma_f_MPa)} ${ul("stress_MPa")}, M ${isFinite(ff.M)?ff.M.toFixed(2):"n/a"}).`)}</div></div></div>
     <div class="cdnote" style="border-left:3px solid #fbbf24">⚠ <b>${v.status}</b> is a B31G Level-1 <b>screening</b> band, not a fitness-for-service determination — high-consequence integrity decisions require a qualified engineer, verified (not vendor-default) inputs, and the full ASME B31G / API 579 procedure. PitCast is an open, unverified screening tool.</div>
     ${ff.depthRatio>0.80 ? `<div class="cdnote">⚠ LIMIT — d/t ${(ff.depthRatio*100).toFixed(0)}% exceeds the ASME B31G 80% wall-loss limit; the defect is beyond B31G applicability — repair/replace or escalate to a Level-2/3 FFS (API 579 Part 5).</div>` : ""}
     <div class="metrics">
-      <div class="metric"><div class="k">P<sub>safe</sub></div><div class="val">${ff.P_safe_bar.toFixed(0)}<span class="u"> bar</span></div><div class="u">P<sub>f</sub> ${ff.P_f_bar.toFixed(0)} bar · SF ${ff.SF}</div></div>
+      <div class="metric"><div class="k">P<sub>safe</sub></div><div class="val">${uv("pressure_bar",ff.P_safe_bar)}<span class="u"> ${ul("pressure_bar")}</span></div><div class="u">P<sub>f</sub> ${uv("pressure_bar",ff.P_f_bar)} ${ul("pressure_bar")} · SF ${ff.SF}</div></div>
       <div class="metric"><div class="k">Wall loss d/t</div><div class="val">${(ff.depthRatio*100).toFixed(0)}<span class="u"> %</span></div><div class="u">${ff.regime||"—"}</div></div>
-      <div class="metric"><div class="k">Allowable d @ MAOP</div><div class="val">${dAllow!=null?dAllow.toFixed(1):"—"}<span class="u"> mm</span></div><div class="u">${dAllow!=null?((dAllow/t*100).toFixed(0)+"% wall · margin "+(dAllow-d).toFixed(1)+" mm"):"intact pipe weaker than MAOP"}</div></div>
+      <div class="metric"><div class="k">Allowable d @ MAOP</div><div class="val">${dAllow!=null?uv("length",dAllow,1):"—"}<span class="u"> ${ul("length")}</span></div><div class="u">${dAllow!=null?((dAllow/t*100).toFixed(0)+"% wall · margin "+uv("length",dAllow-d,1)+" "+ul("length")):"intact pipe weaker than MAOP"}</div></div>
     </div>
     ${iDisag}
     ${iEnvCard}
     ${iMapBlock}
-    <div class="explain"><b>Remaining life (uniform CR):</b> CR ${rl.CR_mmyr.toFixed(2)} mm/y${rl.inhibitorEff>0?(` × (1−η ${(rl.inhibitorEff*100).toFixed(0)}%) = ${rl.effective_CR_mmyr.toFixed(2)} mm/y eff`):""} → <b>${isFinite(rl.yearsToMinWT)?rl.yearsToMinWT.toFixed(1)+" yr"+(rl.yearsToMinWT<rl.designLifeYr?" (< design life)":""):"∞ (no corrosion)"}</b> to t<sub>min</sub> ${rl.tMin_mm} mm.
-      ${!rl.ca_sufficient?` Required inhibitor efficiency for ${rl.designLifeYr} yr: <b>${(rl.required_inhibitor_efficiency*100).toFixed(0)}%</b>.`:` CA ${rl.CA_mm.toFixed(1)} mm sufficient for ${rl.designLifeYr} yr at this CR.`}
+    <div class="explain"><b>Remaining life (uniform CR):</b> CR ${uv("rate_mmpy",rl.CR_mmyr,2)} ${ul("rate_mmpy")}${rl.inhibitorEff>0?(` × (1−η ${(rl.inhibitorEff*100).toFixed(0)}%) = ${uv("rate_mmpy",rl.effective_CR_mmyr,2)} ${ul("rate_mmpy")} eff`):""} → <b>${isFinite(rl.yearsToMinWT)?rl.yearsToMinWT.toFixed(1)+" yr"+(rl.yearsToMinWT<rl.designLifeYr?" (< design life)":""):"∞ (no corrosion)"}</b> to t<sub>min</sub> ${uv("length",rl.tMin_mm)} ${ul("length")}.
+      ${!rl.ca_sufficient?` Required inhibitor efficiency for ${rl.designLifeYr} yr: <b>${(rl.required_inhibitor_efficiency*100).toFixed(0)}%</b>.`:` CA ${uv("length",rl.CA_mm,1)} ${ul("length")} sufficient for ${rl.designLifeYr} yr at this CR.`}
       <span style="color:var(--dim)"> ${ff.ref} · ${rl.ref}</span></div>${gbox("P<sub>f</sub> = σ<sub>f</sub>·(2t/D)·(1−d/t)/(1−(d/t)/M); Folias M=√(1+0.6275λ−0.003375λ²), λ=L²/(Dt). Mod-B31G uses 0.85·d·L effective area.", "ASME B31G-2012 · Kiefner &amp; Vieth 1989 (RSTRENG) · Folias 1965", "T2 · ASME B31G Appx B Ex 1 reproduced (P_safe 54.3 bar) — VR/b31g.md")}${ff.throughWall?"":showWork("B31G → P_safe", swB)}${tierTag("75 full-scale burst tests — orig-B31G 0.678× measured, matches Zhou &amp; Huang 2012 (n=149)","validated")}
     ${(()=>{ if(!window.CUI) return ""; const u=window.CUI.risk({material:gv("u_mat"),T_C:+gv("u_T"),insulation:gv("u_ins"),jacket:gv("u_jkt"),coating:gv("u_coat"),ambient:gv("u_amb"),ageYr:+gv("u_age"),cyclic:!!($("u_cyc")&&$("u_cyc").checked)});
       const cls={low:"within",medium:"untabulated",high:"exceeds",severe:"exceeds"}[u.level]||"within";
@@ -869,6 +875,22 @@ function renderIntegrity(){
 `;
 }
 $("b31gForm") && $("b31gForm").addEventListener("input", renderIntegrity);
+// Units SI<->US toggle (B31G/Integrity tab): on switch, convert every data-u field value from the
+// current system to the new one + relabel; the engine always computes in SI (inSI() in render).
+function _b31gUnitToggle(toSys){
+  if (!window.Units){ renderIntegrity(); return; }
+  var prev = Units.getSystem();
+  if (toSys !== prev){
+    document.querySelectorAll('#b31gForm input[data-u]').forEach(function(el){
+      var q = el.dataset.u, cur = parseFloat(el.value);
+      if (!isNaN(cur)) el.value = +(Units.fromSI(q, Units.toSI(q, cur, prev), toSys)).toFixed(4);
+    });
+    Units.setSystem(toSys);
+    document.querySelectorAll('#b31gForm .uq[data-u]').forEach(function(s){ s.textContent = Units.label(s.dataset.u, toSys); });
+  }
+  renderIntegrity();
+}
+$("b_units") && $("b_units").addEventListener("change", function(){ _b31gUnitToggle($("b_units").value === "US" ? "US" : "SI"); });
 
 
 function _dl(filename, text){ const b=new Blob([text],{type:"text/csv;charset=utf-8"});

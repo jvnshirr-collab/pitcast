@@ -78,13 +78,8 @@
   }
   function getSystem() { return SYS; }
 
-  // restore persisted preference in the browser
-  try {
-    if (typeof localStorage !== "undefined") {
-      var saved = localStorage.getItem("pitcast.units");
-      if (saved === "US" || saved === "SI") SYS = saved;
-    }
-  } catch (e) { /* ignore */ }
+  // Session-only: SYS starts "SI" on every load; setSystem() changes it within the session.
+  // (No auto-restore — keeps per-tab toggles consistent with their SI-default input values.)
 
   var Units = {
     QUANTS: QUANTS,
