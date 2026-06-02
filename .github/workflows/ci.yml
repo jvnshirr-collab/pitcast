@@ -1,0 +1,23 @@
+name: CI
+
+# Runs PitCast's verification + validation gate on every push/PR. Pure Node, no deps.
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Benchmark gate (121 oracle + validation assertions vs cited standards/data)
+        run: node benchmark/test-all.js
+      - name: Units oracle (SI <-> US-customary conversions)
+        run: node benchmark/test-units.js
+      - name: Benchmark reproducibility (regenerate REPORT.md from cited data)
+        run: node benchmark/run.js
