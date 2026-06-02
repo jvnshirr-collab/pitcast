@@ -287,7 +287,7 @@ structurally-limited ceiling.
 Instead of padding G48 with off-basis values, the abundant electrochemical data was used to build a
 **genuinely separate** correlation:
 - **`data/cpt-electrochemical.json`** — 123 austenitic-SS records, electrochemical (potentiodynamic)
-  CPT + composition + test conditions, from **Liu et al., npj Materials Degradation 2025, DOI
+  CPT + composition + test conditions, from **Hou F., Wu H.-H., Zhu D. et al., npj Materials Degradation 2025, DOI
   10.1038/s41529-025-00563-0** (open-access Supplementary Table S1; transcribed via pdftotext).
 - Fit (`run.js`): **CPT_elec = 4.096·PREN_N30 − 96.22, R² 0.93, leave-one-out MAE 6.11 °C** (n=123).
   Slope 4.10 vs the G48 slope 2.04 — the two bases scale **differently** with PREN and are **NEVER
