@@ -134,6 +134,13 @@ PitCast may be described as *industry-ready as an open screening tool* when **al
 4. User guide + worked examples exist (WS-D).
 5. The JOSS submission is live (WS-E1) — *acceptance pending, disclosed as pending.*
 
+**Status — 2026-06-03 — Half-A COMPLETE (criteria 1–4 met & live; 5 is the user's action):**
+1. ✅ Engine scope+validation audit; out-of-scope generic-RBI removed; honest ✅/📐/🔎 tier badge on every engine (`docs/ENGINE-STATUS.md`).
+2. ✅ SI⇄US units on B31G & CO₂ (CPT kept in °C per universal standard; MR0175/FFS toggles judged low-value); filed one-page PDF report (`filedReport()`).
+3. ✅ Robustness gate `benchmark/test-edge.js` (1168 adversarial cases, was 301 failing → **0**), wired into CI; 121-assertion oracle gate; 39-case units oracle. Engine accuracy constants audited 2026-05-20.
+4. ✅ `docs/USER-GUIDE.md` + `docs/examples/` (3 reproducible worked examples).
+5. ☐ **JOSS submission** — `paper.md`/`paper.bib` prepped; the author submits at joss.theoj.org. Half-B (peer review / third-party V&V / track record) is time + external, not code.
+
 ## 5. What this plan explicitly does NOT claim
 
 - Not a fitness-for-service, remaining-life, or inspection-interval authority.
