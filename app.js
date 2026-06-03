@@ -771,7 +771,7 @@ function renderIntegrity(){
   const gv=id=>$(id)?$(id).value:"";
   // Units presentation layer (units.js): engine math stays SI. inSI() reads a field in the active
   // system and returns SI; uv()/ul() format an SI value for display in the active system.
-  const _sys=(window.Units && Units.getSystem()==="US")?"US":"SI";
+  const _sys=($("b_units") && $("b_units").value==="US")?"US":"SI";
   const inSI=(q,id)=> window.Units?Units.toSI(q,+gv(id),_sys):+gv(id);
   const uv=(q,si,dig)=>{ const x=window.Units?Units.fromSI(q,si,_sys):si; return (x==null||isNaN(x))?String(x):x.toFixed(dig==null?0:dig); };
   const ul=q=> window.Units?Units.label(q,_sys):({pressure_bar:"bar",length:"mm",stress_MPa:"MPa",rate_mmpy:"mm/y"}[q]||"");
@@ -875,22 +875,22 @@ function renderIntegrity(){
 `;
 }
 $("b31gForm") && $("b31gForm").addEventListener("input", renderIntegrity);
-// Units SI<->US toggle (B31G/Integrity tab): on switch, convert every data-u field value from the
-// current system to the new one + relabel; the engine always computes in SI (inSI() in render).
-function _b31gUnitToggle(toSys){
-  if (!window.Units){ renderIntegrity(); return; }
-  var prev = Units.getSystem();
-  if (toSys !== prev){
-    document.querySelectorAll('#b31gForm input[data-u]').forEach(function(el){
+// Generic per-tab SI<->US toggle: convert a form's data-u field values to the new system + relabel,
+// then re-render. Only two systems exist, so the previous system is the opposite of the new one.
+// Each tab reads its OWN <select> in its render (no shared global state) — tabs stay independent,
+// and the engine always computes in SI (inSI() in each render).
+function _unitToggle(formId, newSys, rerender){
+  if (window.Units){
+    var prev = newSys === "US" ? "SI" : "US";
+    document.querySelectorAll('#'+formId+' input[data-u]').forEach(function(el){
       var q = el.dataset.u, cur = parseFloat(el.value);
-      if (!isNaN(cur)) el.value = +(Units.fromSI(q, Units.toSI(q, cur, prev), toSys)).toFixed(4);
+      if (!isNaN(cur)) el.value = +(Units.fromSI(q, Units.toSI(q, cur, prev), newSys)).toFixed(4);
     });
-    Units.setSystem(toSys);
-    document.querySelectorAll('#b31gForm .uq[data-u]').forEach(function(s){ s.textContent = Units.label(s.dataset.u, toSys); });
+    document.querySelectorAll('#'+formId+' .uq[data-u]').forEach(function(s){ s.textContent = Units.label(s.dataset.u, newSys); });
   }
-  renderIntegrity();
+  rerender();
 }
-$("b_units") && $("b_units").addEventListener("change", function(){ _b31gUnitToggle($("b_units").value === "US" ? "US" : "SI"); });
+$("b_units") && $("b_units").addEventListener("change", function(){ _unitToggle("b31gForm", this.value==="US"?"US":"SI", renderIntegrity); });
 
 
 function _dl(filename, text){ const b=new Blob([text],{type:"text/csv;charset=utf-8"});
