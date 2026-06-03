@@ -95,6 +95,16 @@ Closed-form worked examples from the standards run as a **deploy gate** (121 ass
 ASME B31G-2012 App. B Ex. 1; de Waard 1975/1995 fugacity + NORSOK M-506 K_t + Crolet-Bonis pH;
 API 579 Part 5/6/7 + NACE TM0284; ISO 15156 Annex-A boundaries.
 
+**Independent equation re-derivation (2026-06-03).** Beyond the in-repo oracles (written by the same
+author, so not fully independent), the de Waard-Milliams models were re-derived from the primary
+papers and checked against the *deployed* engine. `CO2.deWaard1975` reproduces
+`log₁₀(CR_mm/y) = 5.8 − 1710/T(K) + 0.67·log₁₀(pCO₂)` (de Waard & Milliams, *Corrosion* 31 (1975) 177)
+to **< 0.1 %** vs an external hand-calculation (60 °C / 1 bar → 4.647 vs 4.648; 20 °C / 1 bar → 0.926
+vs 0.927; 60 °C / 10 bar → 21.74 vs 21.7 mm/y). `CO2.deWaard1995` adds the documented fugacity
+coefficient `log₁₀φ = (0.0031 − 1.4/T)·P` (P ≤ 250 bar, φ ≤ 1), the mass-transport term
+`2.45·u^0.8/d^0.2·f_CO₂`, and the F_pH / F_scale corrections in series — matching de Waard, Lotz &
+Dugstad, NACE Corrosion/95 Paper 128. The implementations are faithful to the published equations.
+
 ---
 
 ## 5. Independent cross-checks (journal harvest, 2026-06-03)
