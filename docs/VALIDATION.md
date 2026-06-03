@@ -97,7 +97,49 @@ API 579 Part 5/6/7 + NACE TM0284; ISO 15156 Annex-A boundaries.
 
 ---
 
-## 5. What this validation does and does not establish
+## 5. Independent cross-checks (journal harvest, 2026-06-03)
+
+Cited spot-checks gathered from full-text literature (METU / ScienceDirect / Wiley). Every value is
+table/text-stated (never read off a figure) and verified here.
+
+**CPT — the electrochemical correlation predicts independent alloys to ≈1 °C.** PitCast's 2nd-basis
+electrochemical CPT correlation (fit on the **austenitic** npj-2025 set) applied to cited
+electrochemical CPT for alloys *outside* that fit:
+
+| Alloy | PREN<sub>N30</sub> | Predicted | Measured | Δ | Source |
+|---|--:|--:|--:|--:|---|
+| **2205 / S31803** (duplex — *out of the austenitic fit*) | 38.1 | 59.9 °C | 59.6 °C | +0.3 | Deng 2008, Electrochim. Acta 53:5220 (DOI 10.1016/j.electacta.2008.02.047), 1 M NaCl |
+| **2507 / S32750** (super-duplex — *out of fit*) | 44.6 | 86.3 °C | 87.5 °C | −1.2 | Deng 2008, same |
+| 254 SMO / S31254 (super-austenitic) | 45.4 | 89.5 °C | 89 °C | +0.5 | Abd El Meguid 2007, Corros. Sci. 49:263 (DOI 10.1016/j.corsci.2006.06.011), 4 % NaCl |
+
+The two **duplex** alloys are genuine *out-of-sample* points (the npj corpus is austenitic-only), yet
+the correlation reproduces their measured CPT within **1.2 °C** — independent corroboration that the
+PREN<sub>N30</sub>→CPT map holds across austenitic *and* duplex CRAs. (254 SMO may overlap the
+austenitic corpus → consistency check.) Reproducible: `PitCast.cptMeanElec({Cr,Mo,N})`. The chloride
+dependence the PREN-only map omits is visible in the same source (254 SMO: 89/67/57 °C at 4/10/30 % NaCl).
+
+**Burst — B31G stays conservative beyond its thin-wall domain.** Li et al. 2019 (*J. Hazard. Mater.*
+366:65, DOI 10.1016/j.jhazmat.2018.11.089) report 9 full-scale internal-pressure burst tests of
+**P110 OCTG tubing** with machined grooves (OD 73, t 5.5 mm, σ<sub>y</sub> 760 MPa, **D/t ≈ 13.3 —
+thick-wall, outside ASME B31G's thin-wall D/t > 20 domain**). Through `b31g.js`: original-B31G predicts
+**0.72× the measured burst, 9/9 conservative**; Modified-B31G 0.97×. So B31G's safe-side bias extends
+even into thick-wall OCTG. **Kept separate from the 75-specimen thin-wall corpus** (which the Zhou &
+Huang 2012 comparison is calibrated to) — an out-of-domain robustness note, not a headline-stat input.
+
+**CO₂ — independent reviews corroborate the "disagreement is the deliverable" framing.** Nešić 2007
+(*Corros. Sci.* 49:4308, DOI 10.1016/j.corsci.2007.06.006; ~1,700 cites) and Simonsen et al. 2026
+(*Processes* 14:170, DOI 10.3390/pr14010170) independently document that the open CO₂ models disagree
+substantially. Mori & Bauernfeind 2004 (*Mater. Corros.* 55:164, DOI 10.1002/maco.200303746) find CPT
+correlates *better* with Speidel's MARC than with PREN — i.e. PREN is an imperfect CPT predictor,
+consistent with PitCast's "ranking-grade, read the interval" caveat. **Honest gap (confirmed by a
+full-text search):** there is **no open, peer-reviewed, tabulated de Waard / NORSOK
+predicted-vs-measured accuracy statistic with a stated n** — the strong databases (IFE / NORSOK
+round-robins) are proprietary. So CO₂ has **no B31G/Zhou-Huang-equivalent external numeric cross-check**,
+and none is manufactured here.
+
+---
+
+## 6. What this validation does and does not establish
 
 **Establishes:** the engines reproduce their governing standards; the CPT correlation generalizes
 out-of-sample to **6.6 °C** on the open G48 corpus; the CO₂ ensemble honestly exposes model
