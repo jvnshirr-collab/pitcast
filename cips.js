@@ -240,7 +240,9 @@
         var matching = survey.readings.find(function(r){ return r.station_m === dcvgPoints[i].station_m; });
         var swing = (matching && matching.E_on_mV != null && matching.E_off_mV != null)
                     ? Math.abs(matching.E_on_mV - matching.E_off_mV) : null;
-        var pctIR = swing != null && swing > 0 ? (Math.abs(cur) / swing) * 100 : null;
+        // %IR is a fraction of the total IR drop, so it is bounded at 100% by definition; a DCVG
+        // signal exceeding the on/off swing means an inconsistent/noisy reading — clamp (still Immediate).
+        var pctIR = swing != null && swing > 0 ? Math.min(100, (Math.abs(cur) / swing) * 100) : null;
         var sev = pctIR != null ? classifySeverity(pctIR) : { band: "?", action: "Cannot classify without V_swing" };
         var pol = matching ? classifyPolarity(matching.E_on_mV, matching.E_off_mV) : { state: "?", interpretation: "n/a" };
         inds.push({

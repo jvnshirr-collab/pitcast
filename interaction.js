@@ -287,13 +287,15 @@
       var s_i = Math.max(0, curLead - prevTrail);   // spacing (clip overlap to 0)
       L_combined += s_i + cur.L_raw_mm;
     }
-    // length-weighted depth: Σ dᵢ·Lᵢ / Σ Lᵢ (using raw values)
-    var depthSum = 0, lenSum = 0;
+    // Combined depth = MAX member depth (conservative). Interacting defects rupture at a LOWER
+    // pressure than any member alone, so the deepest point must govern the merged profile. A
+    // length-weighted mean (used here previously) let a shallow neighbour dilute and MASK a deep
+    // defect — non-conservative: an 89%-wall pit could be reported PASS. Matches the Mod-B31G / POF
+    // merge. (DNV-RP-F101 §3.7 still sets the interaction criterion + the end-to-end combined length.)
+    var d_combined = 0;
     for (var k = 0; k < sorted.length; k++) {
-      depthSum += sorted[k].d_raw_mm * sorted[k].L_raw_mm;
-      lenSum   += sorted[k].L_raw_mm;
+      if (sorted[k].d_raw_mm > d_combined) d_combined = sorted[k].d_raw_mm;
     }
-    var d_combined = lenSum > 0 ? (depthSum / lenSum) : 0;
     var x_start = sorted[0].x_axial_mm - sorted[0].L_raw_mm / 2;
     var x_end   = sorted[sorted.length - 1].x_axial_mm
                 + sorted[sorted.length - 1].L_raw_mm / 2;

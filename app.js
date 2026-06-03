@@ -15,6 +15,7 @@ document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
   t.classList.add("active");
   $("tab-" + t.dataset.tab).classList.add("active");
   if (t.dataset.tab === "co2") renderCO2();
+  if (t.dataset.tab === "data") renderData();
   if (t.dataset.tab === "cpac") renderCPAC();
   if (t.dataset.tab === "envelope") renderEnvelope();
   if (t.dataset.tab === "integrity") renderIntegrity();
@@ -906,7 +907,7 @@ function _unitToggle(formId, newSys, rerender){
 $("b_units") && $("b_units").addEventListener("change", function(){ _unitToggle("b31gForm", this.value==="US"?"US":"SI", renderIntegrity); });
 
 
-function _dl(filename, text){ const b=new Blob([text],{type:"text/csv;charset=utf-8"});
+function _dl(filename, text){ const mime=/\.json$/i.test(filename)?"application/json;charset=utf-8":"text/csv;charset=utf-8"; const b=new Blob([text],{type:mime});
   const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=filename; a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1500); }
 function exportActiveCSV(){
@@ -1007,6 +1008,14 @@ function pcRestore(){
     var val = decodeURIComponent(p.slice(1).join("="));
     if (el.type==="checkbox") el.checked = (val==="1"||val==="true"); else el.value = val;
   });
+  // Re-resolve the restored grade-search text into an actual grade selection — else currentGrade()
+  // keeps the default index and the verdict silently mismatches the alloy shown in the field.
+  if (tab === "assess" && gInput && gInput.value) {
+    var _gt = gInput.value.toUpperCase();
+    var _gi = appGrades.findIndex(function(g){ return g.uns && _gt.indexOf(String(g.uns).toUpperCase()) >= 0; });
+    if (_gi < 0) _gi = appGrades.findIndex(function(g){ return g.name && _gt.indexOf(String(g.name).toUpperCase()) >= 0; });
+    if (_gi >= 0) { selectedIdx = _gi; customGrade = null; }
+  }
   var btn = document.querySelector('.tab[data-tab="'+tab+'"]');
   if (btn) btn.click();                                   // switch + render
   var panel = $("tab-"+tab);
@@ -1149,8 +1158,12 @@ function valStr(r){ const u = r.units==="degC" ? "°C" : r.units==="mV(SCE)" ? "
 // searchable string for a measured record — clean label + UNS + class + composition
 // (NOT the raw code, which is sometimes long lab-prep text that caused false matches,
 //  e.g. "pH 7.8" in a note matching a "PH" query).
+// family from composition (PitCast.inferFamily → "austenitic"/"duplex"/"nickel"/…) so the Class
+// column is meaningful and "duplex"/"austenitic" are searchable (the stored r.cls is sparse).
+function _measFamily(r){ try{ return (window.PitCast&&PitCast.inferFamily&&r.comp)?(PitCast.inferFamily(r.comp)||""):""; }catch(e){ return ""; } }
+function _famLabel(r){ var f=_measFamily(r); return f ? (f.charAt(0).toUpperCase()+f.slice(1)) : (r.cls||"—"); }
 function _measSearchStr(r){ const m=/[NSR]\d{5}/.exec(String(r.code||"").toUpperCase());
-  return (_measLabel(r)+" "+(m?m[0]:"")+" "+(r.cls||"")+" "+compStr(r.comp)).toUpperCase(); }
+  return (_measLabel(r)+" "+(m?m[0]:"")+" "+(r.cls||"")+" "+_measFamily(r)+" "+compStr(r.comp)).toUpperCase(); }
 function renderData(){
   if(!$("dataTable")) return;
   const q = ($("d_search").value||"").trim().toUpperCase();
@@ -1166,7 +1179,7 @@ function renderData(){
     + `<th>Conditions</th><th>Composition (wt%)</th><th>Source</th><th></th></tr></thead>`;
   const body=shown.map(r=>`<tr>
     <td>${_measLabel(r)}</td>
-    <td>${r.cls||"—"}</td><td>${r.metric}</td>
+    <td>${_famLabel(r)}</td><td>${r.metric}</td>
     <td class="num">${valStr(r)}</td>
     <td>${condStr(r)||"—"}</td>
     <td style="font-family:var(--mono);color:var(--muted)">${compStr(r.comp)}</td>
