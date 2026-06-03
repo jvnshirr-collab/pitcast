@@ -47,7 +47,7 @@ Requires Node.js (the app itself is dependency-free vanilla JS — no build step
 
 ```bash
 node benchmark/run.js       # regenerates results.json + REPORT.md from cited data
-node benchmark/test-all.js  # 92 oracle assertions (standards worked examples) — the pre-deploy gate
+node benchmark/test-all.js  # 121 oracle assertions (standards worked examples) — the pre-deploy gate
 ```
 
 The benchmark spans three validation domains, all built on cited measured data:
