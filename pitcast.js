@@ -88,7 +88,22 @@ function measuredCPT(uns, name){
 }
 
 // ---- helpers ----------------------------------------------------------------
-const v = (c, el) => c[el] || 0;
+// Robust numeric coercion (graceful degradation). _numOr0: a composition element
+// (wt%) — anything non-finite/non-numeric (NaN, '', 'abc', null, {}, []) collapses
+// to 0 so a single garbage key never poisons PREN/CPT/cost with a silent NaN. For a
+// genuine numeric input these are the identity, so VALID compositions are unchanged.
+const _numOr0 = x => { const n = (typeof x === 'number') ? x
+  : (typeof x === 'string' && x.trim() !== '') ? Number(x) : NaN;
+  return Number.isFinite(n) ? n : 0; };
+// _numOrNull: an OPTIONAL service driver (Cl, stress, pH2S, pH, HV, ageT, aget) —
+// garbage coerces to null, i.e. "not provided", so the mechanism that needs it is
+// simply skipped (the existing Cl>0 / stress!=null / pH2S>=thr / HV!=null guards),
+// rather than emitting a silent NaN. Finite numerics pass through unchanged.
+const _numOrNull = x => { const n = (typeof x === 'number') ? x
+  : (typeof x === 'string' && x.trim() !== '') ? Number(x) : NaN;
+  return Number.isFinite(n) ? n : null; };
+// Composition accessor: null-safe + coerces each element to a finite wt% (or 0).
+const v = (c, el) => _numOr0(c ? c[el] : 0);
 const logistic = x => 1 / (1 + Math.exp(-x));
 function erf(x){ const t=1/(1+0.3275911*Math.abs(x));
   const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);
@@ -274,31 +289,48 @@ function isoSourCheck(family, c, svc){
 
 // ---- cost -------------------------------------------------------------------
 function relativeCost(c){
+  if (!c || typeof c !== "object") return 0;
   let total = 0, sum = 0;
-  for (const el in c) if (el!=="Fe"){ total += (PRICE[el]||0)*c[el]/100; sum += c[el]; }
+  for (const el in c) if (el!=="Fe"){ const w = _numOr0(c[el]); total += (PRICE[el]||0)*w/100; sum += w; }
   const fe = Math.max(0, 100-sum);
   total += PRICE.Fe*fe/100;
-  if (c.Fe) total += PRICE.Fe*c.Fe/100;   // explicit Fe (Ni-base)
+  const cFe = _numOr0(c.Fe);
+  if (cFe) total += PRICE.Fe*cFe/100;   // explicit Fe (Ni-base)
   return total/REF304_COST;
 }
 
 // ---- unified assessment -----------------------------------------------------
 function assess(c, svc){
+  // Graceful degradation on bad input. A composition must be a non-null object;
+  // anything else is rejected with an explicit {error} (the engine's flagged shape)
+  // rather than throwing on c.Ni / propagating a silent NaN.
+  if (!c || typeof c !== "object") return { error: "composition must be an object" };
+  svc = (svc && typeof svc === "object") ? svc : {};
+  // Service temperature is the master axis (it drives every CPT / SCC / sour term).
+  // If it is non-finite (NaN / undefined / string / object) the whole assessment is
+  // meaningless, so flag it instead of letting NaN leak into cpt / overall.
+  const T = _numOrNull(svc.T);
+  if (T == null) return { error: "service temperature T must be a finite number" };
+  // Optional drivers: garbage coerces to null = "not provided", so the dependent
+  // mechanism is skipped (Cl>0 / stress!=null / pH2S>=thr / HV!=null) — no silent NaN.
+  const Cl = _numOrNull(svc.Cl), stress = _numOrNull(svc.stress);
+  const pH2S = _numOrNull(svc.pH2S), pH = _numOrNull(svc.pH), HV = _numOrNull(svc.HV);
+  const ageT = _numOrNull(svc.ageT), aget = _numOrNull(svc.aget);
   const family = svc.family || inferFamily(c);
-  const aged = (svc.ageT && svc.aget) ? { T:svc.ageT, t:svc.aget } : null;
-  const pit = pPit(c, svc.T, aged, svc.Cl);
+  const aged = (ageT != null && aget != null && aget > 0) ? { T:ageT, t:aget } : null;
+  const pit = pPit(c, T, aged, Cl);
   let pScc = null, pSourFail = null, sour = null;
-  if (svc.stress!=null && svc.Cl>0) pScc = clSCC(family, svc.T, svc.Cl, svc.stress);
-  if (svc.pH2S>=SOUR.threshold && svc.HV!=null){ sour = sourFail(svc.HV, svc.pH2S, svc.pH, family); pSourFail = sour.pFail; }
-  const iso = isoSourCheck(family, c, svc);
-  const risks = { pitting: svc.Cl>0?pit.p:null, "chloride-SCC": pScc, "sour-SSC": pSourFail };
+  if (stress!=null && Cl>0) pScc = clSCC(family, T, Cl, stress);
+  if (pH2S!=null && pH2S>=SOUR.threshold && HV!=null){ sour = sourFail(HV, pH2S, pH, family); pSourFail = sour.pFail; }
+  const iso = isoSourCheck(family, c, { T, Cl, pH2S, pH });
+  const risks = { pitting: Cl>0?pit.p:null, "chloride-SCC": pScc, "sour-SSC": pSourFail };
   const active = Object.entries(risks).filter(([k,x])=>x!=null);
   const overall = active.length ? Math.max(...active.map(([k,x])=>x)) : 0;
   const dominant = active.length ? active.reduce((a,b)=>b[1]>a[1]?b:a)[0] : "none";
   return { family, pren: pren(c), prenW: prenW(c), ferrite: ferritePct(c),
            cpt: pit.cptLocal, cptG48: cptMean(c), cptSE: pit.se, fsig: pit.fsig, aged: !!aged,
-           cptCapped: pit.capped, clAdj: cptChlorideAdj(svc.Cl),
-           pPit: svc.Cl>0?pit.p:null, pScc, pSourFail, sourRegion: sour?sour.region:null,
+           cptCapped: pit.capped, clAdj: cptChlorideAdj(Cl),
+           pPit: Cl>0?pit.p:null, pScc, pSourFail, sourRegion: sour?sour.region:null,
            sourSeverity: sour?sour.severity:null, sourLimEff: sour?sour.limEff:null,
            sourHVlimit: SOUR.hvByFamily[family]||SOUR.hvByFamily.austenitic,
            cost: relativeCost(c), overall, dominant, risks, iso };
@@ -309,7 +341,12 @@ function selectAlloys(svc, threshold){
   threshold = threshold ?? 0.15;
   const ranked = GRADES.map(g => {
     const a = assess(g.comp, svc);
-    return { name:g.name, uns:g.uns, overall:a.overall, dominant:a.dominant, cost:a.cost, a };
+    // If assess rejected the service input, rank this grade as worst (overall=1,
+    // cost=Inf) so it sorts to the bottom and is never auto-recommended — degrade
+    // gracefully rather than sorting on undefined.
+    const overall = a.error ? 1 : a.overall;
+    const cost = a.error ? Infinity : a.cost;
+    return { name:g.name, uns:g.uns, overall, dominant:a.error?"invalid-input":a.dominant, cost, a };
   }).sort((x,y)=>x.overall-y.overall);
   const acceptable = ranked.filter(r=>r.overall<=threshold);
   const recommended = acceptable.length
@@ -374,14 +411,21 @@ function envelope(c, opts){
 // requires (ASTM G48 CPT margin, the Cl-SCC screen, ISO 15156-3 sour envelope).
 function complianceDiff(c, svc){
   const a = assess(c, svc);
+  // assess() flagged the input (bad composition / non-finite T) — propagate the
+  // flag instead of dereferencing a.cpt / a.pPit (which would throw or print NaN).
+  if (a.error) return { assess: a, rows: [], overall: null, dominant: "none", error: a.error };
+  // From here a.* are finite (assess validated T) — re-derive the same coerced
+  // T/Cl so the row text/margins never interpolate a raw NaN or undefined.
+  const Cl = _numOrNull(svc && svc.Cl);
+  const Tsvc = _numOrNull(svc && svc.T);
   const rows = [];
   // Pitting / crevice — CPT margin vs service temperature (ASTM G48 basis)
-  if (svc.Cl > 0){
-    const margin = a.cpt - svc.T;                 // degC of headroom to the CPT
+  if (Cl > 0){
+    const margin = a.cpt - Tsvc;                  // degC of headroom to the CPT
     rows.push({
       mechanism: "Pitting / crevice",
       physics: "P(pit) " + (a.pPit*100).toFixed(0) + "% · CPT " + a.cpt.toFixed(0) + "°C",
-      code: "ASTM G48 CPT vs T " + svc.T.toFixed(0) + "°C",
+      code: "ASTM G48 CPT vs T " + Tsvc.toFixed(0) + "°C",
       pass: margin > 0 && a.pPit < 0.5,
       margin: (margin >= 0 ? "+" : "") + margin.toFixed(0) + "°C to CPT",
       p: a.pPit
@@ -392,7 +436,7 @@ function complianceDiff(c, svc){
     rows.push({
       mechanism: "Chloride-SCC",
       physics: "P(SCC) " + (a.pScc*100).toFixed(0) + "%",
-      code: "Cl⁻ " + (svc.Cl||0) + " ppm · " + svc.T.toFixed(0) + "°C · σ " + ((svc.stress||0)).toFixed(2) + "·YS",
+      code: "Cl⁻ " + (Cl||0) + " ppm · " + Tsvc.toFixed(0) + "°C · σ " + (_numOr0(svc && svc.stress)).toFixed(2) + "·YS",
       pass: a.pScc < 0.5,
       margin: a.pScc < 0.15 ? "low" : a.pScc < 0.5 ? "elevated" : "high",
       p: a.pScc

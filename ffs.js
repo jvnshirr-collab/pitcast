@@ -33,11 +33,23 @@
   // Level 1 — Point Thickness Readings (PTR)
   // Need ≥ 15 readings inside the flaw zone; COV ≤ 10 % → use mean; else escalate
   function part4_Level1(opts) {
-    var readings_mm = opts.readings_mm || [];
+    opts = opts || {};
+    var raw = Array.isArray(opts.readings_mm) ? opts.readings_mm : [];
     var FCA_mm = +opts.FCA_mm || 0;
     var t_min_mm = +opts.t_min_mm;
+    // Coerce + validate array contents: a PTR must be a finite, positive
+    // thickness. Drop NaN / string / negative / zero entries before counting so
+    // garbage never leaks into mean/std/COV (silent NaN) or a negative mean.
+    var readings_mm = [];
+    var rejected = 0;
+    for (var ri = 0; ri < raw.length; ri++) {
+      var v = +raw[ri];
+      if (Number.isFinite(v) && v > 0) readings_mm.push(v);
+      else rejected++;
+    }
     if (readings_mm.length < 15) {
-      return { passes: false, level: 1, reason: "Need ≥15 PTR per Part 4 §4.3.3", n: readings_mm.length,
+      return { passes: false, level: 1, reason: "Need ≥15 valid (finite, >0) PTR per Part 4 §4.3.3", n: readings_mm.length,
+               rejected_readings: rejected,
                ref: "API 579-1/ASME FFS-1 (2021) Part 4 §4.3.3 PTR" };
     }
     var mean = readings_mm.reduce(function(a,b){ return a+b; }, 0) / readings_mm.length;
@@ -82,6 +94,7 @@
 
   // Part 5 Level 1 — single LTA on cylindrical shell, Type A, internal pressure
   function part5_LTA_L1(opts) {
+    opts = opts || {};
     var tmm = +opts.tmm_mm;       // minimum measured thickness in LTA
     var FCA = +opts.FCA_mm || 0;
     var t_nom = +opts.t_nom_mm;
@@ -93,6 +106,11 @@
 
     if (!(tmm > 0 && t_nom > 0 && s > 0 && D > 0)) {
       return { error: "tmm, t_nom, s_axial, D_inside must be > 0" };
+    }
+    // MAWP_design_bar drives the headline MAWP_reduced_bar; a non-finite or
+    // negative design pressure would silently poison it (NaN / negative bar).
+    if (!(MAWP_design_bar > 0)) {
+      return { error: "MAWP_design_bar must be a finite value > 0", MAWP_design_bar: opts.MAWP_design_bar };
     }
     var tc = t_nom - LOSS - FCA;   // corroded reference wall
     if (!(tc > 0)) return { error: "tc ≤ 0 — corrosion exceeds wall", tc_mm: tc };
@@ -160,8 +178,12 @@
   //   RSF_p = 1 - (R_wt^2 · Q / E_pit) where R_wt = pit depth/t, Q = density factor
   //   Plus equivalent MAWP reduction per Eq 2.2: MAWP_r = MAWP · (RSF/RSFa)
   function part6_pitting_L1(opts) {
-    var max_pit_depth_mm = +opts.max_pit_depth_mm || 0;
-    var pit_density_per_m2 = +opts.pit_density_per_m2 || 0;
+    opts = opts || {};
+    // Pit depth + density are physically non-negative; clamp so a negative input
+    // can't yield a negative depth_ratio / density (which would mis-classify the
+    // pit type and emit a negative headline value). NaN/string → 0 via `|| 0`.
+    var max_pit_depth_mm = Math.max(0, +opts.max_pit_depth_mm || 0);
+    var pit_density_per_m2 = Math.max(0, +opts.pit_density_per_m2 || 0);
     var t_nom_mm = +opts.t_nom_mm;
     var MAWP_design_bar = +opts.MAWP_design_bar || 0;
     var RSFa = +opts.RSFa || 0.90;
@@ -224,16 +246,21 @@
    *  Mt_pit ≈ 1 / (1 - (a/s)^2)^0.5 (Annex 6A Eq 6.A.4 simplified).
    */
   function part6_pitting_L2(opts) {
-    var max_pit_depth_mm = +opts.max_pit_depth_mm || 0;
-    var pit_diameter_mm = +opts.pit_diameter_mm || 1;
-    var pit_spacing_mm = +opts.pit_spacing_mm || 10;
+    opts = opts || {};
+    // Pit depth is physically non-negative; clamp so a negative reading can't
+    // produce a negative R_wt headline. NaN/string → 0 / default via `|| n`.
+    var max_pit_depth_mm = Math.max(0, +opts.max_pit_depth_mm || 0);
+    var pit_diameter_mm = Math.max(0, +opts.pit_diameter_mm || 1);
+    var pit_spacing_mm = Math.max(0, +opts.pit_spacing_mm || 10);
     var t_nom_mm = +opts.t_nom_mm;
-    var FCA_mm = +opts.FCA_mm || 0;
+    var FCA_mm = Math.max(0, +opts.FCA_mm || 0);
     var MAWP_design_bar = +opts.MAWP_design_bar || 0;
     var RSFa = +opts.RSFa || 0.90;
     if (!(t_nom_mm > 0)) return { error: "t_nom_mm required" };
 
     var t_eff = t_nom_mm - FCA_mm;
+    // FCA ≥ t_nom leaves no remaining wall → R_wt would be ±Inf / negative.
+    if (!(t_eff > 0)) return { error: "FCA_mm ≥ t_nom_mm — no remaining wall under the pit", t_eff: t_eff };
     var R_wt = max_pit_depth_mm / t_eff;
     if (R_wt >= 0.80) {
       return {
@@ -342,11 +369,16 @@
    *  spherical-cap blister geometry per Anderson FM 4th ed §10.
    */
   function part7_HIC_L2(opts) {
-    var blister_diameter_mm = +opts.blister_diameter_mm || 0;
-    var blister_density_per_m2 = +opts.blister_density_per_m2 || 0;
-    var t_loss_fraction = +opts.t_loss_fraction || 0;     // 0-1 through-wall loss under blister
+    opts = opts || {};
+    // Diameter, density and wall-loss fraction are physically non-negative;
+    // clamp so a negative input can't produce a negative blister_area_fraction
+    // (which would push RSF above 1). t_loss is additionally capped at 1 (full
+    // through-wall). NaN/string → 0 via `|| 0`.
+    var blister_diameter_mm = Math.max(0, +opts.blister_diameter_mm || 0);
+    var blister_density_per_m2 = Math.max(0, +opts.blister_density_per_m2 || 0);
+    var t_loss_fraction = Math.min(1, Math.max(0, +opts.t_loss_fraction || 0));  // 0-1 through-wall loss under blister
     var t_nom_mm = +opts.t_nom_mm;
-    var FCA_mm = +opts.FCA_mm || 0;
+    var FCA_mm = Math.max(0, +opts.FCA_mm || 0);
     var MAWP_design_bar = +opts.MAWP_design_bar || 0;
     var RSFa = +opts.RSFa || 0.90;
     if (!(t_nom_mm > 0)) return { error: "t_nom_mm required" };

@@ -19,5 +19,7 @@ jobs:
         run: node benchmark/test-all.js
       - name: Units oracle (SI <-> US-customary conversions)
         run: node benchmark/test-units.js
+      - name: Robustness edge cases (adversarial inputs degrade gracefully — no throw / silent NaN)
+        run: node benchmark/test-edge.js
       - name: Benchmark reproducibility (regenerate REPORT.md from cited data)
         run: node benchmark/run.js

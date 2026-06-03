@@ -47,9 +47,23 @@
   var SHORT_LIMIT_B31G = 20.0;          // (L^2 / (D t)) cutoff for short-vs-long (original)
   var MID_LIMIT_MODB31G = 50.0;         // (L^2 / (D t)) cutoff between piecewise M in mod-B31G
 
+  /** Coerce to a finite number, returning `fallback` (default NaN) for any value
+   *  that is null/undefined/non-numeric/empty-string/NaN/±Infinity. Mirrors the
+   *  defensive `+o.x`-then-validate pattern already used below, but rejects the
+   *  cases bare `+x` lets through (e.g. +'' === 0, +[] === 0, +null === 0). */
+  function finiteOr(x, fallback) {
+    if (x == null) return fallback === undefined ? NaN : fallback;
+    var n = (typeof x === "number") ? x : (typeof x === "string" && x.trim() !== "" ? +x : NaN);
+    return Number.isFinite(n) ? n : (fallback === undefined ? NaN : fallback);
+  }
+
   /** Folias (bulging) factor M.
-   *  method ∈ {"b31g", "modb31g"}.  Returns +Infinity-safe number. */
+   *  method ∈ {"b31g", "modb31g"}.  Returns +Infinity-safe number.
+   *  Degrades gracefully: any non-finite L/D/t collapses to the M=1 floor
+   *  (no bulging amplification) rather than propagating a silent NaN. */
   function foliasM(L, D, t, method) {
+    L = finiteOr(L); D = finiteOr(D); t = finiteOr(t);
+    if (!Number.isFinite(L) || !Number.isFinite(D) || !Number.isFinite(t)) return 1;
     var z = (L * L) / Math.max(1e-9, D * t);
     if (method === "modb31g") {
       if (z <= MID_LIMIT_MODB31G) {
@@ -72,11 +86,24 @@
    * @param {number} [o.SF=1.39]           safety factor on P_f
    */
   function failurePressure(o) {
-    var D = +o.D, t = +o.t, SMYS = +o.SMYS, L = +o.L, d = +o.d;
+    if (o == null || typeof o !== "object") {
+      return { error: "input must be an object {D,t,SMYS,L,d}", method: "modb31g" };
+    }
+    var D = finiteOr(o.D), t = finiteOr(o.t), SMYS = finiteOr(o.SMYS),
+        L = finiteOr(o.L), d = finiteOr(o.d);
     var method = o.method === "b31g" ? "b31g" : "modb31g";
-    var SF = (o.SF != null ? +o.SF : DEFAULT_SF);
+    // SF: clamp to a positive value; non-finite or <=0 falls back to the
+    // ASME B31G default (never an Infinity/negative/NaN safe pressure).
+    var SF = finiteOr(o.SF, DEFAULT_SF);
+    if (!(SF > 0)) SF = DEFAULT_SF;
     if (!(D > 0 && t > 0 && SMYS > 0)) {
       return { error: "D, t, SMYS must be > 0", method: method };
+    }
+    if (!(L >= 0)) {  // NaN/undefined/string/object/negative defect length
+      return { error: "L (defect length) must be a finite value >= 0", method: method };
+    }
+    if (!(d >= 0)) {  // NaN/undefined/string/object/negative defect depth
+      return { error: "d (defect depth) must be a finite value >= 0", method: method };
     }
     if (d >= t) {  // through-wall
       return { D: D, t: t, SMYS: SMYS, L: L, d: d, method: method, SF: SF,
@@ -132,13 +159,14 @@
   /** Largest defect depth such that P_safe == MAOP, by binary search.
    *  Returns null if even d→0 fails (intact pipe weaker than MAOP — bad pipe selection). */
   function allowableDepth(o) {
-    var MAOP_bar = +o.MAOP_bar;
-    var D = +o.D, t = +o.t;
-    if (!(MAOP_bar > 0)) return null;
+    if (o == null || typeof o !== "object") return null;
+    var MAOP_bar = finiteOr(o.MAOP_bar), D = finiteOr(o.D), t = finiteOr(o.t);
+    if (!(MAOP_bar > 0) || !(D > 0) || !(t > 0)) return null;
     // intact pipe must clear MAOP first
     var intact = failurePressure({ D: D, t: t, SMYS: o.SMYS, L: o.L, d: 0,
                                    method: o.method, SF: o.SF });
-    if (intact.P_safe_bar < MAOP_bar) return null;
+    // failurePressure flagged the inputs (e.g. SMYS/L invalid) -> no solution.
+    if (!Number.isFinite(intact.P_safe_bar) || intact.P_safe_bar < MAOP_bar) return null;
     var lo = 0, hi = 0.99 * t;
     for (var i = 0; i < 60; i++) {
       var mid = 0.5 * (lo + hi);
@@ -177,15 +205,19 @@
    *  Output: years to min WT, required inhibitor efficiency to meet design life,
    *          fraction of CA consumed at design life. Cited per API 570 / API 510. */
   function remainingLife(o) {
-    var CR = Math.max(0, +o.CR);
-    var inh = o.inhEff == null ? 0 : Math.max(0, Math.min(0.999, +o.inhEff));
+    if (o == null || typeof o !== "object") o = {};
+    // Coerce-and-validate: non-finite numerics degrade to safe defaults rather
+    // than propagating a silent NaN; negatives are clamped (no negative CR /
+    // corrosion allowance / design life / consumed metal).
+    var CR = Math.max(0, finiteOr(o.CR, 0));
+    var inh = Math.max(0, Math.min(0.999, finiteOr(o.inhEff, 0)));
     var crEff = CR * (1 - inh);
-    var tNom = +o.tNom, tMin = +o.tMin;
+    var tNom = finiteOr(o.tNom, 0), tMin = finiteOr(o.tMin, 0);
     var CA = Math.max(0, tNom - tMin);
-    var life = +o.designLifeYr;
+    var life = Math.max(0, finiteOr(o.designLifeYr, 0));
     var consumed = crEff * life;
     var yrsToMin = crEff > 0 ? CA / crEff : Infinity;
-    var etaReq = consumed > CA ? Math.max(0, 1 - CA / (CR * life)) : 0;
+    var etaReq = (consumed > CA && CR * life > 0) ? Math.max(0, 1 - CA / (CR * life)) : 0;
     return {
       CR_mmyr: CR, inhibitorEff: inh, effective_CR_mmyr: crEff,
       tNom_mm: tNom, tMin_mm: tMin, CA_mm: CA,

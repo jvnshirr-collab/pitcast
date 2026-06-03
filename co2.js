@@ -46,6 +46,7 @@
    *  and pH calculations stay internally consistent.
    *  Crolet J.-L., Bonis M.R., CORROSION/91 Paper 22; Corrosion 47 (1991) 351. */
   function K_H_CO2(T_C) {
+    T_C = clampT_C(T_C, 25);
     return 0.0344 * Math.pow(10, -0.0085 * (T_C - 25));
   }
 
@@ -53,6 +54,8 @@
    *  Crolet-Bonis 1991 closed-form for pure CO2-water. */
   function pH_carbonic(pCO2_bar, T_C) {
     if (T_C === undefined) T_C = 25;
+    T_C = clampT_C(T_C, 25);
+    pCO2_bar = clampP(pCO2_bar, 5);
     return 3.71 + 0.00417 * T_C - 0.5 * Math.log10(Math.max(1e-6, pCO2_bar));
   }
 
@@ -67,8 +70,9 @@
    *  De Waard, Lotz & Dugstad, NACE Corrosion/95 Paper 128. */
   function fugacity_CO2(pCO2_bar, T_C) {
     if (T_C === undefined) T_C = 60;
+    T_C = clampT_C(T_C, 60);
     var T = T_C + 273.15;
-    var P = Math.max(0, pCO2_bar);
+    var P = clampP(pCO2_bar, 0);
     var logPhi = Math.min(0, (0.0031 - 1.4 / T) * Math.min(P, 250));
     return Math.pow(10, logPhi) * P;
   }
@@ -79,6 +83,8 @@
   //   Corrosion 31 (1975) 177. Conservative — no flow, scale, or pH.
   // ══════════════════════════════════════════════════════════════════════
   function deWaard1975(T_C, pCO2_bar) {
+    T_C = clampT_C(T_C, 60);
+    pCO2_bar = clampP(pCO2_bar, 5);
     var T = T_C + 273.15;
     var logCR = 5.8 - 1710 / T + 0.67 * Math.log10(Math.max(1e-6, pCO2_bar));
     return Math.max(0, Math.pow(10, logCR));
@@ -96,35 +102,39 @@
   // opts: { T_C, pCO2_bar, u_m_s, d_pipe_m, pH, X_glycol?, applyScale? }
   // ══════════════════════════════════════════════════════════════════════
   function deWaard1995(opts) {
-    var T = opts.T_C + 273.15;
-    var f = fugacity_CO2(opts.pCO2_bar, opts.T_C);
+    opts = opts || {};
+    var T_C = clampT_C(opts.T_C, 60);
+    var pCO2_bar = clampP(opts.pCO2_bar, 5);
+    var pH = clampPH(opts.pH, 4.5);
+    var T = T_C + 273.15;
+    var f = fugacity_CO2(pCO2_bar, T_C);
 
     // 1) Reaction-controlled rate (no flow, no scale)
     var log_react = 5.8 - 1710 / T + 0.67 * Math.log10(Math.max(1e-6, f));
     var CR_react = Math.pow(10, log_react);
 
     // 2) Mass-transport-controlled rate (liquid-side film, turbulent pipe)
-    var u = Math.max(0.05, opts.u_m_s);
-    var d = Math.max(0.01, opts.d_pipe_m);
+    var u = Math.max(0.05, num(opts.u_m_s, 1.0));
+    var d = Math.max(0.01, num(opts.d_pipe_m, 0.1));
     var CR_mass = 2.45 * Math.pow(u, 0.8) / Math.pow(d, 0.2) * f;
 
     // 3) Combine in resistance-in-series
     var CR_combined = CR_react * CR_mass / Math.max(1e-9, CR_react + CR_mass);
 
     // 4) pH correction (only if pH > saturation pH of pure carbonic)
-    var pH_sat = pH_carbonic(opts.pCO2_bar, opts.T_C);
-    var dPH = Math.max(0, opts.pH - pH_sat);
+    var pH_sat = pH_carbonic(pCO2_bar, T_C);
+    var dPH = Math.max(0, pH - pH_sat);
     var F_pH = Math.max(0.05, 1 - 0.31 * Math.pow(dPH, 1.6));
 
     // 5) Scale-formation correction (FeCO3 film throttles CR, T >= 60 C)
     var F_scale = 1;
-    if (opts.applyScale !== false && opts.T_C >= 60) {
+    if (opts.applyScale !== false && T_C >= 60) {
       var log_F = 2400 / T - 0.6 * Math.log10(Math.max(1e-6, f)) - 6.7;
       F_scale = Math.min(1, Math.pow(10, log_F));
     }
 
     // 6) Glycol/MEG correction
-    var Xg = opts.X_glycol == null ? 0 : opts.X_glycol;
+    var Xg = num(opts.X_glycol, 0);
     var F_glycol = Math.max(0.05, 1 - 1.6 * Math.max(0, Math.min(0.9, Xg)));
 
     return {
@@ -145,9 +155,13 @@
   // opts: { T_C, pCO2_bar, u_m_s, d_pipe_m, pH, rho_kgm3?, mu_PaS? }
   // ══════════════════════════════════════════════════════════════════════
   function norsokM506(opts) {
+    opts = opts || {};
+    var T_C = clampT_C(opts.T_C, 60);
+    var pCO2_bar = clampP(opts.pCO2_bar, 5);
+    var pH = clampPH(opts.pH, 4.5);
     var T_table = [5, 15, 20, 40, 60, 80, 90, 120, 150];
     var K_table = [0.42, 1.59, 4.762, 8.927, 10.695, 9.949, 6.250, 7.770, 5.203];
-    var T = opts.T_C;
+    var T = T_C;
     var K_T = K_table[0];
     if (T <= T_table[0]) {
       K_T = K_table[0];
@@ -164,26 +178,26 @@
     }
 
     // Wall shear stress S (Pa). Default rho = 1025 (brine), mu = 0.001 Pa.s.
-    var rho = opts.rho_kgm3 == null ? 1025 : opts.rho_kgm3;
-    var mu = opts.mu_PaS == null ? 0.001 : opts.mu_PaS;
-    var u = Math.max(0.05, opts.u_m_s);
-    var d = Math.max(0.01, opts.d_pipe_m);
+    var rho = Math.max(1, num(opts.rho_kgm3, 1025));
+    var mu = Math.max(1e-6, num(opts.mu_PaS, 0.001));
+    var u = Math.max(0.05, num(opts.u_m_s, 1.0));
+    var d = Math.max(0.01, num(opts.d_pipe_m, 0.1));
     var Re = rho * u * d / mu;
     var f_f = 0.001375 * (1 + Math.pow(2e4 / Re + 1e6 / Re, 1 / 3)); // Colebrook-style
     var S = 0.5 * rho * u * u * f_f;
-    var f_CO2 = fugacity_CO2(opts.pCO2_bar, T);
+    var f_CO2 = fugacity_CO2(pCO2_bar, T);
 
     // f(pH) — bracketed by T (NORSOK M-506 surface table, closed form)
     var f_pH;
     if (T <= 20) {
-      if (opts.pH <= 4.6) f_pH = 2.0676 - 0.2309 * opts.pH;
-      else f_pH = 4.342 - 1.051 * opts.pH + 0.0708 * opts.pH * opts.pH;
+      if (pH <= 4.6) f_pH = 2.0676 - 0.2309 * pH;
+      else f_pH = 4.342 - 1.051 * pH + 0.0708 * pH * pH;
     } else if (T < 80) {
-      if (opts.pH <= 4.6) f_pH = 2.0676 - 0.2309 * opts.pH;
-      else f_pH = 5.486 - 1.718 * opts.pH + 0.1233 * opts.pH * opts.pH;
+      if (pH <= 4.6) f_pH = 2.0676 - 0.2309 * pH;
+      else f_pH = 5.486 - 1.718 * pH + 0.1233 * pH * pH;
     } else {
-      if (opts.pH <= 4.6) f_pH = 0.4254 - 0.0857 * opts.pH;
-      else f_pH = 6.1473 - 1.7757 * opts.pH + 0.1254 * opts.pH * opts.pH;
+      if (pH <= 4.6) f_pH = 0.4254 - 0.0857 * pH;
+      else f_pH = 6.1473 - 1.7757 * pH + 0.1254 * pH * pH;
     }
     f_pH = Math.max(0.05, f_pH);
 
@@ -200,22 +214,26 @@
   //   oil_type: 'condensate' | 'crude' | 'water-only'
   // ══════════════════════════════════════════════════════════════════════
   function nescCassandra(opts) {
-    var T = opts.T_C + 273.15;
-    var f = fugacity_CO2(opts.pCO2_bar, opts.T_C);
+    opts = opts || {};
+    var T_C = clampT_C(opts.T_C, 60);
+    var pCO2_bar = clampP(opts.pCO2_bar, 5);
+    var pH = clampPH(opts.pH, 4.5);
+    var T = T_C + 273.15;
+    var f = fugacity_CO2(pCO2_bar, T_C);
 
     // 1) Blank rate (de Waard anchor)
     var CR_baseline = Math.pow(10, 5.8 - 1710 / T + 0.67 * Math.log10(Math.max(1e-6, f)));
 
     // 2) FeCO3 scaling factor (Sun-Nesic 2009 supersaturation)
-    var log_Ksp = -10.13 - 0.0182 * opts.T_C; // simplified linear with T_C
+    var log_Ksp = -10.13 - 0.0182 * T_C; // simplified linear with T_C
     var K_sp = Math.pow(10, log_Ksp);
-    var K_H = K_H_CO2(opts.T_C);
+    var K_H = K_H_CO2(T_C);
     var CO2_aq = K_H * f;
-    var H_plus = Math.pow(10, -opts.pH);
-    var K1 = Math.pow(10, -(6.351 - 0.0019 * opts.T_C));
-    var K2 = Math.pow(10, -(10.329 - 0.0024 * opts.T_C));
+    var H_plus = Math.pow(10, -pH);
+    var K1 = Math.pow(10, -(6.351 - 0.0019 * T_C));
+    var K2 = Math.pow(10, -(10.329 - 0.0024 * T_C));
     var CO3 = K1 * K2 * CO2_aq / (H_plus * H_plus);
-    var Fe2_M = opts.Fe2_ppm / 55847; // mg/L -> mol/L
+    var Fe2_M = Math.max(0, num(opts.Fe2_ppm, 10)) / 55847; // mg/L -> mol/L
     var SR = (Fe2_M * CO3) / K_sp;
     var F_scale = 1 / (1 + Math.pow(Math.max(1e-9, SR), 0.8));
 
@@ -226,7 +244,7 @@
     // a higher water cut than condensate. A sigmoid in water cut replaces the
     // old hard step so the hydrocarbon choice changes the rate continuously
     // (Smart 1993 / de Waard water-wetting concept).
-    var ot = opts.oil_type, wc = (opts.water_cut == null ? 0.5 : opts.water_cut);
+    var ot = opts.oil_type, wc = num(opts.water_cut, 0.5);
     var F_oil = 1;
     if (ot === 'crude' || ot === 'condensate') {
       var wc_t = ot === 'crude' ? 0.45 : 0.28;   // water-wetting transition (water cut)
@@ -236,7 +254,7 @@
     }
 
     // 4) Velocity / Schmidt-Sherwood (Berger-Hau correlation)
-    var u = Math.max(0.05, opts.u_m_s);
+    var u = Math.max(0.05, num(opts.u_m_s, 1.0));
     var F_velocity = Math.min(2.5, 0.4 + 0.18 * Math.pow(u, 0.8));
 
     return {
@@ -254,13 +272,18 @@
   // opts: { T_C, pCO2_bar, pH2S_bar, pH, u_m_s, age_h }
   // ══════════════════════════════════════════════════════════════════════
   function multicorpFreeCorp(opts) {
-    var T = opts.T_C + 273.15;
-    var f = fugacity_CO2(opts.pCO2_bar, opts.T_C);
+    opts = opts || {};
+    var T_C = clampT_C(opts.T_C, 60);
+    var pCO2_bar = clampP(opts.pCO2_bar, 5);
+    var pH2S_bar = clampP(opts.pH2S_bar, 0);
+    var pH = clampPH(opts.pH, 4.5);
+    var T = T_C + 273.15;
+    var f = fugacity_CO2(pCO2_bar, T_C);
 
     var CR_react = Math.pow(10, 5.8 - 1710 / T + 0.67 * Math.log10(Math.max(1e-6, f)));
 
     // H2S co-effect (Sun-Nesic 2009)
-    var ratio = opts.pH2S_bar / Math.max(1e-6, opts.pCO2_bar);
+    var ratio = pH2S_bar / Math.max(1e-6, pCO2_bar);
     var F_H2S = 1;
     if (ratio < 0.05) {
       F_H2S = 1 + 4.5 * Math.log10(1 + 100 * ratio); // mild acceleration
@@ -274,17 +297,17 @@
     // matures with exposure time. Undersaturated brine (e.g. cold or low-Fe2+)
     // grows no scale, so F_film stays ~1 (no protection). Protection is capped
     // at ~2 orders of magnitude, the upper bound Nesic reports for FeCO3 films.
-    var f_film = fugacity_CO2(opts.pCO2_bar, opts.T_C);
-    var CO2_aq_f = K_H_CO2(opts.T_C) * f_film;
-    var K1f = Math.pow(10, -(6.351 - 0.0019 * opts.T_C));
-    var K2f = Math.pow(10, -(10.329 - 0.0024 * opts.T_C));
-    var Hf = Math.pow(10, -opts.pH);
+    var f_film = fugacity_CO2(pCO2_bar, T_C);
+    var CO2_aq_f = K_H_CO2(T_C) * f_film;
+    var K1f = Math.pow(10, -(6.351 - 0.0019 * T_C));
+    var K2f = Math.pow(10, -(10.329 - 0.0024 * T_C));
+    var Hf = Math.pow(10, -pH);
     var CO3f = K1f * K2f * CO2_aq_f / (Hf * Hf);
-    var Fe2f = Math.max(0, opts.Fe2_ppm == null ? 10 : opts.Fe2_ppm) / 55847;
-    var Ksp_f = Math.pow(10, -10.13 - 0.0182 * opts.T_C);
+    var Fe2f = Math.max(0, num(opts.Fe2_ppm, 10)) / 55847;
+    var Ksp_f = Math.pow(10, -10.13 - 0.0182 * T_C);
     var SR_f = (Fe2f * CO3f) / Ksp_f;
     var scaleReady = SR_f > 1 ? (SR_f - 1) / SR_f : 0;            // 0..1 (0 if undersaturated)
-    var ageGrowth = 1 - Math.exp(-Math.max(0, opts.age_h) / 4380); // film matures, tau ~ 6 months
+    var ageGrowth = 1 - Math.exp(-Math.max(0, num(opts.age_h, 8760)) / 4380); // film matures, tau ~ 6 months
     var coverage = scaleReady * ageGrowth;                        // 0..1 protective coverage
     var F_film = Math.max(0.01, 1 - 0.99 * coverage);            // <= 2 orders of magnitude
 
@@ -293,7 +316,7 @@
     // multiplier would double-count temperature and blow up the hot end.
 
     // Velocity (lighter than NESC)
-    var F_v = 0.8 + 0.1 * Math.min(8, opts.u_m_s);
+    var F_v = 0.8 + 0.1 * Math.min(8, Math.max(0, num(opts.u_m_s, 1.0)));
 
     return {
       CR_mmpy: CR_react * F_H2S * F_film * F_v,
@@ -310,16 +333,20 @@
   // opts: { T_C, pCO2_bar, pH, Fe2_ppm, CR_mmpy }
   // ══════════════════════════════════════════════════════════════════════
   function feCO3_scaling_tendency(opts) {
-    var T = opts.T_C + 273.15;
-    var f = fugacity_CO2(opts.pCO2_bar, opts.T_C);
-    var K_H = K_H_CO2(opts.T_C);
+    opts = opts || {};
+    var T_C = clampT_C(opts.T_C, 60);
+    var pCO2_bar = clampP(opts.pCO2_bar, 5);
+    var pH = clampPH(opts.pH, 4.5);
+    var T = T_C + 273.15;
+    var f = fugacity_CO2(pCO2_bar, T_C);
+    var K_H = K_H_CO2(T_C);
     var CO2_aq = K_H * f;
-    var K1 = Math.pow(10, -(6.351 - 0.0019 * opts.T_C));
-    var K2 = Math.pow(10, -(10.329 - 0.0024 * opts.T_C));
-    var H_plus = Math.pow(10, -opts.pH);
+    var K1 = Math.pow(10, -(6.351 - 0.0019 * T_C));
+    var K2 = Math.pow(10, -(10.329 - 0.0024 * T_C));
+    var H_plus = Math.pow(10, -pH);
     var CO3 = K1 * K2 * CO2_aq / (H_plus * H_plus);
-    var Fe2_M = opts.Fe2_ppm / 55847;
-    var log_Ksp = -10.13 - 0.0182 * opts.T_C;
+    var Fe2_M = Math.max(0, num(opts.Fe2_ppm, 10)) / 55847;
+    var log_Ksp = -10.13 - 0.0182 * T_C;
     var K_sp = Math.pow(10, log_Ksp);
     var SR = (Fe2_M * CO3) / K_sp;
 
@@ -329,7 +356,8 @@
     var Rp = A * Math.exp(-Ep / (R_GAS * T)) * Math.max(0, SR - 1);
     var Rp_mmpy = Rp * 31557600 / 3.85e3 * 1000; // rho_FeCO3 = 3.85 g/cm3
 
-    var ST = opts.CR_mmpy > 0 ? Rp_mmpy / opts.CR_mmpy : 0;
+    var CR_in = num(opts.CR_mmpy, 0);
+    var ST = CR_in > 0 ? Rp_mmpy / CR_in : 0;
     return { ST: ST, SR: SR, protective: ST > 1 };
   }
 
@@ -342,12 +370,13 @@
   // opts: { pCO2_bar, T_C?, bicarbonate_mg_l? }
   // ══════════════════════════════════════════════════════════════════════
   function co2InSituPH(opts) {
-    var T_C = opts.T_C == null ? 25 : opts.T_C;
+    opts = opts || {};
+    var T_C = clampT_C(opts.T_C, 25);
     var f = fugacity_CO2(opts.pCO2_bar, T_C);
     var kH = 0.0344 * Math.pow(10, -0.0085 * (T_C - 25));
     var co2_aq = kH * f;
     var K1 = Math.pow(10, -(6.351 - 1.94e-3 * T_C));
-    var A = (opts.bicarbonate_mg_l == null ? 0 : opts.bicarbonate_mg_l) / (61.017 * 1000);
+    var A = Math.max(0, num(opts.bicarbonate_mg_l, 0)) / (61.017 * 1000);
     var disc = A * A + 4 * K1 * co2_aq;
     var h = Math.max(1e-12, (-A + Math.sqrt(disc)) / 2);
     var h0 = Math.sqrt(K1 * co2_aq);
@@ -509,16 +538,16 @@
   //   snapshot — update when the corpus grows; never hand-fabricate.
   // ══════════════════════════════════════════════════════════════════════
   var MODEL_VALIDATION = {
-    date: '2026-05-30',
-    n_in_scope: 10,
-    envelope_coverage: 0.30,
-    basis: 'cited in-scope carbon-steel CO2 corpus (20-80 C); benchmark/run.js',
+    date: '2026-06-03',
+    n_in_scope: 16,
+    envelope_coverage: 0.56,
+    basis: 'cited in-scope carbon-steel CO2 corpus (20-90 C); benchmark/run.js + REPORT.md',
     perModel: {
-      'DWM-1975': { MAE: 223.43, RMSE: 667.31, bias: 223.43 },
-      'DWM-1995': { MAE: 1.12, RMSE: 1.89, bias: 1.09 },
-      'NORSOK': { MAE: 3.03, RMSE: 3.51, bias: 2.84 },
-      'NESC': { MAE: 4.74, RMSE: 7.36, bias: 4.73 },
-      'FreeCorp': { MAE: 51.39, RMSE: 127.23, bias: 51.39 }
+      'DWM-1975': { MAE: 140.32, RMSE: 527.56, bias: 140.32 },
+      'DWM-1995': { MAE: 0.94, RMSE: 1.58, bias: 0.44 },
+      'NORSOK': { MAE: 2.95, RMSE: 3.35, bias: 2.46 },
+      'NESC': { MAE: 3.06, RMSE: 5.82, bias: 2.86 },
+      'FreeCorp': { MAE: 32.59, RMSE: 100.59, bias: 32.59 }
     }
   };
 
@@ -752,6 +781,32 @@
   function num(v, fallback) {
     return (v != null && isFinite(v)) ? Number(v) : fallback;
   }
+
+  // ── INPUT-ROBUSTNESS GUARDS ─────────────────────────────────────────────
+  //  The individual model functions take a flat opts object and feed values
+  //  straight into Math.pow(10, ...) chains and log10(). A NaN/undefined/
+  //  string/object input, or a physically-absurd magnitude (pH=1e12, T=1e12,
+  //  negative pH2S), used to leak a silent NaN/Infinity/negative CR. These
+  //  helpers coalesce a bad value to the model's own default and clamp the
+  //  chemistry-sensitive variables to a physically sane FINITE band BEFORE the
+  //  power chain, so huge/negative inputs degrade gracefully instead of
+  //  blowing up. Bands are deliberately far outside any real CO2-corrosion
+  //  case (and outside every cited oracle), so VALID inputs pass through
+  //  unchanged — these only bite on adversarial extremes.
+  function clamp(v, lo, hi, fallback) {
+    var x = num(v, fallback);
+    return x < lo ? lo : (x > hi ? hi : x);
+  }
+  // temperature (degC): below abs zero is unphysical; >1000 C is irrelevant to
+  // aqueous CO2 corrosion and is only there to stop 10^(±k*T) over/underflowing
+  // to Inf/0 (and Inf*0 -> NaN) in the carbonate-equilibrium chains.
+  function clampT_C(v, fallback) { return clamp(v, -273, 1000, fallback); }
+  // pH: keeps 10^(-pH) and 10^(-2*pH) finite & non-zero. Wider than the model
+  // validity window (3.5-6.5) so realistic in-situ pH is never altered.
+  function clampPH(v, fallback) { return clamp(v, -2, 14, fallback); }
+  // partial pressures (bar, absolute): non-negative, finite-bounded. 1e6 bar is
+  // astronomically above any service yet keeps the fugacity power chain finite.
+  function clampP(v, fallback) { return clamp(v, 0, 1e6, fallback); }
 
   // ── UQ framework resolver (browser global or Node require; cached) ───────
   var _uqCache;

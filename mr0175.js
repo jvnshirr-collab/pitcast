@@ -183,6 +183,9 @@
   // ----- HRC ↔ HV10 (ASTM E140 simplified) --------------------------------
   function _HRCtoHV10(hrc) {
     if (hrc == null) return null;
+    hrc = +hrc;
+    // Reject non-finite HRC (NaN / string / object) → null, not a silent NaN HV.
+    if (!Number.isFinite(hrc)) return null;
     // ASTM E140 Table 2 piecewise approximation for 20–50 HRC range on steels
     if (hrc < 20) return Math.round(238 + (hrc - 20) * 9);
     if (hrc <= 50) {
@@ -200,8 +203,10 @@
   // ----- DISPATCHER -------------------------------------------------------
   function issue(opts) {
     opts = opts || {};
-    var c = opts.composition || {};
-    var uns = (opts.uns || "").toUpperCase();
+    var c = (opts.composition && typeof opts.composition === "object") ? opts.composition : {};
+    // Coerce uns to a string before .toUpperCase() — a numeric/object uns
+    // (e.g. {uns:12345}) would otherwise throw "toUpperCase is not a function".
+    var uns = String(opts.uns == null ? "" : opts.uns).toUpperCase();
     var T_C = opts.T_C, pH2S = opts.pH2S_kPa, Cl = opts.Cl_mg_L, pH = opts.pH_in_situ;
     var stress = opts.stress_pct_SMYS, HRC = opts.hardness_HRC, CW = opts.cold_work_pct;
     var equip = opts.equipment_class || "general";
