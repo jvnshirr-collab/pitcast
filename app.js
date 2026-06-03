@@ -939,7 +939,46 @@ function exportActiveCSV(){
   const csv=rows.map(r=>r.map(c=>`"${String(c==null?"":c).replace(/"/g,'""')}"`).join(",")).join("\r\n");
   _dl("pitcast-"+tab+".csv", csv);
 }
-$("btnPrint")&&($("btnPrint").onclick=()=>window.print());
+// Filed report (PDF): build a clean one-page record of the ACTIVE assessment (header with
+// version/DOI/timestamp/permalink + inputs echo + the glass-box result + screening caveat) and
+// print only that — the raw window.print() dumped the whole page. Save-as-PDF -> a fileable record.
+function filedReport(){
+  if(!document.getElementById('pc-report-style')){
+    const st=document.createElement('style'); st.id='pc-report-style';
+    st.textContent='@media print{body>*:not(#pc-report){display:none!important}#pc-report{display:block!important;color:#000;font:12px/1.5 system-ui,Arial,sans-serif}#pc-report h3{margin:9px 0 3px;font-size:13px}#pc-report .pc-rh{border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:8px}#pc-report .pc-cav{margin-top:10px;padding:8px;border:1px solid #000;font-size:11px}#pc-report .iso,#pc-report .verdict,#pc-report .metric{border:1px solid #999!important;background:#fff!important;color:#000!important}#pc-report svg{max-width:100%}}#pc-report{display:none}';
+    document.head.appendChild(st);
+  }
+  const panels=[...document.querySelectorAll('.panel')];
+  const active=panels.find(p=>p.offsetParent!==null)||panels[0];
+  const tabBtn=document.querySelector('.tab.active')||[...document.querySelectorAll('.tab')].find(t=>t.offsetParent!==null);
+  const tabName=tabBtn?tabBtn.textContent.trim():'Assessment';
+  const results=active?active.querySelector('.results'):null;
+  let inputsHTML='';
+  if(active){ const rows=[];
+    active.querySelectorAll('.inputs label').forEach(lab=>{
+      const ctrl=lab.querySelector('input,select'); if(!ctrl||ctrl.type==='file') return;
+      let val=ctrl.value; if(ctrl.tagName==='SELECT'&&ctrl.selectedOptions[0]) val=ctrl.selectedOptions[0].textContent.trim();
+      if(val===''||val==null) return;
+      const nm=(lab.childNodes[0]&&lab.childNodes[0].textContent||lab.textContent||'').trim().replace(/\s+/g,' ').slice(0,48);
+      rows.push('<tr><td style="padding:1px 12px 1px 0;color:#333">'+nm+'</td><td><b>'+val+'</b></td></tr>');
+    });
+    if(rows.length) inputsHTML='<h3>Inputs</h3><table style="font-size:11px;border-collapse:collapse">'+rows.join('')+'</table>';
+  }
+  const stamp=new Date().toISOString().replace('T',' ').slice(0,16)+' UTC';
+  let rep=document.getElementById('pc-report'); if(rep) rep.remove();
+  rep=document.createElement('div'); rep.id='pc-report';
+  rep.innerHTML='<div class="pc-rh"><div style="font-size:15px"><b>PitCast</b> — corrosion-engineering screening report</div>'
+    +'<div>'+tabName+' · generated '+stamp+'</div>'
+    +'<div style="font-size:10px">pitcast.austenite.org · open-source (Apache-2.0) · archived DOI 10.5281/zenodo.20466523</div>'
+    +'<div style="font-size:9px;word-break:break-all;color:#555">'+location.href+'</div></div>'
+    +inputsHTML
+    +'<h3>Result</h3>'+(results?results.innerHTML:'(run an assessment first)')
+    +'<div class="pc-cav"><b>Screening-grade estimate — NOT a fitness-for-service determination.</b> No professional-engineer seal. High-consequence integrity or material-selection decisions require a qualified engineer, verified (not default) inputs, and the full ASME / API / ISO procedure. Validation &amp; per-engine tier: docs/VALIDATION.md, docs/ENGINE-STATUS.md.</div>';
+  document.body.appendChild(rep);
+  window.print();
+  setTimeout(function(){ rep.remove(); },800);
+}
+$("btnPrint")&&($("btnPrint").onclick=filedReport);
 $("btnCSV")&&($("btnCSV").onclick=exportActiveCSV);
 
 // ---- Reproducible permalinks (WS2.2) — share the EXACT calculation -----------
