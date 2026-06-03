@@ -26,6 +26,9 @@ ok("1 kPa -> 0.14503774 psi", U.fromSI("pp_kPa", 1), 0.1450377377, 1e-6);
 ok("100 MPa -> 14.503774 ksi", U.fromSI("stress_MPa", 100), 14.50377377, 1e-5);
 ok("358 MPa(X52 SMYS) -> 51.9 ksi", U.fromSI("stress_MPa", 358), 51.923, 1e-3);
 ok("1 mm/y -> 39.3700787 mpy", U.fromSI("rate_mmpy", 1), 39.3700787, 1e-5);
+ok("1 m/s -> 3.280840 ft/s", U.fromSI("velocity", 1), 3.280839895, 1e-6);
+ok("0.1 m -> 3.93701 in", U.fromSI("length_m", 0.1), 3.937007874, 1e-6);
+ok("0.3048 m -> 12 in", U.fromSI("length_m", 0.3048), 12, 1e-5);
 ok("0.1 mm/y -> 3.937 mpy", U.fromSI("rate_mmpy", 0.1), 3.93700787, 1e-5);
 
 // --- US -> SI (input read-in) ---
@@ -36,7 +39,7 @@ ok("14.50377 ksi -> 100 MPa", U.toSI("stress_MPa", 14.50377377), 100, 1e-5);
 ok("39.37 mpy -> 1 mm/y",  U.toSI("rate_mmpy", 39.3700787), 1, 1e-5);
 
 // --- round-trips across every quantity ---
-["temp","length","pressure_bar","pp_kPa","stress_MPa","rate_mmpy"].forEach(q => {
+["temp","length","pressure_bar","pp_kPa","stress_MPa","rate_mmpy","velocity","length_m"].forEach(q => {
   const v = 73.21;
   ok(`round-trip ${q}`, U.toSI(q, U.fromSI(q, v)), v, 1e-9);
 });

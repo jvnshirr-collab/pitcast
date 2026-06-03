@@ -24,7 +24,9 @@
     pressure_bar:{ si: { u: "bar"  },     us: { u: "psi",  f: 14.503773773,  o: 0 } },
     pp_kPa:      { si: { u: "kPa"  },     us: { u: "psi",  f: 0.1450377377,  o: 0 } },
     stress_MPa:  { si: { u: "MPa"  },     us: { u: "ksi",  f: 0.1450377377,  o: 0 } },
-    rate_mmpy:   { si: { u: "mm/y" },     us: { u: "mpy",  f: 39.3700787,    o: 0 } }
+    rate_mmpy:   { si: { u: "mm/y" },     us: { u: "mpy",  f: 39.3700787,    o: 0 } },
+    velocity:    { si: { u: "m/s"  },     us: { u: "ft/s", f: 3.280839895,   o: 0 } },
+    length_m:    { si: { u: "m"    },     us: { u: "in",   f: 39.37007874,   o: 0 } }
   };
 
   var SYS = "SI"; // "SI" | "US"

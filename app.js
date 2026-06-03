@@ -403,22 +403,29 @@ function riskBar(items){
 function renderCO2(){
   if(!$("co2_results")||!window.CO2||!window.Charts) return;
   const gv=id=>$(id)?$(id).value:"";
-  const o={ T:+gv("c_T"), pCO2:+gv("c_pCO2"), velocity:+gv("c_u"), pipeID:+gv("c_d"), fe2:+gv("c_fe2"),
-    pH2S:+gv("c_pH2S")/100, waterCut:+gv("c_wc"), glycol:+gv("c_meg"), oilType:gv("c_oil"),
+  // Units layer: engine computes in SI. inSI reads a field in the active system; uv/ul format SI
+  // values for display; uvn = numeric form. CR-vs-T / pCO2 trend + disagreement charts stay SI.
+  const _sys=($("c_units") && $("c_units").value==="US")?"US":"SI";
+  const inSI=(q,id)=> window.Units?Units.toSI(q,+gv(id),_sys):+gv(id);
+  const uvn=(q,si)=> window.Units?Units.fromSI(q,si,_sys):si;
+  const uv=(q,si,dig)=>{ const x=uvn(q,si); return (x==null||isNaN(x))?String(x):x.toFixed(dig==null?0:dig); };
+  const ul=q=> window.Units?Units.label(q,_sys):({rate_mmpy:"mm/y",pressure_bar:"bar",velocity:"m/s",length:"mm",length_m:"m",temp:"°C",pp_kPa:"kPa"}[q]||"");
+  const o={ T:inSI("temp","c_T"), pCO2:inSI("pressure_bar","c_pCO2"), velocity:inSI("velocity","c_u"), pipeID:inSI("length_m","c_d"), fe2:+gv("c_fe2"),
+    pH2S:inSI("pp_kPa","c_pH2S")/100, waterCut:+gv("c_wc"), glycol:+gv("c_meg"), oilType:gv("c_oil"),
     bicarbonate:+gv("c_bicarb"), ageH:+gv("c_age") };
   const pHraw=gv("c_pH"); if(pHraw!==""&&isFinite(+pHraw)) o.pH=+pHraw;
   const r=CO2.assess(o);
   const col=cr=> cr>=5?"#ef4444":cr>=1?"#f59e0b":"#22c55e";
   const vb=r.crMax>=5?"high":r.crMax>=1?"moderate":"low";
   const norsok=r.models.find(m=>m.id==="NORSOK")||r.models[2];
-  const al=CO2.allowance({cr:norsok.cr, designLifeYr:+gv("c_life"), caMm:+gv("c_ca")});
+  const al=CO2.allowance({cr:norsok.cr, designLifeYr:+gv("c_life"), caMm:inSI("length","c_ca")});
   const ev=CO2.erosionalVelocity({velocity_ms:o.velocity});
   const evCol=ev.status==="below continuous limit"?"#22c55e":ev.status&&ev.status.indexOf("C=200")>=0?"#ef4444":"#f59e0b";
   const fixed={pCO2:o.pCO2,velocity:o.velocity,pipeID:o.pipeID,fe2:o.fe2,pH2S:o.pH2S,waterCut:o.waterCut,glycol:o.glycol,oilType:o.oilType,bicarbonate:o.bicarbonate,ageH:o.ageH}; if(o.pH!=null)fixed.pH=o.pH;
   const st=CO2.sweepT(Object.assign({Tmin:20,Tmax:175,n:50},fixed));
   const sp=CO2.sweepPCO2(Object.assign({pMin:0.1,pMax:100,n:50,T:o.T},fixed));
   const SER=st=>[ {name:"de Waard 95",color:"#38bdf8",pts:st.dw95}, {name:"NORSOK M-506",color:"#2dd4bf",pts:st.norsok}, {name:"NESC",color:"#a78bfa",pts:st.nesc} ];
-  const bars=Charts.bars({w:540,labelW:165,unit:"mm/y",fmt:v=>v.toFixed(v<1?3:2),items:r.models.map(m=>({name:m.name,value:m.cr,color:col(m.cr)}))});
+  const bars=Charts.bars({w:540,labelW:165,unit:ul("rate_mmpy"),fmt:v=>v.toFixed(v<1?3:2),items:r.models.map(m=>({name:m.name,value:uvn("rate_mmpy",m.cr),color:col(m.cr)}))});
   const crT=Charts.lines({w:540,h:230,title:"CR vs temperature",xlabel:"Temperature (°C)",ylabel:"CR (mm/y)",
     series:[{name:"de Waard 95",color:"#38bdf8",pts:st.map(p=>({x:p.T,y:p.dw95}))},{name:"NORSOK M-506",color:"#2dd4bf",pts:st.map(p=>({x:p.T,y:p.norsok}))},{name:"NESC",color:"#a78bfa",pts:st.map(p=>({x:p.T,y:p.nesc}))}],
     vmarkers:[{x:o.T,label:"op "+o.T+"°C"}]});
@@ -447,30 +454,32 @@ function renderCO2(){
     const dgLegend=`<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:11px;color:var(--dim);margin-top:6px"><span><b style="color:var(--ink)">Model spread</b> (max/min):</span><span>${sw('#0f3d24')} agree ≤1.5×</span><span>${sw('#7a7416')} caution ~3–5×</span><span>${sw('#b4471a')} diverge &gt;10×</span><span><span style="display:inline-block;width:12px;height:10px;vertical-align:middle;border-radius:2px;background:repeating-linear-gradient(45deg,#334155,#334155 1px,transparent 1px,transparent 4px)"></span> outside validity envelope</span><span>◯ your operating point</span></div>`;
     dgBlock=`<div class="chartwrap" style="margin:10px 0"><div style="font-size:12px;color:var(--dim);margin-bottom:2px">Where the five models <b style="color:var(--ink)">agree vs disagree</b> across the envelope — trust the number most where cells are green.</div>${dgMap}${dgLegend}</div>`;
   }
-  const rows=r.models.map(m=>`<tr><td>${m.name}</td><td class="num">${m.cr.toFixed(m.cr<1?3:2)}</td><td style="color:var(--dim);font-size:11px">${decompStr(m.decomposition)}</td><td style="color:var(--dim);font-size:10px">${m.ref}</td></tr>`).join("");
+  const rows=r.models.map(m=>`<tr><td>${m.name}</td><td class="num">${uv("rate_mmpy",m.cr,m.cr<1?3:2)}</td><td style="color:var(--dim);font-size:11px">${decompStr(m.decomposition)}</td><td style="color:var(--dim);font-size:10px">${m.ref}</td></tr>`).join("");
   $("co2_results").innerHTML=`
-    <div class="verdict ${vb}"><div class="gauge">${r.crMax.toFixed(1)}<span class="u"> mm/y</span></div>
+    <div class="verdict ${vb}"><div class="gauge">${uv("rate_mmpy",r.crMax,1)}<span class="u"> ${ul("rate_mmpy")}</span></div>
       <div class="vtext"><b>${r.verdict}</b><div>${r.regime.regime.toUpperCase()} regime · in-situ pH ${r.pH_insitu.toFixed(2)} · FeCO₃ ${r.feco3_protective?"protective":"active"} (ST ${r.feco3_st.toExponential(1)}) · model spread ${r.spread.toFixed(0)}×</div></div></div>
     <div style="margin:10px 0;padding:10px 12px;border:1px solid ${r.spread>=3?"rgba(245,158,11,.45)":"rgba(56,189,248,.35)"};border-radius:8px;background:${r.spread>=3?"rgba(245,158,11,.07)":"rgba(56,189,248,.05)"}">
       <div style="font-size:12px;color:var(--dim)">5-model ensemble — <b style="color:var(--ink)">disagreement view</b></div>
-      <div style="font-size:22px;font-weight:700;margin:2px 0">${r.crMin.toFixed(r.crMin<1?3:2)} – ${r.crMax.toFixed(r.crMax<1?3:2)} <span style="font-size:12px;font-weight:400;color:var(--dim)">mm/y · spread ${r.spread.toFixed(0)}×</span></div>
+      <div style="font-size:22px;font-weight:700;margin:2px 0">${uv("rate_mmpy",r.crMin,r.crMin<1?3:2)} – ${uv("rate_mmpy",r.crMax,r.crMax<1?3:2)} <span style="font-size:12px;font-weight:400;color:var(--dim)">${ul("rate_mmpy")} · spread ${r.spread.toFixed(0)}×</span></div>
       <div style="font-size:12px;color:var(--dim);line-height:1.5">${r.spread>=3?"⚠ Models disagree strongly — read the band as your uncertainty, not a single number. Where a protective FeCO₃/FeS film dominates, even the lowest model can read high (see benchmark envelope-coverage, About).":"Models broadly agree — the band is your uncertainty range."}</div></div>
     ${envBars(r.uq&&r.uq.envelope)}
+    ${_sys==="US"?'<div class="blab2" style="color:var(--dim)">↳ trend &amp; disagreement charts below are shown in SI units (°C · bar · mm/yr)</div>':''}
     ${dgBlock}
-    <div class="blab2">Model verdicts (mm/y)</div>${bars}
+    <div class="blab2">Model verdicts (${ul("rate_mmpy")})</div>${bars}
     <div class="chartwrap">${crT}</div>
     <div class="chartwrap">${crP}</div>
-    <table><thead><tr><th>Model</th><th>CR</th><th>Decomposition / multipliers</th><th>Reference</th></tr></thead><tbody>${rows}</tbody></table>
+    <table><thead><tr><th>Model</th><th>CR (${ul("rate_mmpy")})</th><th>Decomposition / multipliers</th><th>Reference</th></tr></thead><tbody>${rows}</tbody></table>
     ${gbox("DWM-1975: log CR=5.8−1710/T+0.67·log pCO₂. DWM-1995: resistance-in-series × F_pH·F_scale·F_glycol. NORSOK M-506: K_T·f_CO₂^0.62·(S/19)^x·f(pH). +NESC, FreeCorp. Report the spread, not one number.", "de Waard 1975 / 1995 · NORSOK M-506:2017 · Nyborg 2010 · Nesic 2007", "T2 · per-model MAE + envelope-coverage on cited cases — node benchmark/run.js · VR/co2.md")}${tierTag("5 published models — the ≈10–1000× disagreement is the output, not a single predicted rate","standard")}
-    <div class="explain"><b>Corrosion allowance (NORSOK basis):</b> ${al.uninhibited_CR_mmpy.toFixed(2)} mm/y → ${al.consumed_mm.toFixed(1)} mm consumed over ${al.designLifeYr} yr vs ${al.caMm} mm CA → <b>${al.verdict}</b>${al.ca_sufficient?"":`; required inhibitor efficiency <b>${al.required_inhibitor_efficiency_pct.toFixed(1)}%</b>${al.achievable?"":" — above sustainable field availability (~95%); reconsider a CRA or thicker CA"}`}.
+    <div class="explain"><b>Corrosion allowance (NORSOK basis):</b> ${uv("rate_mmpy",al.uninhibited_CR_mmpy,2)} ${ul("rate_mmpy")} → ${uv("length",al.consumed_mm,1)} ${ul("length")} consumed over ${al.designLifeYr} yr vs ${uv("length",al.caMm,1)} ${ul("length")} CA → <b>${al.verdict}</b>${al.ca_sufficient?"":`; required inhibitor efficiency <b>${al.required_inhibitor_efficiency_pct.toFixed(1)}%</b>${al.achievable?"":" — above sustainable field availability (~95%); reconsider a CRA or thicker CA"}`}.
       <span style="color:var(--dim)"> Screening, carbon steel, sweet service. The five models span ${r.spread.toFixed(0)}× — design to the conservative/relevant one. Sources: Corrosion 31 (1975) 177; NACE 95-128; NORSOK M-506:2017; Nyborg 2010; Nesic 2007.</span></div>
-    <div class="explain"><b>Flow velocity (API&nbsp;RP&nbsp;14E):</b> ${o.velocity} m/s vs erosional limit V<sub>e</sub> = ${ev.Ve_continuous_ms.toFixed(1)} m/s (C=100, continuous) / ${ev.Ve_controlled_ms.toFixed(1)} m/s (C=200, corrosion-controlled) → <b style="color:${evCol}">${ev.status}</b>.
+    <div class="explain"><b>Flow velocity (API&nbsp;RP&nbsp;14E):</b> ${uv("velocity",o.velocity,1)} ${ul("velocity")} vs erosional limit V<sub>e</sub> = ${uv("velocity",ev.Ve_continuous_ms,1)} ${ul("velocity")} (C=100, continuous) / ${uv("velocity",ev.Ve_controlled_ms,1)} ${ul("velocity")} (C=200, corrosion-controlled) → <b style="color:${evCol}">${ev.status}</b>.
       <span style="color:var(--dim)"> Liquid/brine basis (ρ≈${ev.rho_kg_m3} kg/m³). Above the limit, protective FeCO₃ films are stripped and erosion-corrosion adds to the rates above. API RP 14E.</span></div>
-    ${(o.T<20 || r.pH_insitu<3.5 || r.pH_insitu>6.5)?`<div class="cdnote">⚠ EXTRAPOLATION — NORSOK M-506 / de Waard are validated for T 20–150 °C and pH 3.5–6.5 (current ${o.T.toFixed(0)} °C, in-situ pH ${r.pH_insitu.toFixed(1)}); outside this window the sweet-CO₂ correlations are extrapolated — treat as indicative only.</div>`:""}
-    ${o.T>150?`<div class="cdnote">⚠ ${o.T} °C is beyond the validated / tabulated range of the de Waard–Milliams and NORSOK&nbsp;M-506 correlations (≈150 °C). The scale-blind models (de Waard 1975, FreeCorp at low pH) become unbounded upper bounds here — read the scale-aware models (de Waard 95 / NESC) as the realistic estimate, and confirm with a CRA.</div>`:""}
+    ${(o.T<20 || r.pH_insitu<3.5 || r.pH_insitu>6.5)?`<div class="cdnote">⚠ EXTRAPOLATION — NORSOK M-506 / de Waard are validated for T 20–150 °C and pH 3.5–6.5 (current ${uv("temp",o.T,0)} ${ul("temp")}, in-situ pH ${r.pH_insitu.toFixed(1)}); outside this window the sweet-CO₂ correlations are extrapolated — treat as indicative only.</div>`:""}
+    ${o.T>150?`<div class="cdnote">⚠ ${uv("temp",o.T,0)} ${ul("temp")} is beyond the validated / tabulated range of the de Waard–Milliams and NORSOK&nbsp;M-506 correlations (≈150 °C). The scale-blind models (de Waard 1975, FreeCorp at low pH) become unbounded upper bounds here — read the scale-aware models (de Waard 95 / NESC) as the realistic estimate, and confirm with a CRA.</div>`:""}
     ${r.regime.regime!=="sweet"?`<div class="cdnote">⚠ ${r.regime.regime.toUpperCase()} service (pCO₂/pH₂S ≈ ${r.regime.ratio.toFixed(0)} · ${r.regime.product}). The de Waard &amp; NORSOK sweet-CO₂ models don't credit the protective FeS film that H₂S forms, so they read conservatively high here — weight FreeCorp (H₂S-aware) and run the sulfide-stress-cracking screen on the Assess / Selection-map tabs (ISO 15156-3).</div>`:""}`;
 }
 $("co2Form")&&$("co2Form").addEventListener("input", renderCO2);
+$("c_units") && $("c_units").addEventListener("change", function(){ _unitToggle("co2Form", this.value==="US"?"US":"SI", renderCO2); });
 
 // ---- CP / AC (cathodic protection + AC corrosion) ---------------------------
 const CPAC_PRESETS = [
@@ -881,12 +890,16 @@ $("b31gForm") && $("b31gForm").addEventListener("input", renderIntegrity);
 // and the engine always computes in SI (inSI() in each render).
 function _unitToggle(formId, newSys, rerender){
   if (window.Units){
-    var prev = newSys === "US" ? "SI" : "US";
-    document.querySelectorAll('#'+formId+' input[data-u]').forEach(function(el){
-      var q = el.dataset.u, cur = parseFloat(el.value);
-      if (!isNaN(cur)) el.value = +(Units.fromSI(q, Units.toSI(q, cur, prev), newSys)).toFixed(4);
-    });
-    document.querySelectorAll('#'+formId+' .uq[data-u]').forEach(function(s){ s.textContent = Units.label(s.dataset.u, newSys); });
+    var form = $(formId);
+    var prev = (form && form.dataset.usys) || "SI";   // explicit prev-tracking (default SI on load)
+    if (newSys !== prev){                              // no-op a redundant call (no corruption)
+      document.querySelectorAll('#'+formId+' input[data-u]').forEach(function(el){
+        var q = el.dataset.u, cur = parseFloat(el.value);
+        if (!isNaN(cur)) el.value = +(Units.fromSI(q, Units.toSI(q, cur, prev), newSys)).toFixed(4);
+      });
+      document.querySelectorAll('#'+formId+' .uq[data-u]').forEach(function(s){ s.textContent = Units.label(s.dataset.u, newSys); });
+      if (form) form.dataset.usys = newSys;
+    }
   }
   rerender();
 }

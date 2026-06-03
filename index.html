@@ -238,20 +238,21 @@
           <div id="c_water_note" style="margin-top:6px;font-size:11px;color:var(--dim);line-height:1.5"></div>
         </details>
         <h3>Operating point</h3>
+        <label class="envwide">Units<select id="c_units"><option value="SI" selected>SI — °C · bar · m/s · mm/yr</option><option value="US">US-customary — °F · psi · ft/s · mpy</option></select></label>
         <div class="row">
-          <label>Temperature (°C)<input type="number" id="c_T" value="60" step="5"></label>
-          <label>pCO₂ (bar abs)<input type="number" id="c_pCO2" value="5" step="0.5"></label>
+          <label>Temperature (<span class="uq" data-u="temp">°C</span>)<input type="number" id="c_T" value="60" step="5" data-u="temp"></label>
+          <label>pCO₂ (<span class="uq" data-u="pressure_bar">bar</span> abs)<input type="number" id="c_pCO2" value="5" step="0.5" data-u="pressure_bar"></label>
         </div>
         <div class="row">
           <label>In-situ pH <span class="lblhint">blank = auto</span><input type="number" id="c_pH" step="0.1" placeholder="auto (Crolet-Bonis)"></label>
-          <label>Liquid velocity (m/s)<input type="number" id="c_u" value="2" step="0.5"></label>
+          <label>Liquid velocity (<span class="uq" data-u="velocity">m/s</span>)<input type="number" id="c_u" value="2" step="0.5" data-u="velocity"></label>
         </div>
         <div class="row">
-          <label>Pipe ID (m)<input type="number" id="c_d" value="0.2" step="0.05"></label>
+          <label>Pipe ID (<span class="uq" data-u="length_m">m</span>)<input type="number" id="c_d" value="0.2" step="0.05" data-u="length_m"></label>
           <label>Fe²⁺ (mg/L)<input type="number" id="c_fe2" value="10" step="5"></label>
         </div>
         <div class="row">
-          <label>pH₂S (kPa)<input type="number" id="c_pH2S" value="0" step="10"></label>
+          <label>pH₂S (<span class="uq" data-u="pp_kPa">kPa</span>)<input type="number" id="c_pH2S" value="0" step="10" data-u="pp_kPa"></label>
           <label>Water cut (0–1)<input type="number" id="c_wc" value="0.5" step="0.1" min="0" max="1"></label>
         </div>
         <div class="row">
@@ -267,7 +268,7 @@
         <h3>Corrosion allowance</h3>
         <div class="row">
           <label>Design life (yr)<input type="number" id="c_life" value="20" step="1"></label>
-          <label>Allowance (mm)<input type="number" id="c_ca" value="3" step="0.5"></label>
+          <label>Allowance (<span class="uq" data-u="length">mm</span>)<input type="number" id="c_ca" value="3" step="0.5" data-u="length"></label>
         </div>
       </form>
       <div class="card results" id="co2_results"><div class="placeholder">Set an operating point →</div></div>
@@ -821,10 +822,10 @@ D-002,95,2.1
 <script src="storage.js?v=1"></script>
 <script src="projects-ui.js?v=3"></script>
 <script src="pitcast.js?v=16"></script>
-<script src="units.js?v=1"></script>
+<script src="units.js?v=2"></script>
 <script src="atlas.js?v=2"></script>
 <script src="learn.js?v=2"></script>
-<script src="app.js?v=77"></script>
+<script src="app.js?v=79"></script>
 <script>
   // Wait for mr0175 annexes to load (async fetch)
   if (typeof window !== "undefined") {
